@@ -53,8 +53,11 @@ function update() {
         mitama.x = sakuya.x + 10;
         mitama.y = sakuya.y + 30;
     } else {
-        mitama.x -= 0.4; // 下がるスピードをゆっくりに
-        mitama.y += Math.sin(Date.now() / 200) * 0.5;
+        mitama.x -= 0.4;
+        // 描画と判定を同期：groundY から浮遊高度(-65)とスケールを考慮して計算
+        const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+        mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale;
+        
         if (mitama.x + mitama.w < 0) endGame("MITAMA LOST...");
     }
 

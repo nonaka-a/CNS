@@ -27,13 +27,13 @@
                 <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
                 <div id="title-text">咲耶・ミタマの<br>油日 乱（RUN）道中！</div>
                 <div class="modal-btn-wrap">
-                    <button id="retry-btn" onclick="startGame()">
-                        <span id="retry-btn-inner">開始</span>
+                    <button class="modal-btn" onclick="startGame()" ontouchend="startGame()">
+                        <span class="modal-btn-inner">開始</span>
                     </button>
                 </div>
                 <div class="modal-btn-wrap" style="margin-top: 20px;">
-                    <button id="retry-btn" onclick="void(0)" style="width: 380px;">
-                        <span id="retry-btn-inner" style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">心変わりの術ルーレット</span>
+                    <button id="roulette-btn" class="modal-btn" onclick="void(0)" ontouchend="void(0)" style="width: 380px;">
+                        <span class="modal-btn-inner" style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">心変わりの術ルーレット</span>
                     </button>
                 </div>
             </div>
@@ -56,8 +56,8 @@
                 <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
                 <div id="modal-text">GAME OVER</div>
                 <div class="modal-btn-wrap">
-                    <button id="retry-btn" onclick="location.reload()" ontouchend="location.reload()">
-                        <span id="retry-btn-inner">再挑戦</span>
+                    <button class="modal-btn" onclick="location.reload()" ontouchend="location.reload()">
+                        <span class="modal-btn-inner">再挑戦</span>
                     </button>
                 </div>
             </div>

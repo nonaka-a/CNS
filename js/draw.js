@@ -19,36 +19,43 @@ function draw() {
 
     // キャラクターとミタマの落ち影
     ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+    
     // サクヤ影
+    const sakuyaScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
     ctx.beginPath();
-    ctx.ellipse(sakuya.x + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35, 12, 0, 0, Math.PI * 2);
+    ctx.ellipse(sakuya.x + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35 * sakuyaScale, 12 * sakuyaScale, 0, 0, Math.PI * 2);
     ctx.fill();
     
     // 敵影
     enemies.forEach(e => {
+        const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         ctx.beginPath();
-        ctx.ellipse(e.x + e.w / 2, e.groundY, e.w * 0.35, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(e.x + e.w / 2, e.groundY, e.w * 0.35 * eScale, 6 * eScale, 0, 0, Math.PI * 2);
         ctx.fill();
     });
 
     // ミタマ影 (リリース時のみ)
     if (!mitama.isHolding && mitama.groundY) {
+        const mitamaScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         ctx.beginPath();
-        ctx.ellipse(mitama.x + mitama.w / 2, mitama.groundY, mitama.w * 0.4, 6, 0, 0, Math.PI * 2);
+        ctx.ellipse(mitama.x + mitama.w / 2, mitama.groundY, mitama.w * 0.4 * mitamaScale, 6 * mitamaScale, 0, 0, Math.PI * 2);
         ctx.fill();
     }
 
     ctx.fillStyle = '#00f2fe';
     bullets.forEach(b => {
         if (syurikenImg.complete) {
+            const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             ctx.save();
             ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+            ctx.scale(bScale, bScale);
             ctx.rotate(b.angle);
             ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
             ctx.restore();
         } else {
             // Fallback to blue square if image not loaded
-            ctx.fillRect(b.x, b.y, b.w, b.h);
+            const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            ctx.fillRect(b.x, b.y, b.w * bScale, b.h * bScale);
         }
     });
 
@@ -67,23 +74,42 @@ function draw() {
     renderQueue.forEach(item => {
         if (item.type === 'enemy') {
             const e = item.obj;
+            const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            ctx.save();
+            ctx.translate(e.x + e.w / 2, e.groundY); // ピボットを足元の中央に配置
+            ctx.scale(eScale, eScale);
             if (droneImg.complete) {
-                ctx.drawImage(droneImg, e.x, e.y, e.w, e.h);
+                ctx.drawImage(droneImg, -e.w / 2, -e.h + e.jumpOffset, e.w, e.h);
             } else {
-                // 画像未ロード時のフォールバック
                 ctx.fillStyle = '#ff4444';
                 ctx.beginPath();
-                ctx.arc(e.x + e.w / 2, e.y + e.h / 2, e.w / 2.5, 0, Math.PI * 2);
+                ctx.arc(0, -e.h / 2 + e.jumpOffset, e.w / 2.5, 0, Math.PI * 2);
                 ctx.fill();
             }
+            ctx.restore();
         } else if (item.type === 'mitama') {
+            const mScale = 1.0 + (item.depth - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (mitama.img.complete) {
                 if (!mitama.invincibleTimer || Math.floor(mitama.invincibleTimer / 4) % 2 === 0) {
-                    ctx.drawImage(mitama.img, mitama.x, mitama.y, mitama.w, mitama.h);
+                    ctx.save();
+                    ctx.translate(mitama.x + mitama.w / 2, (!mitama.isHolding ? mitama.groundY : sakuya.groundY));
+                    ctx.scale(mScale, mScale);
+                    // ホールド中か否かで表示位置を微調整
+                    if (!mitama.isHolding) {
+                        // 地面から65pxほど浮かせ、揺れを±15pxに強調
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                    } else {
+                        // ホールド位置（サクヤの肩付近）
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                    }
+                    ctx.restore();
                 }
             }
         } else if (item.type === 'sakuya') {
+            const sScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             ctx.save();
+            ctx.translate(sakuya.x + sakuya.w / 2, sakuya.groundY);
+            ctx.scale(sScale, sScale);
             if (sakuya.img.complete) {
                 if (!sakuya.invincibleTimer || Math.floor(sakuya.invincibleTimer / 4) % 2 === 0) {
                     if (sakuyaConfig) {
@@ -92,10 +118,10 @@ function draw() {
                         ctx.drawImage(
                             sakuya.img,
                             frame.x, frame.y, frame.w, frame.h,
-                            sakuya.x, sakuya.y, sakuya.w, sakuya.h
+                            -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h
                         );
                     } else {
-                        ctx.drawImage(sakuya.img, sakuya.x, sakuya.y, sakuya.w, sakuya.h);
+                        ctx.drawImage(sakuya.img, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
                     }
                 }
             }
@@ -105,6 +131,7 @@ function draw() {
 
     // レーザーのビーム描画 (予告線と太いレーザーを最前面に描画)
     enemyLasers.forEach(l => {
+        const lScale = 1.0 + (l.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         ctx.save();
         ctx.translate(l.startX, l.startY);
         ctx.rotate(l.angle);
@@ -114,7 +141,7 @@ function draw() {
             if (Math.floor(l.telegraphDuration / 4) % 2 === 0) {
                 ctx.lineCap = 'butt';
                 ctx.strokeStyle = 'rgba(255, 20, 147, 0.8)';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 2 * lScale;
                 ctx.setLineDash([15, 15]); // 点線パターン
                 
                 ctx.beginPath();
@@ -130,7 +157,7 @@ function draw() {
             ctx.lineCap = 'round';
             
             ctx.strokeStyle = 'rgba(255, 20, 147, 0.8)'; // 鮮やかな赤ピンク
-            ctx.lineWidth = w;
+            ctx.lineWidth = w * lScale;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(2000, 0); // 端まで繋がる
@@ -138,7 +165,7 @@ function draw() {
             
             // 芯の白を入れるとレーザー感が増す
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.lineWidth = w * 0.4;
+            ctx.lineWidth = w * 0.4 * lScale;
             ctx.beginPath();
             ctx.moveTo(0, 0);
             ctx.lineTo(2000, 0);
