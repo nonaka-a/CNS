@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CNS - Ninja Action</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="main-wrapper">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div id="ui-layer">
+        <div id="progress-container">
+            <div class="corner tp-l"></div><div class="corner tp-r"></div>
+            <div class="corner bt-l"></div><div class="corner bt-r"></div>
+            <div id="progress-bar-track">
+                <div id="progress-bar"></div>
+            </div>
+        </div>
+
+        <div id="title-screen">
+            <div id="title-window">
+                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
+                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
+                <div id="title-text">咲耶・ミタマの<br>油日 乱（RUN）道中！</div>
+                <div class="modal-btn-wrap">
+                    <button id="retry-btn" onclick="startGame()">
+                        <span id="retry-btn-inner">開始</span>
+                    </button>
+                </div>
+                <div class="modal-btn-wrap" style="margin-top: 20px;">
+                    <button id="retry-btn" onclick="void(0)" style="width: 380px;">
+                        <span id="retry-btn-inner" style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">心変わりの術ルーレット</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="hud">
+            <div class="hp-row">
+                <span class="hp-label">咲耶</span>
+                <div id="sakuya-circles" class="circles"></div>
+            </div>
+            <div class="hp-row">
+                <span class="hp-label">ミタマ</span>
+                <div id="mitama-circles" class="circles"></div>
+            </div>
+        </div>
+
+        <div id="modal-overlay">
+            <div id="modal-window">
+                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
+                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
+                <div id="modal-text">GAME OVER</div>
+                <div class="modal-btn-wrap">
+                    <button id="retry-btn" onclick="location.reload()" ontouchend="location.reload()">
+                        <span id="retry-btn-inner">再挑戦</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="control-panel">
+            <div class="dir-pad">
+                <div id="btn-left" class="v-btn dir-btn">◀</div>
+                <div id="btn-right" class="v-btn dir-btn">▶</div>
+                <div id="btn-down" class="v-btn dir-btn">▼</div>
+                <div id="btn-up" class="v-btn dir-btn">▲</div>
+            </div>
+            <div class="action-pad">
+                <div id="btn-jump" class="v-btn action-btn"><img src="images/syuriken_2.png" style="width: 50px; height: 50px; opacity: 0.8;"></div>
+                <div id="btn-attack" class="v-btn action-btn">B</div>
+                <div id="btn-mode" class="v-btn action-btn">C</div>
+                <div id="btn-sub" class="v-btn action-btn">D</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/globals.js"></script>
+<script src="js/input.js"></script>
+<script src="js/update.js"></script>
+<script src="js/draw.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

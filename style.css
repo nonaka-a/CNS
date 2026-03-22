@@ -1,0 +1,194 @@
+body {
+            margin: 0; padding: 0; overflow: hidden;
+            background-color: #111;
+            font-family: 'Hiragino Kaku Gothic ProN', sans-serif;
+            touch-action: none; user-select: none; -webkit-user-select: none;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh;
+        }
+        #main-wrapper {
+            position: relative;
+            width: 1000px; height: 600px;
+            overflow: hidden;
+            background: linear-gradient(to bottom, #0f0524, #2c1b54, #4a3b75);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transform-origin: center center;
+        }
+        canvas { display: block; }
+
+        /* UI Layer */
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+        .hud {
+            position: absolute; top: 55px; left: 20px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+        .hp-row { display: flex; align-items: center; gap: 12px; }
+        .hp-label { font-family: 'Sawarabi Mincho', serif; font-size: 18px; font-weight: 900; color: #fff; width: 80px; text-shadow: 2px 2px 4px #000; }
+        .circles { display: flex; gap: 5px; }
+        .circle {
+            width: 14px; height: 14px; border-radius: 50%;
+            background: rgba(0,0,0,0.5); transition: all 0.3s;
+        }
+        .circle.active { background: #ff1493; box-shadow: 0 0 10px #ff1493, inset 0 0 5px #fff; }
+        .circle.mitama.active { background: #00ffcc; box-shadow: 0 0 10px #00ffcc, inset 0 0 5px #fff; }
+
+        #progress-container {
+            position: absolute; top: 15px; left: 2%;
+            width: 96%; height: 26px;
+            background: #2a2a2a;
+            border: 3px solid #8c6e5e;
+            box-shadow: inset 0 0 0 2px #111, 0 4px 10px rgba(0,0,0,0.5);
+            padding: 3px; border-radius: 0;
+            box-sizing: border-box;
+            display: flex; align-items: center;
+        }
+        #progress-bar-track {
+            width: 100%; height: 100%;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        #progress-bar {
+            width: 0%; height: 100%;
+            background: linear-gradient(to right, #9fe65e, #cff466);
+            border-radius: 10px;
+            transition: width 0.1s;
+        }
+        .corner { position: absolute; width: 8px; height: 8px; background: #8c6e5e; border: 1px solid #1a1a1a; z-index: 2; }
+        .tp-l { top: -6px; left: -6px; }
+        .tp-r { top: -6px; right: -6px; }
+        .bt-l { bottom: -6px; left: -6px; }
+        .bt-r { bottom: -6px; right: -6px; }
+
+        /* カスタムモーダル（ウィンドウ） */
+        #modal-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 1000;
+            backdrop-filter: blur(4px); pointer-events: auto;
+        }
+        #modal-window {
+            position: relative; width: 450px; padding: 50px;
+            background: radial-gradient(circle, #4a4a4a 0%, #222 100%);
+            border: 4px solid #8c6e5e;
+            box-shadow: inset 0 0 0 3px #111, 0 20px 60px rgba(0,0,0,0.9);
+            text-align: center; animation: modalIn 0.4s ease-out;
+        }
+        #modal-window::before {
+            content: ''; position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid rgba(140, 110, 94, 0.4);
+            pointer-events: none;
+        }
+        @keyframes modalIn {
+            from { transform: scale(0.8) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        #modal-text {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 44px; font-weight: 900; color: #fff; margin-bottom: 35px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8), 0 0 15px rgba(255,100,100,0.2);
+            letter-spacing: 4px;
+        }
+        .modal-btn-wrap {
+            display: inline-block;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.8));
+            -webkit-filter: drop-shadow(0 4px 4px rgba(0,0,0,0.8));
+            transition: all 0.2s;
+            pointer-events: auto; /* クリックを確実に通す */
+        }
+        #retry-btn {
+            font-family: 'Sawarabi Mincho', serif;
+            width: 250px; height: 64px; padding: 3px; 
+            background: #8c6e5e; border: none; cursor: pointer;
+            clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px);
+            display: inline-flex; justify-content: center; align-items: center;
+            pointer-events: auto;
+        }
+        .modal-btn-wrap:hover { filter: drop-shadow(0 6px 6px rgba(0,0,0,0.9)); transform: scale(1.05); }
+        .modal-btn-wrap:active { transform: scale(0.95); }
+        #retry-btn-inner {
+            width: 100%; height: 100%;
+            background: linear-gradient(to bottom, #ffebad, #f7d478);
+            clip-path: inherit;
+            display: flex; justify-content: center; align-items: center;
+            color: #4a2a1a; font-size: 24px; font-weight: 900;
+            letter-spacing: 8px; text-indent: 8px; /* 最後の文字の後ろにも余白があるように調整 */
+        }
+
+        .modal-corner { position: absolute; width: 12px; height: 12px; background: #8c6e5e; border: 2px solid #111; z-index: 2; }
+        .m-tp-l { top: -8px; left: -8px; }
+        .m-tp-r { top: -8px; right: -8px; }
+        .m-bt-l { bottom: -8px; left: -8px; }
+        .m-bt-r { bottom: -8px; right: -8px; }
+
+        /* シックな立体ボタンデザイン */
+        #control-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 280px;
+            pointer-events: none; display: flex; justify-content: space-between; align-items: flex-end;
+            padding: 30px 20px; box-sizing: border-box;
+        }
+        .v-btn {
+            width: 85px; height: 85px;
+            background: linear-gradient(145deg, #3a3a3a, #222);
+            border: 2px solid #444; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            color: #ccc; font-weight: 900; font-size: 24px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.6), 
+                        inset 2px 2px 5px rgba(255,255,255,0.1);
+            transition: all 0.05s ease;
+            pointer-events: auto;
+            opacity: 0.9;
+        }
+        .v-btn.active {
+            transform: scale(0.92) translateY(4px);
+            background: linear-gradient(145deg, #111, #222);
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.8), 
+                        inset 4px 4px 10px rgba(0,0,0,0.6);
+            color: #fff;
+            opacity: 1;
+        }
+
+        /* 十字キー */
+        .dir-pad { position: relative; width: 280px; height: 160px; margin-left: 20px; }
+        .dir-btn { position: absolute; }
+        #btn-left  { left: 0; bottom: 60px; }
+        #btn-right { left: 190px; bottom: 60px; }
+        #btn-down  { left: 95px; bottom: 0; }
+        #btn-up    { left: 95px; bottom: 120px; }
+        
+        /* アクションボタン（画像に基づいた十字配置） */
+        .action-pad { position: relative; width: 300px; height: 220px; margin-right: 20px; }
+        .action-btn { position: absolute; }
+        #btn-jump   { left: 0px; bottom: 60px; border-color: #383; color: #5a5; }   /* A: Left */
+        #btn-attack { left: 95px; bottom: 120px; border-color: #338; color: #55a; } /* B: Top */
+        #btn-mode   { left: 95px; bottom: 0px; border-color: #833; color: #a55; }   /* C: Bottom */
+        #btn-sub    { left: 190px; bottom: 60px; border-color: #883; color: #ff0; }  /* D: Right */
+
+        .v-btn.active#btn-jump   { color: #6f6; box-shadow: 0 0 15px rgba(100,255,100,0.4), inset 4px 4px 10px #000; }
+        .v-btn.active#btn-attack { color: #6af; box-shadow: 0 0 15px rgba(100,150,255,0.4), inset 4px 4px 10px #000; }
+        .v-btn.active#btn-mode   { color: #f66; box-shadow: 0 0 15px rgba(255,100,100,0.4), inset 4px 4px 10px #000; }
+        .v-btn.active#btn-sub    { color: #ff0; box-shadow: 0 0 15px rgba(255,255,0,0.4), inset 4px 4px 10px #000; }
+
+        /* タイトル画面用 */
+        #title-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000;
+            backdrop-filter: blur(8px);
+        }
+        #title-window {
+            position: relative; width: 600px; padding: 60px;
+            background: radial-gradient(circle, #4a4a4a 0%, #222 100%);
+            border: 4px solid #8c6e5e;
+            box-shadow: inset 0 0 0 3px #111, 0 30px 80px rgba(0,0,0,1);
+            text-align: center;
+        }
+        #title-text {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 38px; font-weight: 900; color: #fff; margin-bottom: 50px;
+            text-shadow: 4px 4px 10px rgba(0,0,0,0.9), 0 0 20px rgba(255,200,100,0.3);
+            line-height: 1.4; letter-spacing: 2px;
+        }
