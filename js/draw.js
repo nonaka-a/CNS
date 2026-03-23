@@ -64,8 +64,10 @@ function draw() {
     // 奥行き(groundY)による描画順のソート（Zソート）
     const renderQueue = [];
     enemies.forEach(e => renderQueue.push({ type: 'enemy', depth: e.groundY, obj: e }));
-    // ミタマ（ホールド中は常にサクヤの後ろ）
-    renderQueue.push({ type: 'mitama', depth: (!mitama.isHolding && mitama.groundY) ? mitama.groundY : sakuya.groundY - 1 });
+    // ミタマ（ホールド中はサクヤのアニメーションに含まれるため、単体での描画はスキップ）
+    if (!mitama.isHolding && mitama.groundY) {
+        renderQueue.push({ type: 'mitama', depth: mitama.groundY });
+    }
     renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
 
     // 奥(画面上部)から手前へソート

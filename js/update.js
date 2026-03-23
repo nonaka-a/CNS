@@ -29,9 +29,12 @@ function update() {
     sakuya.y = sakuya.groundY - sakuya.h + sakuya.jumpOffset;
 
     // Animation update
-    let nextAnim = 'idle';
-    if (sakuya.vx > 0) nextAnim = 'run';
-    else if (sakuya.vx < 0) nextAnim = 'back_run';
+    let nextAnim = mitama.isHolding ? 'run_m' : 'idle';
+    if (sakuya.vx > 0) {
+        nextAnim = mitama.isHolding ? 'run_m' : 'run';
+    } else if (sakuya.vx < 0) {
+        nextAnim = mitama.isHolding ? 'back_m_run' : 'back_run';
+    }
 
     if (sakuya.currentAnim !== nextAnim) {
         sakuya.currentAnim = nextAnim;
