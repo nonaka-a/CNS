@@ -82,6 +82,11 @@ function update() {
                           b.y < e.y + e.h && b.y + b.h > e.y &&
                           Math.abs(b.groundY - e.groundY) < 80; 
             if (isHit) {
+                // 爆発を生成
+                explosions.push({
+                    x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
+                    frame: 0, timer: 0
+                });
                 enemies.splice(j, 1);
                 hit = true;
                 break;
@@ -89,6 +94,23 @@ function update() {
         }
         if (hit) {
             bullets.splice(i, 1);
+        }
+    }
+
+    // 爆発の更新
+    if (explosionConfig) {
+        for (let i = explosions.length - 1; i >= 0; i--) {
+            const ex = explosions[i];
+            const anim = explosionConfig.data.idle;
+            ex.timer += 1000 / 60;
+            const duration = 1000 / anim.fps;
+            if (ex.timer >= duration) {
+                ex.timer -= duration;
+                ex.frame++;
+                if (ex.frame >= anim.frames.length) {
+                    explosions.splice(i, 1);
+                }
+            }
         }
     }
 
@@ -185,6 +207,18 @@ function update() {
 
     distance += 5;
     const progress = Math.min((distance / goalDistance) * 100, 100);
-    document.getElementById('progress-bar').style.width = progress + '%';
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) progressBar.style.width = progress + '%';
+    
+    // UIの更新: ホールド中は手裏剣ボタンをグレーアウト
+    const shurikenBtn = document.getElementById('btn-jump');
+    if (shurikenBtn) {
+        if (mitama.isHolding) {
+            shurikenBtn.classList.add('disabled');
+        } else {
+            shurikenBtn.classList.remove('disabled');
+        }
+    }
+
     if (distance >= goalDistance) endGame("GOAL!");
 }

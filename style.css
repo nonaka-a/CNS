@@ -151,6 +151,11 @@ body {
             color: #fff;
             opacity: 1;
         }
+        .v-btn.disabled {
+            filter: grayscale(1) brightness(0.6);
+            opacity: 0.5;
+            pointer-events: none;
+        }
 
         /* 十字キー */
         .dir-pad { position: relative; width: 280px; height: 160px; margin-left: 20px; }

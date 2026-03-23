@@ -7,8 +7,11 @@ async function init() {
     try {
         const response = await fetch('json/sakuya.json');
         sakuyaConfig = await response.json();
+        
+        const resExp = await fetch('json/Explosion_A.json');
+        explosionConfig = await resExp.json();
     } catch (e) {
-        console.error("Failed to load sakuya.json:", e);
+        console.error("Failed to load configs:", e);
     }
 
     fitWindow();

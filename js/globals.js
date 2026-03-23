@@ -52,3 +52,7 @@ const droneImg = new Image();
 droneImg.src = 'images/droneA.png';
 let bgX = 0;
 let canShoot = true;
+let explosions = [];
+const explosionImg = new Image();
+explosionImg.src = 'images/Explosion_A.png';
+let explosionConfig = null;
