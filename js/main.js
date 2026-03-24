@@ -14,6 +14,9 @@ async function init() {
         // SEの先行ロード
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
+        await loadSE('laser', 'sound/Laser1.mp3');
+        await loadSE('jump1', 'sound/jump1.mp3');
+        await loadSE('jump2', 'sound/jump2.mp3');
     } catch (e) {
         console.error("Failed to load configs:", e);
     }

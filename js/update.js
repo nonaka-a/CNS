@@ -176,6 +176,7 @@ function update() {
         const l = enemyLasers[i];
         if (l.telegraphDuration > 0) {
             l.telegraphDuration--;
+            if (l.telegraphDuration === 0) playSE('laser');
             continue; // 予告線表示中は当たり判定なし
         }
 

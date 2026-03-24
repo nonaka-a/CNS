@@ -70,6 +70,8 @@ function setupControls() {
 
 function jump() {
     if (sakuya.jumpCount < 2) {
+        if (sakuya.jumpCount === 0) playSE('jump1');
+        else playSE('jump2');
         sakuya.vy = sakuya.jumpPower;
         sakuya.isJumping = true;
         sakuya.jumpCount++;
