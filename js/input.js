@@ -97,10 +97,14 @@ function shoot() {
         w: 50, 
         h: 50,
         angle: 0,
-        groundY: sakuya.groundY
+        groundY: sakuya.groundY,
+        history: []
     });
 
+    playSE('shuriken');
+
     // Cooldown: 0.5 seconds
+    sakuya.attackTimer = 16;
     canShoot = false;
     setTimeout(() => { canShoot = true; }, 500);
 }

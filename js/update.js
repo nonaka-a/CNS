@@ -36,6 +36,11 @@ function update() {
         nextAnim = mitama.isHolding ? 'back_m_run' : 'back_run';
     }
 
+    if (sakuya.attackTimer > 0) {
+        sakuya.attackTimer--;
+        nextAnim = 'throw_shuriken';
+    }
+
     if (sakuya.currentAnim !== nextAnim) {
         sakuya.currentAnim = nextAnim;
         sakuya.currentFrame = 0;
@@ -69,6 +74,8 @@ function update() {
         const b = bullets[i];
         b.x += b.vx;
         b.angle -= 0.6;
+        b.history.push({ x: b.x, y: b.y, angle: b.angle });
+        if (b.history.length > 12) b.history.shift();
         if (b.x + b.w < 0 || b.x > CANVAS_WIDTH) {
             bullets.splice(i, 1);
             continue;
@@ -87,6 +94,10 @@ function update() {
                     x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
                     frame: 0, timer: 0
                 });
+                
+                // 爆発音
+                playSE('explosion');
+
                 enemies.splice(j, 1);
                 hit = true;
                 break;

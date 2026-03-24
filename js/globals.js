@@ -30,7 +30,8 @@ const sakuya = {
     groundY: 0, jumpOffset: 0,
     jumpPower: -18, isJumping: false, hp: 100,
     img: new Image(),
-    currentAnim: 'idle', currentFrame: 0, frameTimer: 0, jumpCount: 0
+    currentAnim: 'idle', currentFrame: 0, frameTimer: 0, jumpCount: 0,
+    attackTimer: 0
 };
 sakuya.img.src = 'images/sakuya.png';
 
@@ -55,4 +56,24 @@ let canShoot = true;
 let explosions = [];
 const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
-let explosionConfig = null;
+let audioCtx = null;
+const seBuffers = {};
+
+async function loadSE(name, url) {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    try {
+        const response = await fetch(url);
+        const arrayBuffer = await response.arrayBuffer();
+        seBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+    } catch (e) {
+        console.error(`Failed to load SE: ${name}`, e);
+    }
+}
+
+function playSE(name) {
+    if (!audioCtx || !seBuffers[name]) return;
+    const source = audioCtx.createBufferSource();
+    source.buffer = seBuffers[name];
+    source.connect(audioCtx.destination);
+    source.start(0);
+}

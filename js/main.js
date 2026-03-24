@@ -10,6 +10,10 @@ async function init() {
         
         const resExp = await fetch('json/Explosion_A.json');
         explosionConfig = await resExp.json();
+
+        // SEの先行ロード
+        await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
+        await loadSE('explosion', 'sound/explosion.mp3');
     } catch (e) {
         console.error("Failed to load configs:", e);
     }
@@ -24,6 +28,12 @@ async function init() {
 
 function startGame() {
     if (isGameRunning) return; // 二重起動防止
+    
+    // iOS/iPadでの低遅延再生を有効にするためユーザー操作時に再開
+    if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+
     document.getElementById('title-screen').style.display = 'none';
     isGameRunning = true;
     requestAnimationFrame(gameLoop);

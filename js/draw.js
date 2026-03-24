@@ -44,8 +44,23 @@ function draw() {
 
     ctx.fillStyle = '#00f2fe';
     bullets.forEach(b => {
+        const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         if (syurikenImg.complete) {
-            const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            // 残像（軌跡）の描画 - 過去の座標を白っぽく発光させて、より長く表示
+            b.history.forEach((h, idx) => {
+                const trailAlpha = (idx / b.history.length) * 0.6; // 少し濃くして白を強調
+                const trailScaleRatio = 0.3 + (idx / b.history.length) * 0.7; // 以前より長く（小さく）尾を引くように
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen'; // 重なって白っぽく発光する効果
+                ctx.globalAlpha = trailAlpha;
+                ctx.translate(h.x + b.w / 2, h.y + b.h / 2);
+                ctx.scale(bScale * trailScaleRatio, bScale * trailScaleRatio);
+                ctx.rotate(h.angle);
+                ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
+                ctx.restore();
+            });
+
+            // 本体
             ctx.save();
             ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
             ctx.scale(bScale, bScale);
@@ -54,7 +69,6 @@ function draw() {
             ctx.restore();
         } else {
             // Fallback to blue square if image not loaded
-            const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             ctx.fillRect(b.x, b.y, b.w * bScale, b.h * bScale);
         }
     });
