@@ -1,18 +1,26 @@
+function subAction() {
+    // 現在のDボタンの処理（空ですが、将来の拡張やNキーとの対応のため定義）
+}
+
 function setupControls() {
     window.addEventListener('keydown', (e) => {
-        if (e.code === 'ArrowLeft') keys.ArrowLeft = true;
-        if (e.code === 'ArrowRight') keys.ArrowRight = true;
-        if (e.code === 'ArrowUp') keys.ArrowUp = true;
-        if (e.code === 'ArrowDown') keys.ArrowDown = true;
-        if (e.code === 'Space' || e.code === 'KeyC') jump();
-        if (e.code === 'KeyX' || e.code === 'KeyB') toggleMode();
-        if (e.code === 'KeyA' || e.code === 'KeyZ') shoot();
+        // 矢印キーとWASDキーの連動
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = true;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = true;
+        if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.ArrowUp = true;
+        if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.ArrowDown = true;
+        
+        // アクションキー
+        if (e.code === 'Space') jump();
+        if (e.code === 'KeyV') shoot();
+        if (e.code === 'KeyB') toggleMode();
+        if (e.code === 'KeyN') subAction();
     });
     window.addEventListener('keyup', (e) => {
-        if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
-        if (e.code === 'ArrowRight') keys.ArrowRight = false;
-        if (e.code === 'ArrowUp') keys.ArrowUp = false;
-        if (e.code === 'ArrowDown') keys.ArrowDown = false;
+        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = false;
+        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = false;
+        if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.ArrowUp = false;
+        if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.ArrowDown = false;
     });
 
     const btnMap = [
@@ -23,7 +31,7 @@ function setupControls() {
         { id: 'btn-jump', action: shoot },
         { id: 'btn-attack', action: toggleMode },
         { id: 'btn-mode', action: jump },
-        { id: 'btn-sub', action: () => {} }
+        { id: 'btn-sub', action: subAction }
     ];
 
     const handleTouch = (e) => {
