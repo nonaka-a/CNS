@@ -69,9 +69,10 @@ function setupControls() {
 }
 
 function jump() {
-    if (sakuya.jumpCount < 2) {
-        if (sakuya.jumpCount === 0) playSE('jump1');
-        else playSE('jump2');
+    if (isIntro || sakuya.jumpCount < 2) {
+        if (isIntro) return; // イントロ中はジャンプ不可
+        if (sakuya.jumpCount === 0) playSE('jump1', 0.6);
+        else playSE('jump2', 0.6);
         sakuya.vy = sakuya.jumpPower;
         sakuya.isJumping = true;
         sakuya.jumpCount++;
@@ -79,9 +80,11 @@ function jump() {
 }
 
 function toggleMode() {
+    if (isIntro) return;
     if (mitama.isHolding) {
         mitama.isHolding = false;
         mitama.groundY = sakuya.groundY;
+        playSE('puni');
     } else {
         // Pickup condition: collision between sakuya and mitama
         const isOverlapping = sakuya.x < mitama.x + mitama.w &&
@@ -90,6 +93,7 @@ function toggleMode() {
                                sakuya.y + sakuya.h > mitama.y;
         if (isOverlapping) {
             mitama.isHolding = true;
+            playSE('puni2');
         } else {
             return; // Not close enough, do nothing
         }
@@ -97,7 +101,7 @@ function toggleMode() {
 }
 
 function shoot() {
-    if (!canShoot || mitama.isHolding || gameOver) return;
+    if (isIntro || !canShoot || mitama.isHolding || gameOver) return;
 
     // Create a rotating shuriken
     bullets.push({ 
@@ -111,7 +115,7 @@ function shoot() {
         history: []
     });
 
-    playSE('shuriken');
+    playSE('shuriken', 0.6);
 
     // Cooldown: 0.5 seconds
     sakuya.attackTimer = 16;

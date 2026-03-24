@@ -24,9 +24,11 @@ const PERSPECTIVE_SCALE_FACTOR = 0.002; // 奥と手前でのサイズ変化率
 const goalDistance = 40000;
 let distance = 0;
 let gameOver = false;
+let isIntro = true;
+const INTRO_TARGET_X = 410;
 
 const sakuya = {
-    x: 150, y: 0, w: 180, h: 180, vx: 0, vy: 0,
+    x: -150, y: 0, w: 180, h: 180, vx: 0, vy: 0,
     groundY: 0, jumpOffset: 0,
     jumpPower: -18, isJumping: false, hp: 100,
     img: new Image(),
@@ -58,6 +60,9 @@ const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
 let audioCtx = null;
 const seBuffers = {};
+const bgm = new Audio('sound/BGM1.mp3');
+bgm.loop = true;
+bgm.volume = 0.4; // プレイの邪魔にならない程度の音量に設定
 
 async function loadSE(name, url) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -70,10 +75,15 @@ async function loadSE(name, url) {
     }
 }
 
-function playSE(name) {
+function playSE(name, volume = 1.0) {
     if (!audioCtx || !seBuffers[name]) return;
     const source = audioCtx.createBufferSource();
     source.buffer = seBuffers[name];
-    source.connect(audioCtx.destination);
+    
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.value = volume;
+    
+    source.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
     source.start(0);
 }

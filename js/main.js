@@ -17,6 +17,8 @@ async function init() {
         await loadSE('laser', 'sound/Laser1.mp3');
         await loadSE('jump1', 'sound/jump1.mp3');
         await loadSE('jump2', 'sound/jump2.mp3');
+        await loadSE('puni', 'sound/puni.mp3');
+        await loadSE('puni2', 'sound/puni2.mp3');
     } catch (e) {
         console.error("Failed to load configs:", e);
     }
@@ -36,6 +38,10 @@ function startGame() {
     if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
     }
+
+    // BGMの再生開始
+    bgm.currentTime = 0;
+    bgm.play().catch(e => console.error("BGM playback failed:", e));
 
     document.getElementById('title-screen').style.display = 'none';
     isGameRunning = true;
@@ -58,6 +64,10 @@ function fitWindow() {
 function endGame(msg) {
     gameOver = true;
     isGameRunning = false;
+    
+    // BGMの停止
+    bgm.pause();
+
     document.getElementById('modal-text').innerText = msg;
     document.getElementById('modal-overlay').style.display = 'flex';
 }

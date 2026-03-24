@@ -1,18 +1,30 @@
 function update() {
     if (gameOver) return;
 
-    if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
-    else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
-    else sakuya.vx = 0;
-    
-    sakuya.x += sakuya.vx;
-    sakuya.x = Math.max(0, Math.min(sakuya.x, CANVAS_WIDTH - sakuya.w));
+    if (isIntro) {
+        // イントロ：画面外から中央（INTRO_TARGET_X）まで走ってくる
+        sakuya.vx = 18;
+        sakuya.x += sakuya.vx;
+        if (sakuya.x >= INTRO_TARGET_X) {
+            sakuya.x = INTRO_TARGET_X;
+            isIntro = false;
+            sakuya.vx = 0;
+        }
+    } else {
+        // 通常の操作
+        if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
+        else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
+        else sakuya.vx = 0;
+        
+        sakuya.x += sakuya.vx;
+        sakuya.x = Math.max(0, Math.min(sakuya.x, CANVAS_WIDTH - sakuya.w));
 
-    // 奥行き移動
-    let vy_depth = 0;
-    if (keys.ArrowUp) vy_depth = -PLAYER_SPEED * 0.7;
-    else if (keys.ArrowDown) vy_depth = PLAYER_SPEED * 0.7;
-    sakuya.groundY += vy_depth;
+        // 奥行き移動
+        let vy_depth = 0;
+        if (keys.ArrowUp) vy_depth = -PLAYER_SPEED * 0.7;
+        else if (keys.ArrowDown) vy_depth = PLAYER_SPEED * 0.7;
+        sakuya.groundY += vy_depth;
+    }
     sakuya.groundY = Math.max(300, Math.min(sakuya.groundY, 420));
 
     // ジャンプ（jumpOffsetにのみ影響）
@@ -217,7 +229,9 @@ function update() {
         }
     }
 
-    distance += 5;
+    if (!isIntro) {
+        distance += 5;
+    }
     const progress = Math.min((distance / goalDistance) * 100, 100);
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = progress + '%';
