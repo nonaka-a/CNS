@@ -45,13 +45,24 @@ function startGame() {
 
     document.getElementById('title-screen').style.display = 'none';
     isGameRunning = true;
+    lastFrameTime = 0;
     requestAnimationFrame(gameLoop);
 }
 
 
-function gameLoop() {
-    update();
-    draw();
+function gameLoop(timestamp) {
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const elapsed = timestamp - lastFrameTime;
+
+    // TARGET_FPS (60fps) 以上時間が経過したときのみ更新・描画
+    if (elapsed >= FRAME_INTERVAL) {
+        // 次のフレームまでの余剰時間を考慮して更新
+        lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
+        
+        update();
+        draw();
+    }
+
     if (isGameRunning) requestAnimationFrame(gameLoop);
 }
 

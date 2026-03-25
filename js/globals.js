@@ -5,6 +5,9 @@ const CANVAS_WIDTH = 1000;
 const CANVAS_HEIGHT = 600;
 let canvas, ctx;
 let isGameRunning = false;
+let lastFrameTime = 0;
+const TARGET_FPS = 60;
+const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
 const keys = {
     ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false,
