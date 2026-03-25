@@ -1,5 +1,5 @@
 function update() {
-    if (gameOver) return;
+    if (gameOver || isPaused) return;
 
     if (isIntro) {
         // イントロ：画面外から中央（INTRO_TARGET_X）まで走ってくる

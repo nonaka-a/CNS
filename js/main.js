@@ -34,6 +34,8 @@ async function init() {
 function startGame() {
     if (isGameRunning) return; // 二重起動防止
     
+    resetGameState();
+    
     // iOS/iPadでの低遅延再生を有効にするためユーザー操作時に再開
     if (audioCtx && audioCtx.state === 'suspended') {
         audioCtx.resume();
@@ -41,7 +43,9 @@ function startGame() {
 
     // BGMの再生開始
     bgm.currentTime = 0;
-    bgm.play().catch(e => console.error("BGM playback failed:", e));
+    if (isSoundOn) {
+        bgm.play().catch(e => console.error("BGM playback failed:", e));
+    }
 
     document.getElementById('title-screen').style.display = 'none';
     isGameRunning = true;
@@ -81,6 +85,98 @@ function endGame(msg) {
 
     document.getElementById('modal-text').innerText = msg;
     document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+/**
+ * --- SETTINGS & CONTROL ---
+ */
+function toggleSettings() {
+    const overlay = document.getElementById('settings-overlay');
+    if (!overlay) return;
+    if (overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+        isPaused = false;
+        if (isSoundOn && isGameRunning) {
+            bgm.play().catch(() => {});
+        }
+    } else {
+        overlay.style.display = 'flex';
+        isPaused = true;
+        bgm.pause();
+    }
+}
+
+function backToTitle() {
+    isGameRunning = false;
+    isPaused = false;
+    bgm.pause();
+    document.getElementById('settings-overlay').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('title-screen').style.display = 'flex';
+}
+
+function toggleSound() {
+    isSoundOn = !isSoundOn;
+    bgm.muted = !isSoundOn;
+    
+    const btnText = document.getElementById('sound-btn-text');
+    if (btnText) {
+        btnText.innerText = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
+    }
+    
+    if (isSoundOn) {
+        if (isGameRunning && !isPaused) {
+            bgm.play().catch(() => {});
+        }
+    } else {
+        bgm.pause();
+    }
+}
+
+function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+        });
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
+}
+
+function resetGameState() {
+    distance = 0;
+    gameOver = false;
+    isIntro = true;
+    isPaused = false;
+    
+    sakuya.x = -150;
+    sakuya.y = 0;
+    sakuya.vx = 0;
+    sakuya.vy = 0;
+    sakuya.groundY = GROUND_Y_POS;
+    sakuya.jumpOffset = 0;
+    sakuya.hp = 100;
+    sakuya.isJumping = false;
+    sakuya.jumpCount = 0;
+    sakuya.attackTimer = 0;
+    sakuya.currentAnim = 'idle';
+    sakuya.currentFrame = 0;
+    if (sakuya.invincibleTimer !== undefined) sakuya.invincibleTimer = 0;
+    
+    mitama.hp = 50;
+    mitama.isHolding = true;
+    if (mitama.invincibleTimer !== undefined) mitama.invincibleTimer = 0;
+    
+    bullets = [];
+    enemies = [];
+    enemyLasers = [];
+    explosions = [];
+    bgX = 0;
+    
+    const progressBar = document.getElementById('progress-bar');
+    if (progressBar) progressBar.style.width = '0%';
 }
 
 init();

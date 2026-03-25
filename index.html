@@ -72,6 +72,35 @@
             </div>
         </div>
 
+        <!-- Settings Modal -->
+        <div id="settings-overlay">
+            <div id="settings-window">
+                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
+                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
+                <div id="settings-title">設定</div>
+                <div class="modal-btn-wrap">
+                    <button class="modal-btn" onclick="backToTitle()" ontouchend="backToTitle()">
+                        <span class="modal-btn-inner" style="font-size: 20px;">タイトルに戻る</span>
+                    </button>
+                </div>
+                <div class="modal-btn-wrap" style="margin-top: 15px;">
+                    <button class="modal-btn" onclick="toggleSound()" ontouchend="toggleSound()">
+                        <span id="sound-btn-text" class="modal-btn-inner" style="font-size: 20px;">音: ON</span>
+                    </button>
+                </div>
+                <div class="modal-btn-wrap" style="margin-top: 15px;">
+                    <button class="modal-btn" onclick="toggleFullscreen()" ontouchend="toggleFullscreen()">
+                        <span class="modal-btn-inner" style="font-size: 20px;">フルスクリーン</span>
+                    </button>
+                </div>
+                <div class="modal-btn-wrap" style="margin-top: 15px;">
+                    <button class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()">
+                        <span class="modal-btn-inner" style="font-size: 20px;">閉じる</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="control-panel">
             <div class="dir-pad">
                 <div id="btn-left" class="v-btn dir-btn">◀</div>
@@ -79,6 +108,7 @@
                 <div id="btn-down" class="v-btn dir-btn">▼</div>
                 <div id="btn-up" class="v-btn dir-btn">▲</div>
             </div>
+            <div id="btn-settings" class="v-btn settings-btn" onclick="toggleSettings()" ontouchend="toggleSettings()">⚙️</div>
             <div class="action-pad">
                 <div id="btn-jump" class="v-btn action-btn"><img src="images/syuriken_2.png" style="width: 50px; height: 50px; opacity: 0.8;"></div>
                 <div id="btn-attack" class="v-btn action-btn">B</div>

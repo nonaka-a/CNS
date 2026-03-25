@@ -31,6 +31,7 @@ function setupControls() {
         { id: 'btn-jump', action: shoot },
         { id: 'btn-attack', action: toggleMode },
         { id: 'btn-mode', action: jump },
+        { id: 'btn-settings', action: typeof toggleSettings !== 'undefined' ? toggleSettings : null },
         { id: 'btn-sub', action: subAction }
     ];
 

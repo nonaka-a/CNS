@@ -57,7 +57,9 @@ bgImg.src = 'images/BG1.jpg';
 const droneImg = new Image();
 droneImg.src = 'images/droneA.png';
 let bgX = 0;
+let isSoundOn = true;
 let canShoot = true;
+let isPaused = false;
 let explosions = [];
 const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
@@ -68,6 +70,7 @@ const seBuffers = {};
 const bgm = new Audio('sound/BGM1.mp3');
 bgm.loop = true;
 bgm.volume = 0.4; // プレイの邪魔にならない程度の音量に設定
+bgm.muted = !isSoundOn;
 
 async function loadSE(name, url) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -81,6 +84,7 @@ async function loadSE(name, url) {
 }
 
 function playSE(name, volume = 1.0) {
+    if (!isSoundOn) return;
     if (!audioCtx || !seBuffers[name]) return;
     const source = audioCtx.createBufferSource();
     source.buffer = seBuffers[name];

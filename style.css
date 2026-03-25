@@ -124,6 +124,26 @@ body {
         .m-tp-r { top: -8px; right: -8px; }
         .m-bt-l { bottom: -8px; left: -8px; }
         .m-bt-r { bottom: -8px; right: -8px; }
+        
+        /* Settings Modal specific */
+        #settings-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); display: none; justify-content: center; align-items: center; z-index: 3000;
+            backdrop-filter: blur(4px); pointer-events: auto;
+        }
+        #settings-window {
+            position: relative; width: 350px; padding: 40px;
+            background: radial-gradient(circle, #4a4a4a 0%, #222 100%);
+            border: 4px solid #8c6e5e;
+            box-shadow: inset 0 0 0 3px #111, 0 20px 60px rgba(0,0,0,0.9);
+            text-align: center; animation: modalIn 0.3s ease-out;
+        }
+        #settings-title {
+            font-family: 'Sawarabi Mincho', serif;
+            font-size: 32px; font-weight: 900; color: #fff; margin-bottom: 25px;
+            text-shadow: 2px 2px 8px rgba(0,0,0,0.8);
+            letter-spacing: 4px;
+        }
 
         /* シックな立体ボタンデザイン */
         #control-panel {
@@ -172,6 +192,19 @@ body {
         #btn-attack { left: 95px; bottom: 120px; border-color: #338; color: #55a; } /* B: Top */
         #btn-mode   { left: 95px; bottom: 0px; border-color: #833; color: #a55; }   /* C: Bottom */
         #btn-sub    { left: 190px; bottom: 60px; border-color: #883; color: #ff0; }  /* D: Right */
+        
+        /* 設定ボタンの個別調整 - サイズを半分程度に縮小 */
+        .v-btn.settings-btn {
+            width: 45px; height: 45px;
+            font-size: 22px;
+            margin-bottom: 75px;
+            z-index: 10;
+            box-shadow: 3px 3px 8px rgba(0,0,0,0.6), 
+                        inset 1px 1px 3px rgba(255,255,255,0.1);
+        }
+        .v-btn.settings-btn:active {
+            transform: scale(0.92) translateY(4px) rotate(30deg);
+        }
 
         .v-btn.active#btn-jump   { color: #6f6; box-shadow: 0 0 15px rgba(100,255,100,0.4), inset 4px 4px 10px #000; }
         .v-btn.active#btn-attack { color: #6af; box-shadow: 0 0 15px rgba(100,150,255,0.4), inset 4px 4px 10px #000; }
