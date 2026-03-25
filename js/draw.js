@@ -173,52 +173,40 @@ function draw() {
         ctx.rotate(l.angle);
         
         if (l.telegraphDuration > 0) {
-            // エネルギー充填エフェクト (チャージ感)
+            // エネルギー充填エフェクト (微調整：少し小さくし、後半に点滅を激化)
             const chargeProgress = 1.0 - (l.telegraphDuration / 48); // 48フレームで溜まる
-            const pulse = (Math.sin(Date.now() / 30) * 0.3 + 0.7); // 激しく明滅
             
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen'; // 発光感を出すためにスクリーン合成
+            // 後半に向けて点滅頻度を「分母を小さくする」ことで加速させる
+            const pulseFreq = 25 - 18 * chargeProgress; 
+            const pulse = (Math.sin(Date.now() / pulseFreq) * 0.4 + 0.6);
+            
+            const easedProgress = 1 - Math.pow(1 - chargeProgress, 4); 
 
-            // 中心コアの光
-            ctx.shadowBlur = 15 * lScale;
-            ctx.shadowColor = 'rgba(255, 10, 50, 1.0)';
-            ctx.fillStyle = `rgba(255, 255, 255, ${0.8 * pulse})`;
-            ctx.beginPath();
-            ctx.arc(0, 0, (6 + 8 * chargeProgress) * lScale, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // 小さいところから「グイン」と広がり、イーズアウトで決まるリング
-            const easedProgress = Math.sin(chargeProgress * Math.PI / 2); // 終わりをゆっくり
-            const ringRadius = (10 + 22 * easedProgress) * lScale; // 最大サイズを約半分に
-            
-            // 正円のまま、線幅に強弱（入り抜き）をつけて描画
             ctx.save();
-            // チャージ進行度に合わせて回転させる (拡大と同じイージングを適用して最後に決まる動きに)
-            ctx.rotate(easedProgress * Math.PI * 3);
+            ctx.globalCompositeOperation = 'screen'; // スクリーン合成
             
-            ctx.strokeStyle = 'rgba(255, 10, 50, 0.9)';
-            const segments = 24; // 24分割して滑らかな強弱を表現
-            for (let i = 0; i < segments; i++) {
-                const angleStart = (i / segments) * Math.PI * 2;
-                const angleEnd = ((i + 1.1) / segments) * Math.PI * 2; // 少し重ねて隙間を埋める
-                // サイン波で線幅を強弱させる（入り抜き）
-                ctx.lineWidth = (Math.sin(angleStart * 2) * 2 + 2.5) * lScale;
-                
-                ctx.beginPath();
-                ctx.arc(0, 0, ringRadius, angleStart, angleEnd);
-                ctx.stroke();
+            // 発光感もサイズに合わせ少し控えめに
+            ctx.shadowBlur = 12 * lScale;
+            ctx.shadowColor = 'rgba(255, 10, 50, 1.0)';
+
+            if (droneEnergyImg.complete) {
+                // 1. 中心コア相当 (前回 30px -> 今回 25px へ微調整)
+                const coreR = (8 + 17 * chargeProgress) * lScale;
+                ctx.save();
+                ctx.globalAlpha = (0.6 + 0.4 * pulse) * 0.8;
+                ctx.drawImage(droneEnergyImg, -coreR, -coreR, coreR * 2, coreR * 2);
+                ctx.restore();
+
+                // 2. リング相当 (前回 80px -> 今回 70px へ微調整)
+                const ringRadius = (15 + 55 * easedProgress) * lScale;
+                ctx.save();
+                ctx.rotate(easedProgress * Math.PI * 4);
+                // 点滅感を後半ほど強く感じさせる
+                ctx.globalAlpha = (0.5 + 0.5 * pulse);
+                ctx.drawImage(droneEnergyImg, -ringRadius, -ringRadius, ringRadius * 2, ringRadius * 2);
+                ctx.restore();
             }
-            
-            // 十字ライン (正円の半径に合わせて描画)
-            ctx.strokeStyle = 'rgba(255, 10, 50, 0.8)';
-            ctx.lineWidth = 2 * lScale;
-            ctx.beginPath();
-            ctx.moveTo(0, -ringRadius * 1.5); ctx.lineTo(0, ringRadius * 1.5);
-            ctx.moveTo(-ringRadius * 0.5, 0); ctx.lineTo(ringRadius * 0.5, 0);
-            ctx.stroke();
             ctx.restore();
-            ctx.restore(); // composite mode / outer saveのrestore
 
             // 発射前の予告線 (点線、かつ点滅)
             if (Math.floor(l.telegraphDuration / 4) % 2 === 0) {
