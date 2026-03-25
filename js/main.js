@@ -90,7 +90,12 @@ function endGame(msg) {
 /**
  * --- SETTINGS & CONTROL ---
  */
+let settingsTimer = 0;
 function toggleSettings() {
+    const now = Date.now();
+    if (now - settingsTimer < 300) return;
+    settingsTimer = now;
+
     const overlay = document.getElementById('settings-overlay');
     if (!overlay) return;
     if (overlay.style.display === 'flex') {
