@@ -35,32 +35,58 @@ function setupControls() {
         { id: 'btn-sub', action: subAction }
     ];
 
+    // ボタンのレクト情報をキャッシュする（レイアウトスライッシング防止）
+    function updateBtnRects() {
+        btnMap.forEach(b => {
+            const el = document.getElementById(b.id);
+            if (el) {
+                b.rect = el.getBoundingClientRect();
+                b.el = el;
+            }
+        });
+    }
+    
+    // 初期化時とリサイズ時にキャッシュを更新
+    updateBtnRects();
+    window.addEventListener('resize', () => {
+        setTimeout(updateBtnRects, 100); // スケール反映待ち
+    });
+
     const handleTouch = (e) => {
         if (e.cancelable) e.preventDefault();
         
+        let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
+        let activeIds = new Set();
+
+        if (e.type !== 'touchend') {
+            for (let i = 0; i < e.touches.length; i++) {
+                const t = e.touches[i];
+                btnMap.forEach(b => {
+                    if (!b.rect) return;
+                    const margin = 15;
+                    if (t.clientX >= b.rect.left - margin && t.clientX <= b.rect.right + margin &&
+                        t.clientY >= b.rect.top - margin && t.clientY <= b.rect.bottom + margin) {
+                        
+                        if (b.key) currentKeys[b.key] = true;
+                        if (b.action && e.type === 'touchstart') b.action();
+                        activeIds.add(b.id);
+                    }
+                });
+            }
+        }
+
+        // 状態が実際に変わった時だけDOM（classList）を操作する
         btnMap.forEach(b => {
-            const el = document.getElementById(b.id);
-            if (el) el.classList.remove('active');
+            if (b.el) {
+                const isActive = activeIds.has(b.id);
+                if (isActive) {
+                    if (!b.el.classList.contains('active')) b.el.classList.add('active');
+                } else {
+                    if (b.el.classList.contains('active')) b.el.classList.remove('active');
+                }
+            }
         });
         
-        let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
-
-        for (let i = 0; i < e.touches.length; i++) {
-            const t = e.touches[i];
-            btnMap.forEach(b => {
-                const el = document.getElementById(b.id);
-                if (!el) return;
-                const rect = el.getBoundingClientRect();
-                const margin = 15;
-                if (t.clientX >= rect.left - margin && t.clientX <= rect.right + margin &&
-                    t.clientY >= rect.top - margin && t.clientY <= rect.bottom + margin) {
-                    
-                    if (b.key) currentKeys[b.key] = true;
-                    if (b.action && e.type === 'touchstart') b.action();
-                    el.classList.add('active');
-                }
-            });
-        }
         Object.assign(keys, currentKeys);
     };
 

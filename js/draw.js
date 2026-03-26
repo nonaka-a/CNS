@@ -51,7 +51,7 @@ function draw() {
                 const trailAlpha = (idx / b.history.length) * 0.6; // 少し濃くして白を強調
                 const trailScaleRatio = 0.3 + (idx / b.history.length) * 0.7; // 以前より長く（小さく）尾を引くように
                 ctx.save();
-                ctx.globalCompositeOperation = 'screen'; // 重なって白っぽく発光する効果
+                // ctx.globalCompositeOperation = 'screen'; // 重いので無効化
                 ctx.globalAlpha = trailAlpha;
                 ctx.translate(h.x + b.w / 2, h.y + b.h / 2);
                 ctx.scale(bScale * trailScaleRatio, bScale * trailScaleRatio);
@@ -182,15 +182,7 @@ function draw() {
             
             const easedProgress = 1 - Math.pow(1 - chargeProgress, 4); 
 
-            ctx.save();
-            ctx.globalCompositeOperation = 'screen'; // スクリーン合成
-            
-            // 発光感もサイズに合わせ少し控えめに
-            ctx.shadowBlur = 12 * lScale;
-            ctx.shadowColor = 'rgba(255, 10, 50, 1.0)';
-
-            if (droneEnergyImg.complete) {
-                // 1. 中心コア相当 (前回 30px -> 今回 25px へ微調整)
+            // 1. 中心コア相当
                 const coreR = (8 + 17 * chargeProgress) * lScale;
                 ctx.save();
                 ctx.globalAlpha = (0.6 + 0.4 * pulse) * 0.8;
@@ -205,63 +197,68 @@ function draw() {
                 ctx.globalAlpha = (0.5 + 0.5 * pulse);
                 ctx.drawImage(droneEnergyImg, -ringRadius, -ringRadius, ringRadius * 2, ringRadius * 2);
                 ctx.restore();
-            }
-            ctx.restore();
 
-            // 発射前の予告線 (点線、かつ点滅)
-            if (Math.floor(l.telegraphDuration / 4) % 2 === 0) {
-                ctx.lineCap = 'butt';
-                ctx.strokeStyle = 'rgba(255, 10, 50, 0.8)';
-                ctx.lineWidth = 2 * lScale;
-                ctx.setLineDash([15, 15]); // 点線パターン
+                // 発射前の予告線 (点線、かつ点滅)
+                if (Math.floor(l.telegraphDuration / 4) % 2 === 0) {
+                    ctx.lineCap = 'butt';
+                    ctx.strokeStyle = 'rgba(255, 10, 50, 0.8)';
+                    ctx.lineWidth = 2 * lScale;
+                    ctx.setLineDash([15, 15]); // 点線パターン
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(2000, 0);
+                    ctx.stroke();
+                    
+                    ctx.setLineDash([]); // 他の描画に影響しないようリセット
+                }
+            } else {
+                // 本物のレーザー
+                let w = (l.duration > 15) ? 18 : l.duration;
+                ctx.lineCap = 'round';
                 
+                ctx.strokeStyle = 'rgba(255, 10, 50, 0.8)'; // 以前より鮮やかな赤へ変更
+                ctx.lineWidth = w * lScale;
+                ctx.beginPath();
+                ctx.moveTo(0, 0);
+                ctx.lineTo(2000, 0); // 端まで繋がる
+                ctx.stroke();
+                
+                // 芯の白を入れるとレーザー感が増す
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+                ctx.lineWidth = w * 0.4 * lScale;
                 ctx.beginPath();
                 ctx.moveTo(0, 0);
                 ctx.lineTo(2000, 0);
                 ctx.stroke();
-                
-                ctx.setLineDash([]); // 他の描画に影響しないようリセット
             }
-        } else {
-            // 本物のレーザー
-            let w = (l.duration > 15) ? 18 : l.duration;
-            ctx.lineCap = 'round';
-            
-            ctx.strokeStyle = 'rgba(255, 10, 50, 0.8)'; // 以前より鮮やかな赤へ変更
-            ctx.lineWidth = w * lScale;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(2000, 0); // 端まで繋がる
-            ctx.stroke();
-            
-            // 芯の白を入れるとレーザー感が増す
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
-            ctx.lineWidth = w * 0.4 * lScale;
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(2000, 0);
-            ctx.stroke();
-        }
-        
-        ctx.restore();
-    });
+            ctx.restore();
+        });
 
-    ctx.restore(); // カメラPANのtranslateをリセット
+        ctx.restore(); // カメラPANのtranslateをリセット
 
-    // ビネット効果（再び視認できる強さに再調整）
-    const vignette = ctx.createRadialGradient(
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.15,
-        CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.6 // 画面端付近で最大になるように絞る
-    );
-    vignette.addColorStop(0, 'rgba(10, 15, 40, 0)');
-    vignette.addColorStop(0.5, 'rgba(10, 15, 40, 0.35)'); 
-    vignette.addColorStop(1, 'rgba(10, 15, 40, 0.8)'); 
-    ctx.fillStyle = vignette;
+    // ビネット効果（グラデーションをキャッシュ化）
+    if (!ctx.vignette) {
+        ctx.vignette = ctx.createRadialGradient(
+            CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.15,
+            CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.6
+        );
+        ctx.vignette.addColorStop(0, 'rgba(10, 15, 40, 0)');
+        ctx.vignette.addColorStop(0.5, 'rgba(10, 15, 40, 0.35)'); 
+        ctx.vignette.addColorStop(1, 'rgba(10, 15, 40, 0.8)'); 
+    }
+    ctx.fillStyle = ctx.vignette;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    // HP オーブ表示の更新
-    updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
-    updateHPCircles('mitama-circles', mitama.hp, 5, 'mitama');
+    // HP オーブ表示の更新（値が変わった時のみDOMを更新）
+    if (sakuya.lastHP !== sakuya.hp) {
+        updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
+        sakuya.lastHP = sakuya.hp;
+    }
+    if (mitama.lastHP !== mitama.hp) {
+        updateHPCircles('mitama-circles', mitama.hp, 5, 'mitama');
+        mitama.lastHP = mitama.hp;
+    }
 }
 
 function updateHPCircles(containerId, hp, count, type) {
