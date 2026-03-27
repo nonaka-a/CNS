@@ -15,6 +15,7 @@ const keys = {
 };
 
 let sakuyaConfig = null;
+let mitamaConfig = null;
 
 /**
  * --- GAME LOGIC ---
@@ -43,7 +44,8 @@ sakuya.img.src = 'images/sakuya.png';
 const mitama = {
     x: 0, y: 0, w: 72, h: 72, hp: 50,
     isHolding: true,
-    img: new Image()
+    img: new Image(),
+    currentAnim: 'idle', currentFrame: 0, frameTimer: 0
 };
 mitama.img.src = 'images/mitama.png';
 

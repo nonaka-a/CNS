@@ -86,10 +86,21 @@ function draw() {
                 ctx.save();
                 ctx.translate(mitama.x + mitama.w / 2, (!mitama.isHolding ? mitama.groundY : sakuya.groundY));
                 ctx.scale(mScale, mScale);
-                if (!mitama.isHolding) {
-                    ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                
+                if (mitamaConfig) {
+                    const anim = mitamaConfig.data[mitama.currentAnim];
+                    const frame = anim.frames[mitama.currentFrame];
+                    if (!mitama.isHolding) {
+                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                    } else {
+                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                    }
                 } else {
-                    ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                    if (!mitama.isHolding) {
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                    } else {
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                    }
                 }
                 ctx.restore();
             }

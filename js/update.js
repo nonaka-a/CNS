@@ -81,6 +81,17 @@ function update() {
         if (mitama.x + mitama.w < 0) endGame("MITAMA LOST...");
     }
 
+    // Mitama animation update
+    if (mitamaConfig) {
+        const anim = mitamaConfig.data[mitama.currentAnim];
+        mitama.frameTimer += 1000 / 60;
+        const frameDuration = 1000 / anim.fps;
+        if (mitama.frameTimer >= frameDuration) {
+            mitama.frameTimer -= frameDuration;
+            mitama.currentFrame = (mitama.currentFrame + 1) % anim.frames.length;
+        }
+    }
+
     // 弾の更新と衝突判定
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];

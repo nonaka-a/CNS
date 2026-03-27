@@ -11,6 +11,9 @@ async function init() {
         const resExp = await fetch('json/Explosion_A.json');
         explosionConfig = await resExp.json();
 
+        const resMitama = await fetch('json/mitama.json');
+        mitamaConfig = await resMitama.json();
+
         // SEの先行ロード
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
@@ -172,6 +175,9 @@ function resetGameState() {
     
     mitama.hp = 50;
     mitama.isHolding = true;
+    mitama.currentAnim = 'idle';
+    mitama.currentFrame = 0;
+    mitama.frameTimer = 0;
     if (mitama.invincibleTimer !== undefined) mitama.invincibleTimer = 0;
     
     bullets = [];
