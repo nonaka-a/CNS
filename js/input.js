@@ -111,6 +111,12 @@ function toggleMode() {
     if (mitama.isHolding) {
         mitama.isHolding = false;
         mitama.groundY = sakuya.groundY;
+
+        // リリース位置から地面（浮遊位置）まで落下させるための初期オフセット計算
+        const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+        const targetGroundY = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale;
+        mitama.jumpOffset = (sakuya.y + 30) - targetGroundY;
+        mitama.vy = 0;
         playSE('puni');
     } else {
         // Pickup condition: collision between sakuya and mitama

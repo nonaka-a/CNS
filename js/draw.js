@@ -78,7 +78,15 @@ function draw() {
             ctx.save();
             ctx.translate(e.x + e.w / 2, e.groundY);
             ctx.scale(eScale, eScale);
-            if (droneImg.complete) ctx.drawImage(droneImg, -e.w / 2, -e.h + e.jumpOffset, e.w, e.h);
+            if (droneImg.complete) {
+                if (droneConfig) {
+                    const anim = droneConfig.data[e.currentAnim];
+                    const frame = anim.frames[e.currentFrame];
+                    ctx.drawImage(droneImg, frame.x, frame.y, frame.w, frame.h, -e.w / 2, -e.h + e.jumpOffset, e.w, e.h);
+                } else {
+                    ctx.drawImage(droneImg, -e.w / 2, -e.h + e.jumpOffset, e.w, e.h);
+                }
+            }
             ctx.restore();
         } else if (item.type === 'mitama') {
             const mScale = 1.0 + (item.depth - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
@@ -91,15 +99,19 @@ function draw() {
                     const anim = mitamaConfig.data[mitama.currentAnim];
                     const frame = anim.frames[mitama.currentFrame];
                     if (!mitama.isHolding) {
-                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                        // リリース中：groundYを軸に、通常の浮遊高さ + jumpOffset分を加算して描画
+                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset, mitama.w, mitama.h);
                     } else {
-                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                        // ホールド中：sakuya.y（ジャンプオフセット込み）+ 30pxの相対位置に描画
+                        // 既に translate(sakuya.groundY) されている想定なので、sakuya.h と jumpOffset を相殺して調整
+                        // drawImage 自体は -h-100 に描かれている想定
+                        ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 100 + sakuya.jumpOffset, mitama.w, mitama.h);
                     }
                 } else {
                     if (!mitama.isHolding) {
-                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15, mitama.w, mitama.h);
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset, mitama.w, mitama.h);
                     } else {
-                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 100, mitama.w, mitama.h);
+                        ctx.drawImage(mitama.img, -mitama.w / 2, -mitama.h - 100 + sakuya.jumpOffset, mitama.w, mitama.h);
                     }
                 }
                 ctx.restore();
@@ -134,6 +146,16 @@ function draw() {
             ctx.restore();
         }
     });
+
+    // ガードレールを描画
+    if (guardrailImg.complete) {
+        const spacing = 650; // ガードレール同士の間隔を大幅に詰める
+        let loopX = -((distance * 2.0) % spacing); // 背景（BG1.jpg）と同速
+        for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {
+            // y=380付近に配置
+            ctx.drawImage(guardrailImg, x, 380, 600, 110);
+        }
+    }
 
     ctx.restore(); // カメラPANのtranslateをリセット (ここで一旦リセット)
 

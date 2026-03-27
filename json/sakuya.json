@@ -210,6 +210,54 @@
       ],
       "fps": 30,
       "loop": true
+    },
+    "junp_up": {
+      "frames": [
+        {
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "fps": 10,
+      "loop": true
+    },
+    "junp_Down": {
+      "frames": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "fps": 10,
+      "loop": true
+    },
+    "jump_m_up": {
+      "frames": [
+        {
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "fps": 10,
+      "loop": true
+    },
+    "jump_m_Down": {
+      "frames": [
+        {
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "fps": 10,
+      "loop": true
     }
   }
 }

@@ -14,6 +14,9 @@ async function init() {
         const resMitama = await fetch('json/mitama.json');
         mitamaConfig = await resMitama.json();
 
+        const resDrone = await fetch('json/droneA.json');
+        droneConfig = await resDrone.json();
+
         // SEの先行ロード
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
@@ -178,6 +181,8 @@ function resetGameState() {
     mitama.currentAnim = 'idle';
     mitama.currentFrame = 0;
     mitama.frameTimer = 0;
+    mitama.jumpOffset = 0;
+    mitama.vy = 0;
     if (mitama.invincibleTimer !== undefined) mitama.invincibleTimer = 0;
     
     bullets = [];

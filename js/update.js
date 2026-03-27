@@ -14,7 +14,7 @@ function update() {
         // 通常の操作
         if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
         else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
-        else sakuya.vx = 0;
+        else if (sakuya.jumpOffset === 0) sakuya.vx = 0; // 地上にいる時だけ、キーが押されていなければ停止
         
         sakuya.x += sakuya.vx;
         sakuya.x = Math.max(0, Math.min(sakuya.x, CANVAS_WIDTH - sakuya.w));
@@ -48,6 +48,14 @@ function update() {
         nextAnim = mitama.isHolding ? 'back_m_run' : 'back_run';
     }
 
+    if (sakuya.jumpOffset < 0) {
+        if (sakuya.vy < 0) {
+            nextAnim = mitama.isHolding ? 'jump_m_up' : 'junp_up';
+        } else {
+            nextAnim = mitama.isHolding ? 'jump_m_Down' : 'junp_Down';
+        }
+    }
+
     if (sakuya.attackTimer > 0) {
         sakuya.attackTimer--;
         nextAnim = 'throw_shuriken';
@@ -61,7 +69,7 @@ function update() {
 
     if (sakuyaConfig) {
         const anim = sakuyaConfig.data[sakuya.currentAnim];
-        sakuya.frameTimer += 1000 / 60;
+        sakuya.frameTimer += FRAME_INTERVAL;
         const frameDuration = 1000 / anim.fps;
         if (sakuya.frameTimer >= frameDuration) {
             sakuya.frameTimer -= frameDuration;
@@ -72,11 +80,25 @@ function update() {
     if (mitama.isHolding) {
         mitama.x = sakuya.x + 10;
         mitama.y = sakuya.y + 30;
+        mitama.jumpOffset = 0; // ホールド中はオフセットなし
+        mitama.vy = 0;
     } else {
         mitama.x -= 0.4;
-        // 描画と判定を同期：groundY から浮遊高度(-65)とスケールを考慮して計算
+        
+        // リリース時の落下物理
+        if (mitama.jumpOffset !== 0 || mitama.vy !== 0) {
+            mitama.vy += GRAVITY * 1.5; // 少しゆっくり降りるように調整
+            mitama.jumpOffset += mitama.vy;
+            if (mitama.jumpOffset >= 0 && mitama.vy > 0) {
+                mitama.jumpOffset = 0;
+                mitama.vy = 0;
+                // 着地の跳ね返りとかを加えても良いが、今回は指示通り早めに着地させる
+            }
+        }
+
+        // 描画と判定を同期：groundY から浮遊高度(-65)とスケール、さらに自由落下のオフセットを考慮して計算
         const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-        mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale;
+        mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale + mitama.jumpOffset;
         
         if (mitama.x + mitama.w < 0) endGame("MITAMA LOST...");
     }
@@ -84,7 +106,7 @@ function update() {
     // Mitama animation update
     if (mitamaConfig) {
         const anim = mitamaConfig.data[mitama.currentAnim];
-        mitama.frameTimer += 1000 / 60;
+        mitama.frameTimer += FRAME_INTERVAL;
         const frameDuration = 1000 / anim.fps;
         if (mitama.frameTimer >= frameDuration) {
             mitama.frameTimer -= frameDuration;
@@ -121,6 +143,13 @@ function update() {
                 // 爆発音
                 playSE('explosion');
 
+                // ドローンの予告レーザーをキャンセル
+                for (let k = enemyLasers.length - 1; k >= 0; k--) {
+                    if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) {
+                        enemyLasers.splice(k, 1);
+                    }
+                }
+
                 enemies.splice(j, 1);
                 hit = true;
                 break;
@@ -136,7 +165,7 @@ function update() {
         for (let i = explosions.length - 1; i >= 0; i--) {
             const ex = explosions[i];
             const anim = explosionConfig.data.idle;
-            ex.timer += 1000 / 60;
+            ex.timer += FRAME_INTERVAL;
             const duration = 1000 / anim.fps;
             if (ex.timer >= duration) {
                 ex.timer -= duration;
@@ -151,13 +180,17 @@ function update() {
     // 敵(ドローン)のスポーンと更新
     if (Math.random() < 0.005 && enemies.length < 5) {
         enemies.push({
+            id: enemyIdCounter++, // 一意識別用ID
             x: -80, w: 80, h: 80,
             groundY: 300 + Math.random() * 120, // 奥行き範囲を中間位置(300-420)へ再調整
             jumpOffset: -80 - Math.random() * 80,
             targetX: 20 + Math.random() * 200, 
             vx: 0.8 + Math.random() * 0.7, 
             offsetSeed: Math.random() * 100,
-            laserTimer: Math.random() * 100 // レーザー発射の周期タイマー
+            laserTimer: Math.random() * 100, // レーザー発射の周期タイマー
+            currentAnim: 'idle',
+            currentFrame: 0,
+            frameTimer: 0
         });
     }
     enemies.forEach((e, i) => {
@@ -166,6 +199,17 @@ function update() {
 
         e.jumpOffset += Math.sin(Date.now() / 200 + e.offsetSeed) * 0.4;
         e.y = e.groundY - e.h + e.jumpOffset;
+
+        // ドローンのアニメーション更新
+        if (droneConfig) {
+            const anim = droneConfig.data[e.currentAnim];
+            e.frameTimer += FRAME_INTERVAL;
+            const frameDuration = 1000 / anim.fps;
+            if (e.frameTimer >= frameDuration) {
+                e.frameTimer -= frameDuration;
+                e.currentFrame = (e.currentFrame + 1) % anim.frames.length;
+            }
+        }
 
         // レーザー発射ロジック (頻度を約1/3に変更)
         e.laserTimer++;
@@ -179,6 +223,7 @@ function update() {
             let ty = target.y + target.h / 2; 
             let angle = Math.atan2(ty - sy, tx - sx);
             enemyLasers.push({
+                ownerId: e.id, // 発射元ID
                 startX: sx, startY: sy,
                 angle: angle,
                 groundY: e.groundY,

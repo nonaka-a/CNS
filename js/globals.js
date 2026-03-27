@@ -16,6 +16,7 @@ const keys = {
 
 let sakuyaConfig = null;
 let mitamaConfig = null;
+let droneConfig = null;
 
 /**
  * --- GAME LOGIC ---
@@ -45,7 +46,8 @@ const mitama = {
     x: 0, y: 0, w: 72, h: 72, hp: 50,
     isHolding: true,
     img: new Image(),
-    currentAnim: 'idle', currentFrame: 0, frameTimer: 0
+    currentAnim: 'idle', currentFrame: 0, frameTimer: 0,
+    jumpOffset: 0, vy: 0
 };
 mitama.img.src = 'images/mitama.png';
 
@@ -58,10 +60,13 @@ const bgImg = new Image();
 bgImg.src = 'images/BG1.jpg';
 const droneImg = new Image();
 droneImg.src = 'images/droneA.png';
+const guardrailImg = new Image();
+guardrailImg.src = 'images/Guardrail.png';
 let bgX = 0;
 let isSoundOn = true;
 let canShoot = true;
 let isPaused = false;
+let enemyIdCounter = 0;
 let explosions = [];
 const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
