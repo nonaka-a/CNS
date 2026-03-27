@@ -188,8 +188,8 @@ body {
         .action-btn { position: absolute; }
         #btn-jump   { left: 0px; bottom: 60px; border-color: #383; color: #5a5; }   /* A: Left */
         #btn-attack { left: 95px; bottom: 120px; border-color: #338; color: #55a; } /* B: Top */
-        #btn-mode   { left: 95px; bottom: 0px; border-color: #833; color: #a55; }   /* C: Bottom */
-        #btn-sub    { left: 190px; bottom: 60px; border-color: #883; color: #ff0; }  /* D: Right */
+        #btn-mode   { left: 95px; bottom: 0px; border-color: #833; color: #a55; font-family: 'Sawarabi Mincho', serif; font-size: 36px; }   /* C: Bottom */
+        #btn-sub    { left: 190px; bottom: 60px; border-color: #883; color: #ff0; font-family: 'Sawarabi Mincho', serif; font-size: 36px; }  /* D: Right */
         
         /* 設定ボタンの個別調整 - サイズを半分程度に縮小 */
         .v-btn.settings-btn {
