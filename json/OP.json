@@ -11,6 +11,74 @@
       "fps": 30,
       "layers": [
         {
+          "id": "layer_solid_1774624413474",
+          "type": "solid",
+          "name": "フラッシュ",
+          "shape": "rect",
+          "color": "#ffa8a8",
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 6.733333333333333,
+          "outPoint": 7.6,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [
+                {
+                  "time": 6.733333333333333,
+                  "value": 50,
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 7.6,
+                  "value": 0,
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
           "id": "layer_solid_1774614609859",
           "type": "solid",
           "name": "暗転",
@@ -842,7 +910,7 @@
           "type": "text",
           "name": "Text Layer コピー コピー コピー コピー",
           "blendMode": "source-over",
-          "text": "ミタマ：あ…！その傷…！さっきので怪我を…？",
+          "text": "ミタマ：あ…！その傷…！さっきのでケガを…？",
           "fontSize": 30,
           "fontFamily": "\"M PLUS Rounded 1c\", sans-serif",
           "color": "#ffffff",
@@ -1070,7 +1138,7 @@
         {
           "id": "layer_1774612600529_164",
           "name": "Gradation.png",
-          "source": "images/Gradation.png",
+          "source": "../images/Gradation.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -1129,7 +1197,7 @@
           "startTime": 7.966666666666666,
           "loop": true,
           "imgObj": {},
-          "source": "images/sakuya.png",
+          "source": "../images/sakuya.png",
           "blendMode": "source-over",
           "parent": null,
           "expanded": true,
@@ -1264,7 +1332,7 @@
         {
           "id": "layer_1774612681826_952",
           "name": "drone_Energy.png",
-          "source": "images/drone_Energy.png",
+          "source": "../images/drone_Energy.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": "layer_anim_1774607874331",
@@ -1451,7 +1519,7 @@
         {
           "id": "layer_1774614316181_536",
           "name": "Laser.png",
-          "source": "images/Laser.png",
+          "source": "../images/Laser.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": "layer_anim_1774607874331",
@@ -1529,7 +1597,7 @@
         {
           "id": "layer_1774613392066_746",
           "name": "s_obake.png",
-          "source": "images/s_obake.png",
+          "source": "../images/s_obake.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -1627,7 +1695,7 @@
           "startTime": 3.7333333333333334,
           "loop": true,
           "imgObj": {},
-          "source": "images/droneA.png",
+          "source": "../images/droneA.png",
           "blendMode": "source-over",
           "parent": null,
           "expanded": false,
@@ -1960,7 +2028,7 @@
           "startTime": 0,
           "loop": true,
           "imgObj": {},
-          "source": "images/mitama.png",
+          "source": "../images/mitama.png",
           "blendMode": "source-over",
           "parent": "layer_solid_1774614469310",
           "expanded": false,
@@ -2165,7 +2233,7 @@
           "loop": true
         }
       },
-      "source": "images/mitama.png",
+      "source": "../images/mitama.png",
       "_collapsed": false,
       "imgObj": {}
     },
@@ -2199,7 +2267,7 @@
           "loop": true
         }
       },
-      "source": "images/droneA.png",
+      "source": "../images/droneA.png",
       "_collapsed": false,
       "imgObj": {}
     },
@@ -2207,28 +2275,28 @@
       "type": "image",
       "name": "Gradation.png",
       "id": "img_17746125983530.7107841478393127",
-      "src": "images/Gradation.png",
+      "src": "../images/Gradation.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "drone_Energy.png",
       "id": "img_17746126789460.9065094422174522",
-      "src": "images/drone_Energy.png",
+      "src": "../images/drone_Energy.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "s_obake.png",
       "id": "img_17746133861800.1284327561373546",
-      "src": "images/s_obake.png",
+      "src": "../images/s_obake.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "Laser.png",
       "id": "img_17746142812770.24859271920795867",
-      "src": "images/Laser.png",
+      "src": "../images/Laser.png",
       "imgObj": {}
     },
     {
@@ -2495,7 +2563,7 @@
           "loop": true
         }
       },
-      "source": "images/sakuya.png",
+      "source": "../images/sakuya.png",
       "_collapsed": false,
       "imgObj": {}
     }
