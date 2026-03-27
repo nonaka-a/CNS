@@ -450,7 +450,8 @@ window.event_exportJSON = function () {
                         if (name.includes(' ')) name = name.split(' ')[0];
                         if (!name.endsWith('.png')) name += '.png';
                         obj[k] = 'images/' + name;
-                    } else if (val.startsWith('/Volumes/') || val.includes(':\\')) {
+                    } else if (val.startsWith('/') || val.includes(':\\') || val.startsWith('file://')) {
+                        // セキュリティ対策: ローカルの絶対パス(Mac/Windows)を検知した場合、ファイル名だけを抽出
                         let name = obj.name || 'unknown';
                         const parts = val.replace(/\\/g, '/').split('/');
                         let fileName = parts[parts.length - 1];
@@ -459,6 +460,7 @@ window.event_exportJSON = function () {
                         if (!fileName.endsWith('.png') && !fileName.endsWith('.jpg')) {
                             fileName += '.png';
                         }
+                        // ※ 相対パス化（プライベート情報を一切含めない）
                         obj[k] = 'images/' + fileName;
                     }
                 } else {
