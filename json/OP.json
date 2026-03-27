@@ -7,7 +7,7 @@
       "id": "comp_1",
       "width": 1000,
       "height": 600,
-      "duration": 27,
+      "duration": 30,
       "fps": 30,
       "layers": [
         {
@@ -217,75 +217,6 @@
                 {
                   "time": 8.7,
                   "value": 0,
-                  "easeIn": false,
-                  "easeOut": false,
-                  "interpolation": "Linear"
-                }
-              ],
-              "min": 0,
-              "max": 100,
-              "step": 1,
-              "initialValue": 100
-            }
-          },
-          "locked": true
-        },
-        {
-          "id": "layer_1774618040392_858",
-          "type": "solid",
-          "name": "暗転 コピー コピー",
-          "shape": "rect",
-          "color": "#000000",
-          "blendMode": "source-over",
-          "parent": null,
-          "expanded": false,
-          "inPoint": 25.5,
-          "outPoint": 27.266666666666666,
-          "tracks": {
-            "position": {
-              "label": "Position",
-              "type": "vector2",
-              "keys": [],
-              "step": 1,
-              "initialValue": {
-                "x": 500,
-                "y": 300
-              }
-            },
-            "scale": {
-              "label": "Scale",
-              "type": "vector2",
-              "linked": true,
-              "keys": [],
-              "step": 1,
-              "initialValue": {
-                "x": 100,
-                "y": 100
-              }
-            },
-            "rotation": {
-              "label": "Rotation",
-              "type": "rotation",
-              "keys": [],
-              "min": -3600,
-              "max": 3600,
-              "step": 1,
-              "initialValue": 0
-            },
-            "opacity": {
-              "label": "Opacity",
-              "type": "number",
-              "keys": [
-                {
-                  "time": 25.566666666666666,
-                  "value": 0,
-                  "interpolation": "Linear",
-                  "easeIn": false,
-                  "easeOut": false
-                },
-                {
-                  "time": 26.066666666666666,
-                  "value": 100,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
@@ -516,7 +447,7 @@
           "parent": null,
           "expanded": false,
           "inPoint": 8.766666666666666,
-          "outPoint": 10.4,
+          "outPoint": 10.6,
           "tracks": {
             "position": {
               "label": "Position",
@@ -616,15 +547,15 @@
           "shadowOpacity": 0,
           "parent": null,
           "expanded": false,
-          "inPoint": 10.533333333333333,
-          "outPoint": 13.166666666666666,
+          "inPoint": 10.7,
+          "outPoint": 13.5,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 10.533333333333333,
+                  "time": 10.7,
                   "value": {
                     "x": 500,
                     "y": 530
@@ -674,14 +605,14 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 10.966666666666667,
+                  "time": 11.133333333333333,
                   "value": 23.333333333333357,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 11.7,
+                  "time": 11.866666666666667,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -717,15 +648,15 @@
           "shadowOpacity": 0,
           "parent": null,
           "expanded": false,
-          "inPoint": 13.2,
-          "outPoint": 16.266666666666666,
+          "inPoint": 13.633333333333333,
+          "outPoint": 17.8,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 13.2,
+                  "time": 13.633333333333333,
                   "value": {
                     "x": 500,
                     "y": 530
@@ -775,14 +706,14 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 13.233333333333333,
+                  "time": 13.666666666666666,
                   "value": 13.333333333333357,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 14.366666666666667,
+                  "time": 14.799999999999999,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -818,15 +749,15 @@
           "shadowOpacity": 0,
           "parent": null,
           "expanded": false,
-          "inPoint": 16.7,
-          "outPoint": 18.933333333333334,
+          "inPoint": 18.066666666666666,
+          "outPoint": 21.066666666666666,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 16.7,
+                  "time": 18.066666666666666,
                   "value": {
                     "x": 500,
                     "y": 530
@@ -876,14 +807,14 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 16.8,
+                  "time": 18.166666666666668,
                   "value": 34.33333333333336,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 17.433333333333334,
+                  "time": 18.8,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -919,15 +850,15 @@
           "shadowOpacity": 0,
           "parent": null,
           "expanded": false,
-          "inPoint": 18.933333333333334,
-          "outPoint": 22.03333333333333,
+          "inPoint": 21.2,
+          "outPoint": 25.03333333333333,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 18.933333333333334,
+                  "time": 21.2,
                   "value": {
                     "x": 500,
                     "y": 530
@@ -977,28 +908,28 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 19.03333333333333,
+                  "time": 21.3,
                   "value": 22.333333333333357,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 19.3,
+                  "time": 21.566666666666666,
                   "value": 55.035087719298424,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 19.7,
+                  "time": 21.966666666666665,
                   "value": 55.035087719298424,
                   "interpolation": "Linear",
                   "easeIn": false,
                   "easeOut": false
                 },
                 {
-                  "time": 20.466666666666665,
+                  "time": 22.733333333333334,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -1021,6 +952,75 @@
           "locked": false
         },
         {
+          "id": "layer_1774618040392_858",
+          "type": "solid",
+          "name": "暗転 コピー コピー",
+          "shape": "rect",
+          "color": "#000000",
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 28.966666666666665,
+          "outPoint": 30.733333333333334,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [
+                {
+                  "time": 29.03333333333333,
+                  "value": 0,
+                  "interpolation": "Linear",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 29.53333333333333,
+                  "value": 100,
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          },
+          "locked": false
+        },
+        {
           "id": "layer_1774617268983_517",
           "type": "text",
           "name": "Text Layer コピー コピー",
@@ -1034,15 +1034,15 @@
           "shadowOpacity": 0,
           "parent": null,
           "expanded": false,
-          "inPoint": 22.1,
-          "outPoint": 26.433333333333334,
+          "inPoint": 25.3,
+          "outPoint": 30.8,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 22.1,
+                  "time": 25.3,
                   "value": {
                     "x": 500,
                     "y": 530
@@ -1092,28 +1092,28 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 22.133333333333333,
+                  "time": 25.333333333333332,
                   "value": 13.333333333333357,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 23.166666666666668,
+                  "time": 26.366666666666667,
                   "value": 81.05882352941171,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 23.9,
+                  "time": 27.099999999999998,
                   "value": 81.05882352941171,
                   "interpolation": "Linear",
                   "easeIn": false,
                   "easeOut": false
                 },
                 {
-                  "time": 24.433333333333334,
+                  "time": 27.633333333333333,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -1144,7 +1144,7 @@
           "parent": null,
           "expanded": false,
           "inPoint": 0,
-          "outPoint": 28.333333333333332,
+          "outPoint": 30.333333333333332,
           "tracks": {
             "position": {
               "label": "Position",
@@ -1202,7 +1202,7 @@
           "parent": null,
           "expanded": true,
           "inPoint": 8.433333333333334,
-          "outPoint": 28.466666666666665,
+          "outPoint": 30.333333333333332,
           "tracks": {
             "motion": {
               "label": "Motion",
@@ -1261,7 +1261,7 @@
                   "easeOut": true
                 },
                 {
-                  "time": 23.53333333333333,
+                  "time": 27.53333333333333,
                   "value": {
                     "x": 492.77108433734935,
                     "y": 297.934595524957
@@ -1271,7 +1271,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 24.933333333333334,
+                  "time": 28.933333333333334,
                   "value": {
                     "x": 1190.8777969018934,
                     "y": 301
