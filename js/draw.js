@@ -159,18 +159,12 @@ function draw() {
 
     ctx.restore(); // カメラPANのtranslateをリセット (ここで一旦リセット)
 
-    // ビネット効果
-    if (!ctx.vignette) {
-        ctx.vignette = ctx.createRadialGradient(
-            CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.15,
-            CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, CANVAS_WIDTH * 0.6
-        );
-        ctx.vignette.addColorStop(0, 'rgba(10, 15, 40, 0)');
-        ctx.vignette.addColorStop(0.5, 'rgba(10, 15, 40, 0.35)'); 
-        ctx.vignette.addColorStop(1, 'rgba(10, 15, 40, 0.8)'); 
+    // ビネット効果 (画像による描画で負荷軽減)
+    if (vignetteImg.complete) {
+        ctx.globalCompositeOperation = 'multiply'; // 乗算
+        ctx.drawImage(vignetteImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.globalCompositeOperation = 'source-over'; // 通常に戻す
     }
-    ctx.fillStyle = ctx.vignette;
-    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     // ビネットの上にレーザーを描画
     ctx.save();
