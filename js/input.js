@@ -1,5 +1,18 @@
 function subAction() {
-    // 現在のDボタンの処理（空ですが、将来の拡張やNキーとの対応のため定義）
+    if (isIntro || ninjutsuGauge < NINJUTSU_MAX || giantShuriken) return;
+
+    // 巨大手裏剣の発射 (右から左へ)
+    giantShuriken = {
+        x: CANVAS_WIDTH, // 画面右から出現
+        y: -100,
+        w: 650, h: 650, // 画面いっぱい
+        vx: -20, // 左方向へ
+        angle: 0
+    };
+
+    sakuya.attackTimer = 30; // 投擲アニメーションを長めに再生
+    ninjutsuGauge = 0;
+    playSE('shuriken', 1.0);
 }
 
 function setupControls() {

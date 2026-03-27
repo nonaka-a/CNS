@@ -151,6 +151,7 @@ function update() {
                 }
 
                 enemies.splice(j, 1);
+                ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
                 hit = true;
                 break;
             }
@@ -285,6 +286,27 @@ function update() {
         }
     }
 
+    // 巨大手裏剣の更新
+    if (giantShuriken) {
+        giantShuriken.x += giantShuriken.vx;
+        giantShuriken.angle += 0.5;
+        
+        // 画面内の敵をすべてなぎ倒す
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            // 巨大なので判定は甘め（x軸が重なっていればOKぐらいの勢い）
+            if (giantShuriken.x + giantShuriken.w > e.x && giantShuriken.x < e.x + e.w) {
+                explosions.push({
+                    x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
+                    frame: 0, timer: 0
+                });
+                playSE('explosion');
+                enemies.splice(j, 1);
+            }
+        }
+        if (giantShuriken.x + giantShuriken.w < 0) giantShuriken = null;
+    }
+
     if (!isIntro) {
         distance += 5;
     }
@@ -299,6 +321,23 @@ function update() {
             shurikenBtn.classList.add('disabled');
         } else {
             shurikenBtn.classList.remove('disabled');
+        }
+    }
+
+    // 忍術ゲージUI更新
+    const ninjutsuBar = document.getElementById('ninjutsu-bar');
+    if (ninjutsuBar) {
+        const percent = (ninjutsuGauge / NINJUTSU_MAX) * 100;
+        ninjutsuBar.style.width = percent + '%';
+        if (ninjutsuGauge >= NINJUTSU_MAX) ninjutsuBar.classList.add('full');
+        else ninjutsuBar.classList.remove('full');
+    }
+    const ninBtn = document.getElementById('btn-sub');
+    if (ninBtn) {
+        if (ninjutsuGauge >= NINJUTSU_MAX && !giantShuriken) {
+            ninBtn.classList.remove('disabled');
+        } else {
+            ninBtn.classList.add('disabled');
         }
     }
 

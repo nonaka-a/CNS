@@ -219,6 +219,18 @@ function draw() {
     });
     ctx.restore();
 
+    // 巨大手裏剣の描画（ビネットの上、HUDの下）
+    if (giantShuriken && syurikenImg.complete) {
+        ctx.save();
+        ctx.translate(giantShuriken.x + giantShuriken.w / 2, giantShuriken.y + giantShuriken.h / 2);
+        ctx.rotate(giantShuriken.angle);
+        // 発光感
+        ctx.shadowBlur = 40;
+        ctx.shadowColor = "#ffeb3b";
+        ctx.drawImage(syurikenImg, -giantShuriken.w / 2, -giantShuriken.h / 2, giantShuriken.w, giantShuriken.h);
+        ctx.restore();
+    }
+
     // HP オーブ更新
     if (sakuya.lastHP !== sakuya.hp) {
         updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
