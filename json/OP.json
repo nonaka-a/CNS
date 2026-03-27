@@ -76,7 +76,8 @@
               "step": 1,
               "initialValue": 100
             }
-          }
+          },
+          "locked": true
         },
         {
           "id": "layer_1774614645943_16",
@@ -158,7 +159,8 @@
               "step": 1,
               "initialValue": 100
             }
-          }
+          },
+          "locked": true
         },
         {
           "id": "layer_1774618040392_858",
@@ -226,7 +228,8 @@
               "step": 1,
               "initialValue": 100
             }
-          }
+          },
+          "locked": true
         },
         {
           "id": "layer_text_1774608242077",
@@ -954,7 +957,7 @@
           "type": "text",
           "name": "Text Layer コピー コピー",
           "blendMode": "source-over",
-          "text": "咲耶：みんなは油日神社にむかったみたいね！いそぐわよ！",
+          "text": "咲耶：…みんなは油日神社にむかったみたいね！いそぐわよ！",
           "fontSize": 30,
           "fontFamily": "\"M PLUS Rounded 1c\", sans-serif",
           "color": "#ffffff",
@@ -1130,13 +1133,28 @@
           "blendMode": "source-over",
           "parent": null,
           "expanded": true,
-          "inPoint": 8.1,
+          "inPoint": 8.433333333333334,
           "outPoint": 28.466666666666665,
           "tracks": {
             "motion": {
               "label": "Motion",
               "type": "string",
-              "keys": [],
+              "keys": [
+                {
+                  "time": 8.166666666666666,
+                  "value": "jump_m_Down",
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 8.7,
+                  "value": "run_m",
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
               "step": 1,
               "initialValue": "run_m"
             },
@@ -1145,10 +1163,40 @@
               "type": "vector2",
               "keys": [
                 {
+                  "time": 8.5,
+                  "value": {
+                    "x": 67.2977624784853,
+                    "y": -151.29087779690184
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 8.7,
+                  "value": {
+                    "x": 385.37005163511185,
+                    "y": 297.934595524957
+                  },
+                  "interpolation": "Linear",
+                  "easeIn": true,
+                  "easeOut": true
+                },
+                {
+                  "time": 10.9,
+                  "value": {
+                    "x": 492.77108433734935,
+                    "y": 297.934595524957
+                  },
+                  "interpolation": "Linear",
+                  "easeIn": true,
+                  "easeOut": true
+                },
+                {
                   "time": 23.53333333333333,
                   "value": {
-                    "x": 491.73838209982785,
-                    "y": 327.8829604130809
+                    "x": 492.77108433734935,
+                    "y": 297.934595524957
                   },
                   "easeIn": false,
                   "easeOut": true,
@@ -1158,7 +1206,7 @@
                   "time": 24.933333333333334,
                   "value": {
                     "x": 1190.8777969018934,
-                    "y": 344.4061962134252
+                    "y": 301
                   },
                   "easeIn": false,
                   "easeOut": false,

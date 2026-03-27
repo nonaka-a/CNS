@@ -343,10 +343,19 @@ function drawOP() {
                 ctx.drawImage(layer.imgObj, frame.x, frame.y, frame.w, frame.h, -frame.w/2, -frame.h/2, frame.w, frame.h);
             }
         } else if (layer.type === 'solid') {
-            if (layer.shape === 'rect') {
-                ctx.fillStyle = layer.color;
-                // コンポジションサイズに合わせて描画（中心基準）
-                ctx.fillRect(-comp.width/2, -comp.height/2, comp.width, comp.height);
+            ctx.fillStyle = layer.color;
+            // 円形や親子関係がある場合は 100x100 を基準サイズとする（エディタの仕様に合わせる）
+            // 親がなく矩形の場合はコンポジションサイズ（暗転用）とする
+            const isSmallShape = layer.shape === 'circle' || layer.parent;
+            const w = layer.width || (isSmallShape ? 100 : comp.width);
+            const h = layer.height || (isSmallShape ? 100 : comp.height);
+
+            if (layer.shape === 'circle') {
+                ctx.beginPath();
+                ctx.ellipse(0, 0, w / 2, h / 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else {
+                ctx.fillRect(-w / 2, -h / 2, w, h);
             }
         } else if (layer.imgObj && layer.imgObj.complete) {
             ctx.drawImage(layer.imgObj, -layer.imgObj.width/2, -layer.imgObj.height/2, layer.imgObj.width, layer.imgObj.height);
