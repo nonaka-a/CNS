@@ -32,6 +32,9 @@ let ninjutsuGauge = 0;
 const NINJUTSU_MAX = 10; // 10体倒すと満タン
 let ninjutsuFullTriggered = false;
 let gameOver = false;
+let isOpRunning = false;
+let opTime = 0; 
+let opConfig = null;
 let isIntro = true;
 const INTRO_TARGET_X = 410;
 

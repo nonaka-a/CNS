@@ -1,6 +1,11 @@
 function draw() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
+    if (isOpRunning) {
+        drawOP();
+        return;
+    }
+
     // カメラのPAN計算（滑らかに追従）
     sakuya.cameraOffsetY = sakuya.cameraOffsetY || 0;
     let targetPanY = (360 - sakuya.groundY) * 0.4;
@@ -257,4 +262,151 @@ function updateHPCircles(containerId, hp, count, type) {
             children[i].classList.remove('active');
         }
     }
+}
+
+/**
+ * --- OP (Opening Event) Player ---
+ */
+function drawOP() {
+    if (!opConfig) return;
+    const comp = opConfig.assets.find(a => a.id === "comp_1");
+    if (!comp) return;
+
+    // 背景画像 (130%スケールでスクロール)
+    if (bgImg.complete) {
+        const scale = 1.3;
+        const sw = CANVAS_WIDTH * scale;
+        const sh = (CANVAS_HEIGHT + 100) * scale;
+        const scrollSpeed = 800; // さらに高速化
+        const loopX = -((opTime * scrollSpeed) % sw);
+        const offsetX = (CANVAS_WIDTH - sw) / 2;
+        const offsetY = (CANVAS_HEIGHT - sh) / 2;
+
+        ctx.drawImage(bgImg, loopX + offsetX, offsetY, sw, sh);
+        ctx.drawImage(bgImg, loopX + sw + offsetX, offsetY, sw, sh);
+    } else {
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+
+    // レイヤーの重なり順を考慮して、配列を逆順（背面から）に描画
+    const layers = [...comp.layers].reverse();
+
+    layers.forEach(layer => {
+        if (layer.visible === false) return;
+        if (opTime < layer.inPoint || opTime > layer.outPoint) return;
+
+        ctx.save();
+        
+        // 階層構造（親子関係）の座標変換を適用
+        applyHierarchyTransforms(layer, comp, opTime);
+
+        const opacity = getOpTrackValue(layer.tracks.opacity, opTime, 100) / 100;
+        ctx.globalAlpha *= opacity; // 親のアルファがあれば継承（簡易）
+
+        if (layer.blendMode && layer.blendMode !== 'source-over') {
+            ctx.globalCompositeOperation = layer.blendMode;
+        }
+
+        if (layer.type === 'text') {
+            const typewriter = getOpTrackValue(layer.tracks.typewriter, opTime, 100);
+            const textToShow = layer.text.substring(0, Math.floor(layer.text.length * (typewriter / 100)));
+            ctx.font = `bold ${layer.fontSize}px ${layer.fontFamily}`;
+            ctx.fillStyle = layer.color;
+            ctx.textAlign = "left"; // 左揃えに変更
+            ctx.textBaseline = "middle";
+            
+            // 左揃えの場合、中央配置(500)ならテキスト幅の半分程度左から開始させる調整が必要な場合があるが、
+            // ユーザー指定の「左位置固定」を優先し、アンカーポイントを左端にする。
+            // もし中央寄せに見せたい場合は、ここで measureText を使ってオフセットする。
+            // ここでは一旦シンプルに left 描画にする。
+            const metrics = ctx.measureText(layer.text);
+            const xOffset = -metrics.width / 2; 
+
+            if (layer.strokeWidth > 0) {
+                ctx.strokeStyle = layer.strokeColor;
+                ctx.lineWidth = layer.strokeWidth;
+                ctx.strokeText(textToShow, xOffset, 0);
+            }
+            ctx.fillText(textToShow, xOffset, 0);
+        } else if (layer.type === 'animated_layer') {
+            const animAsset = opConfig.assets.find(a => a.id === layer.animAssetId);
+            if (animAsset && (layer.imgObj && layer.imgObj.complete)) {
+                const animData = animAsset.data[layer.animId];
+                const elapsedSinceStart = opTime - layer.startTime;
+                const frameIdx = Math.floor(Math.max(0, elapsedSinceStart * animData.fps)) % animData.frames.length;
+                const frame = animData.frames[frameIdx];
+                ctx.drawImage(layer.imgObj, frame.x, frame.y, frame.w, frame.h, -frame.w/2, -frame.h/2, frame.w, frame.h);
+            }
+        } else if (layer.type === 'solid') {
+            if (layer.shape === 'rect') {
+                ctx.fillStyle = layer.color;
+                // コンポジションサイズに合わせて描画（中心基準）
+                ctx.fillRect(-comp.width/2, -comp.height/2, comp.width, comp.height);
+            }
+        } else if (layer.imgObj && layer.imgObj.complete) {
+            ctx.drawImage(layer.imgObj, -layer.imgObj.width/2, -layer.imgObj.height/2, layer.imgObj.width, layer.imgObj.height);
+        }
+        ctx.restore();
+    });
+}
+
+function applyHierarchyTransforms(layer, comp, time) {
+    // 親があれば先に適用（再帰）
+    if (layer.parent) {
+        const parentLayer = comp.layers.find(l => l.id === layer.parent);
+        if (parentLayer) {
+            applyHierarchyTransforms(parentLayer, comp, time);
+        }
+    }
+
+    const pos = getOpTrackValue(layer.tracks.position, time, {x:500, y:300});
+    const scale = getOpTrackValue(layer.tracks.scale, time, {x:100, y:100});
+    const rotation = getOpTrackValue(layer.tracks.rotation, time, 0) * (Math.PI / 180);
+
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(rotation);
+    ctx.scale(scale.x / 100, scale.y / 100);
+}
+
+function getOpTrackValue(track, time, def) {
+    if (!track || !track.keys || track.keys.length === 0) {
+        return (track && track.initialValue !== undefined) ? track.initialValue : def;
+    }
+    const keys = track.keys;
+    let nextIdx = keys.findIndex(k => k.time > time);
+    if (nextIdx === -1) return keys[keys.length - 1].value;
+    if (nextIdx === 0) return keys[0].value;
+
+    const prev = keys[nextIdx - 1];
+    const next = keys[nextIdx];
+
+    // 停止（Hold）キーフレームの処理
+    if (prev.interpolation === "Hold") {
+        return prev.value;
+    }
+
+    let ratio = (time - prev.time) / (next.time - prev.time);
+
+    // イージングの処理
+    if (prev.easeOut && next.easeIn) {
+        // Ease In Out (Smoothstep)
+        ratio = ratio * ratio * (3 - 2 * ratio);
+    } else if (next.easeIn) {
+        // 到着時に減速 (Ease In)
+        ratio = 1 - (1 - ratio) * (1 - ratio);
+    } else if (prev.easeOut) {
+        // 出発時に加速 (Ease Out)
+        ratio = ratio * ratio;
+    }
+
+    if (typeof prev.value === 'number') {
+        return prev.value + (next.value - prev.value) * ratio;
+    } else if (prev.value && typeof prev.value.x === 'number') {
+        return {
+            x: prev.value.x + (next.value.x - prev.value.x) * ratio,
+            y: prev.value.y + (next.value.y - prev.value.y) * ratio
+        };
+    }
+    return prev.value;
 }

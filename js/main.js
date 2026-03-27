@@ -17,6 +17,29 @@ async function init() {
         const resDrone = await fetch('json/droneA.json');
         droneConfig = await resDrone.json();
 
+        const resOP = await fetch('json/OP.json');
+        opConfig = await resOP.json();
+
+        // OP画像のプリロード
+        if (opConfig && opConfig.assets) {
+            const comp = opConfig.assets.find(a => a.type === 'comp');
+            if (comp) {
+                comp.layers.forEach(layer => {
+                    if (layer.source) {
+                        layer.imgObj = new Image();
+                        if (layer.source.startsWith('data:image')) {
+                            layer.imgObj.src = layer.source;
+                        } else {
+                            // 絶対パスが含まれる場合は相対パス(images/...)に変換を試みる
+                            const parts = layer.source.split('/');
+                            const fileName = parts[parts.length - 1];
+                            layer.imgObj.src = `images/${fileName}`;
+                        }
+                    }
+                });
+            }
+        }
+
         // SEの先行ロード
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
@@ -55,9 +78,36 @@ function startGame() {
     }
 
     document.getElementById('title-screen').style.display = 'none';
+    
+    if (opConfig) {
+        isOpRunning = true;
+        opTime = 0;
+    }
+    
     isGameRunning = true;
     lastFrameTime = 0;
     requestAnimationFrame(gameLoop);
+}
+
+function skipOP() {
+    endOP();
+}
+
+function endOP() {
+    if (!isOpRunning) return;
+    isOpRunning = false;
+    opTime = 0;
+
+    // UIの表示復帰
+    document.getElementById('progress-container').style.display = 'block';
+    document.getElementById('ninjutsu-container').style.display = 'block';
+    document.querySelector('.hud').style.display = 'block';
+    document.getElementById('control-panel').style.display = 'flex';
+    document.getElementById('skip-op-btn').style.display = 'none';
+
+    // ゲーム本編の開始準備
+    sakuya.x = -100;
+    isIntro = true;
 }
 
 

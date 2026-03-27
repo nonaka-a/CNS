@@ -1,6 +1,30 @@
 function update() {
     if (gameOver || isPaused) return;
 
+    // オープニングイベントの更新
+    if (isOpRunning) {
+        if (opConfig) {
+            // UIの非表示制御 (OP開始時のみ実行)
+            if (opTime === 0) {
+                document.getElementById('progress-container').style.display = 'none';
+                document.getElementById('ninjutsu-container').style.display = 'none';
+                document.querySelector('.hud').style.display = 'none';
+                document.getElementById('control-panel').style.display = 'none';
+                document.getElementById('skip-op-btn').style.display = 'block';
+            }
+
+            opTime += FRAME_INTERVAL / 1000;
+            // OP終了判定
+            const opComp = opConfig.assets.find(a => a.id === "comp_1");
+            if (opComp && opTime >= opComp.duration) {
+                endOP();
+            }
+        } else {
+            endOP();
+        }
+        return;
+    }
+
     if (isIntro) {
         // イントロ：画面外から中央（INTRO_TARGET_X）まで走ってくる
         sakuya.vx = 18;

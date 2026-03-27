@@ -17,6 +17,10 @@ function subAction() {
 
 function setupControls() {
     window.addEventListener('keydown', (e) => {
+        if (isOpRunning) {
+            skipOP();
+            return;
+        }
         // 矢印キーとWASDキーの連動
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = true;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = true;
@@ -68,6 +72,11 @@ function setupControls() {
     const handleTouch = (e) => {
         if (e.cancelable) e.preventDefault();
         
+        if (isOpRunning) {
+            skipOP();
+            return;
+        }
+
         let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
         let activeIds = new Set();
 
