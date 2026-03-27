@@ -333,7 +333,9 @@ window.event_toRelativePath = function (fullPath) {
     }
 
     let savedPath = fullPath;
-    if (fullPath.includes('image/')) {
+    if (fullPath.includes('images/')) {
+        savedPath = '../images/' + fullPath.split('images/').pop();
+    } else if (fullPath.includes('image/')) {
         savedPath = '../image/' + fullPath.split('image/').pop();
     } else if (fullPath.includes('sounds/')) {
         savedPath = '../sounds/' + fullPath.split('sounds/').pop();
@@ -436,7 +438,39 @@ window.event_exportJSON = function () {
         assets: event_data.assets
     };
 
-    const json = JSON.stringify(exportData, null, 2);
+    // --- JSON書き出し前に、絶対パスやBase64画像を軽量化(相対パス化)する処理 ---
+    const cleanData = JSON.parse(JSON.stringify(exportData));
+    function convertToRelativePaths(obj) {
+        if (typeof obj === 'object' && obj !== null) {
+            for (let k in obj) {
+                if ((k === 'source' || k === 'src') && typeof obj[k] === 'string') {
+                    let val = obj[k];
+                    if (val.startsWith('data:image')) {
+                        let name = obj.name || 'unknown';
+                        if (name.includes(' ')) name = name.split(' ')[0];
+                        if (!name.endsWith('.png')) name += '.png';
+                        obj[k] = 'images/' + name;
+                    } else if (val.startsWith('/Volumes/') || val.includes(':\\')) {
+                        let name = obj.name || 'unknown';
+                        const parts = val.replace(/\\/g, '/').split('/');
+                        let fileName = parts[parts.length - 1];
+                        if (!fileName) fileName = name;
+                        if (fileName.includes(' ')) fileName = fileName.split(' ')[0];
+                        if (!fileName.endsWith('.png') && !fileName.endsWith('.jpg')) {
+                            fileName += '.png';
+                        }
+                        obj[k] = 'images/' + fileName;
+                    }
+                } else {
+                    convertToRelativePaths(obj[k]);
+                }
+            }
+        }
+    }
+    convertToRelativePaths(cleanData);
+    // --------------------------------------------------------------------------
+
+    const json = JSON.stringify(cleanData, null, 2);
     const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
 
