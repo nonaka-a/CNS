@@ -336,8 +336,24 @@ function update() {
     if (ninBtn) {
         if (ninjutsuGauge >= NINJUTSU_MAX && !giantShuriken) {
             ninBtn.classList.remove('disabled');
+            ninBtn.classList.add('shinobi-ready');
+            
+            // 初めて満タンになった瞬間にピカーンと光らせる
+            if (!ninjutsuFullTriggered) {
+                ninjutsuFullTriggered = true;
+                ninBtn.classList.add('shinobi-flash');
+                playSE('flash'); // 満タンSE再生
+                setTimeout(() => {
+                    ninBtn.classList.remove('shinobi-flash');
+                }, 600); // アニメーション時間分待って外す
+            }
         } else {
             ninBtn.classList.add('disabled');
+            ninBtn.classList.remove('shinobi-ready');
+            ninBtn.classList.remove('shinobi-flash'); // 強制リセット
+            if (ninjutsuGauge < NINJUTSU_MAX) {
+                ninjutsuFullTriggered = false;
+            }
         }
     }
 

@@ -30,6 +30,7 @@ const goalDistance = 40000;
 let distance = 0;
 let ninjutsuGauge = 0;
 const NINJUTSU_MAX = 10; // 10体倒すと満タン
+let ninjutsuFullTriggered = false;
 let gameOver = false;
 let isIntro = true;
 const INTRO_TARGET_X = 410;

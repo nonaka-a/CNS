@@ -25,6 +25,7 @@ async function init() {
         await loadSE('jump2', 'sound/jump2.mp3');
         await loadSE('puni', 'sound/puni.mp3');
         await loadSE('puni2', 'sound/puni2.mp3');
+        await loadSE('flash', 'sound/flash.mp3');
     } catch (e) {
         console.error("Failed to load configs:", e);
     }
