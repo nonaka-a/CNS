@@ -42,6 +42,7 @@ function draw() {
         const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         if (syurikenImg.complete) {
             b.history.forEach((h, idx) => {
+                if (idx % 2 === 0) return; // 1つおきに描画をスキップして間引く
                 const trailAlpha = (idx / b.history.length) * 0.6;
                 const trailScaleRatio = 0.3 + (idx / b.history.length) * 0.7;
                 ctx.save();

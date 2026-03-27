@@ -120,7 +120,7 @@ function update() {
         b.x += b.vx;
         b.angle -= 0.6;
         b.history.push({ x: b.x, y: b.y, angle: b.angle });
-        if (b.history.length > 12) b.history.shift();
+        if (b.history.length > 12) b.history.shift(); 
         if (b.x + b.w < 0 || b.x > CANVAS_WIDTH) {
             bullets.splice(i, 1);
             continue;
