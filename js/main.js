@@ -1,3 +1,4 @@
+let initDone = false;
 async function init() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
@@ -58,11 +59,21 @@ async function init() {
     setupControls();
     
     sakuya.groundY = GROUND_Y_POS;
+    initDone = true;
+
+    // STARTボタンを正常な表示に戻し、有効化する
+    const startBtn = document.getElementById('start-btn');
+    if (startBtn) {
+        startBtn.style.opacity = '1';
+        const inner = startBtn.querySelector('.modal-btn-inner');
+        if (inner) inner.innerText = '開始';
+    }
+
     requestAnimationFrame(gameLoop);
 }
 
 function startGame() {
-    if (isGameRunning) return; // 二重起動防止
+    if (!initDone || isGameRunning) return; // ロード中または二重起動防止
     
     resetGameState();
     
@@ -90,6 +101,9 @@ function startGame() {
 }
 
 function skipOP() {
+    // iPadなどで「開始」ボタンを押した際のイベントが残っており、
+    // 開始直後にそのままスキップされてしまうのを防ぐため、0.5秒の猶予を設ける
+    if (opTime < 0.5) return;
     endOP();
 }
 

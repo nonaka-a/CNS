@@ -19,6 +19,15 @@ function draw() {
         let loopX = -((distance * 2.0) % CANVAS_WIDTH);
         ctx.drawImage(bgImg, loopX, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
         ctx.drawImage(bgImg, loopX + CANVAS_WIDTH, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+
+        // ビネット効果 (背景にのみ適用)
+        if (vignetteImg.complete) {
+            ctx.save();
+            ctx.globalCompositeOperation = 'multiply';
+            // カメラ追従のオフセット(-50)分も考慮して、背景と同じ領域に描画
+            ctx.drawImage(vignetteImg, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+            ctx.restore();
+        }
     }
 
     // 落ち影
@@ -165,12 +174,7 @@ function draw() {
 
     ctx.restore(); // カメラPANのtranslateをリセット (ここで一旦リセット)
 
-    // ビネット効果 (画像による描画で負荷軽減)
-    if (vignetteImg.complete) {
-        ctx.globalCompositeOperation = 'multiply'; // 乗算
-        ctx.drawImage(vignetteImg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        ctx.globalCompositeOperation = 'source-over'; // 通常に戻す
-    }
+    // ビネット効果は背景描画直後に移動しました。
 
     // ビネットの上にレーザーを描画
     ctx.save();
