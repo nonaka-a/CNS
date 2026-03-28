@@ -58,6 +58,23 @@ body {
             border-radius: 10px;
             transition: width 0.1s;
         }
+        #progress-halfway-marker {
+            position: absolute; left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            width: 14px; height: 14px;
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid #555;
+            border-radius: 50%;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+            z-index: 10;
+            transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+        }
+        #progress-halfway-marker.reached {
+            background: #ff1493;
+            border-color: #fff;
+            box-shadow: 0 0 15px #ff1493, inset 0 0 5px #fff;
+            transform: translate(-50%, -50%) scale(1.3);
+        }
         .corner { position: absolute; width: 8px; height: 8px; background: #8c6e5e; border: 1px solid #1a1a1a; z-index: 2; }
         .tp-l { top: -6px; left: -6px; }
         .tp-r { top: -6px; right: -6px; }

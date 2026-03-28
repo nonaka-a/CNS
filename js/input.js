@@ -1,5 +1,5 @@
 function subAction() {
-    if (isIntro || ninjutsuGauge < NINJUTSU_MAX || giantShuriken) return;
+    if (isIntro || isHalfwayTransitioning || ninjutsuGauge < NINJUTSU_MAX || giantShuriken) return;
 
     // 巨大手裏剣の発射 (右から左へ)
     giantShuriken = {
@@ -118,8 +118,8 @@ function setupControls() {
 }
 
 function jump() {
-    if (isIntro || sakuya.jumpCount < 2) {
-        if (isIntro) return; // イントロ中はジャンプ不可
+    if (isIntro || isHalfwayTransitioning || sakuya.jumpCount < 2) {
+        if (isIntro || isHalfwayTransitioning) return; // イントロ・トランジション中はジャンプ不可
         if (sakuya.jumpCount === 0) playSE('jump1', 0.6);
         else playSE('jump2', 0.6);
         sakuya.vy = sakuya.jumpPower;
@@ -129,7 +129,7 @@ function jump() {
 }
 
 function toggleMode() {
-    if (isIntro) return;
+    if (isIntro || isHalfwayTransitioning) return;
     if (mitama.isHolding) {
         mitama.isHolding = false;
         mitama.groundY = sakuya.groundY;
@@ -156,7 +156,7 @@ function toggleMode() {
 }
 
 function shoot() {
-    if (isIntro || !canShoot || mitama.isHolding || gameOver) return;
+    if (isIntro || isHalfwayTransitioning || !canShoot || mitama.isHolding || gameOver) return;
 
     // Create a rotating shuriken
     bullets.push({ 

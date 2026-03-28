@@ -40,17 +40,23 @@ function update() {
         }
     } else {
         // 通常の操作
-        if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
-        else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
-        else if (sakuya.jumpOffset === 0) sakuya.vx = 0; // 地上にいる時だけ、キーが押されていなければ停止
+        if (isHalfwayTransitioning) {
+            if (sakuya.jumpOffset === 0) sakuya.vx = 0;
+        } else {
+            if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
+            else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
+            else if (sakuya.jumpOffset === 0) sakuya.vx = 0; // 地上にいる時だけ、キーが押されていなければ停止
+        }
         
         sakuya.x += sakuya.vx;
         sakuya.x = Math.max(0, Math.min(sakuya.x, CANVAS_WIDTH - sakuya.w));
 
         // 奥行き移動
         let vy_depth = 0;
-        if (keys.ArrowUp) vy_depth = -PLAYER_SPEED * 0.7;
-        else if (keys.ArrowDown) vy_depth = PLAYER_SPEED * 0.7;
+        if (!isHalfwayTransitioning) {
+            if (keys.ArrowUp) vy_depth = -PLAYER_SPEED * 0.7;
+            else if (keys.ArrowDown) vy_depth = PLAYER_SPEED * 0.7;
+        }
         sakuya.groundY += vy_depth;
     }
     sakuya.groundY = Math.max(300, Math.min(sakuya.groundY, 420));
@@ -207,7 +213,7 @@ function update() {
     }
 
     // 敵(ドローン)のスポーンと更新
-    if (Math.random() < 0.005 && enemies.length < 5) {
+    if (!isHalfwayTransitioning && Math.random() < 0.005 && enemies.length < 5) {
         enemies.push({
             id: enemyIdCounter++, // 一意識別用ID
             x: -80, w: 80, h: 80,
@@ -335,9 +341,35 @@ function update() {
         if (giantShuriken.x + giantShuriken.w < 0) giantShuriken = null;
     }
 
-    if (!isIntro) {
+    if (!isIntro && !isHalfwayTransitioning) {
         distance += 5;
+        
+        // 中間地点チェック
+        if (distance >= goalDistance / 2 && !halfwayReached) {
+            halfwayReached = true;
+            isHalfwayTransitioning = true;
+            halfwayTransitionTimer = 0;
+            
+            // 敵や弾を消去して仕切り直す
+            enemies = [];
+            enemyLasers = [];
+            bullets = [];
+            explosions = [];
+            
+            const progressMarker = document.getElementById('progress-halfway-marker');
+            if (progressMarker) progressMarker.classList.add('reached');
+        }
     }
+    
+    // トランジション進行
+    if (isHalfwayTransitioning) {
+        halfwayTransitionTimer++;
+        if (halfwayTransitionTimer > 180) { // 3秒間 (60fps * 3s = 180)
+            isHalfwayTransitioning = false;
+            isSecondScene = true;
+        }
+    }
+
     const progress = Math.min((distance / goalDistance) * 100, 100);
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = progress + '%';

@@ -270,6 +270,10 @@ function toggleFullscreen() {
 
 function resetGameState() {
     distance = 0;
+    halfwayReached = false;
+    isHalfwayTransitioning = false;
+    halfwayTransitionTimer = 0;
+    isSecondScene = false;
     gameOver = false;
     isIntro = true;
     isPaused = false;
@@ -305,6 +309,8 @@ function resetGameState() {
     
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = '0%';
+    const progressMarker = document.getElementById('progress-halfway-marker');
+    if (progressMarker) progressMarker.classList.remove('reached');
 }
 
 init();

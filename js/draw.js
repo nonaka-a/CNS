@@ -235,6 +235,23 @@ function draw() {
         ctx.restore();
     }
 
+    // トランジション（中間切り替え）の描画
+    if (isHalfwayTransitioning) {
+        let alpha = 0;
+        if (halfwayTransitionTimer < 60) {
+            alpha = halfwayTransitionTimer / 60; // フェードアウト（暗転）
+        } else if (halfwayTransitionTimer < 120) {
+            alpha = 1; // 暗転保持
+        } else {
+            alpha = 1 - ((halfwayTransitionTimer - 120) / 60); // フェードイン（明ける）
+        }
+        
+        ctx.save();
+        ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.restore();
+    }
+
     // HP オーブ更新
     if (sakuya.lastHP !== sakuya.hp) {
         updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
