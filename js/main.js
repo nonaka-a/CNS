@@ -21,22 +21,67 @@ async function init() {
         const resOP = await fetch('json/OP.json');
         opConfig = await resOP.json();
 
-        // OP画像のプリロード
+        // OPアセットのプリロード
         if (opConfig && opConfig.assets) {
-            const comp = opConfig.assets.find(a => a.type === 'comp');
+            const fixPath = (p, type) => {
+                if (!p) return p;
+                if (p.startsWith('data:')) return p;
+                const parts = p.replace(/\\/g, '/').split('/');
+                let fileName = parts[parts.length - 1];
+                // 過去のエクスポートバグで壊れた音声拡張子の修正
+                if (type === 'audio' && fileName.endsWith('.png')) {
+                    fileName = fileName.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
+                }
+                return (type === 'audio') ? `sound/${fileName}` : `images/${fileName}`;
+            };
+
+            const loadAsset = async (asset) => {
+                if (!asset) return;
+                if (asset.type === 'audio') {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    try {
+                        const url = fixPath(asset.src, 'audio');
+                        const response = await fetch(url);
+                        const buffer = await response.arrayBuffer();
+                        asset.audioBuffer = await audioCtx.decodeAudioData(buffer);
+                    } catch (err) { console.error("OP Audio Load Error:", asset.name, err); }
+                } else if (asset.type === 'animation') {
+                    asset.imgObj = new Image();
+                    asset.imgObj.src = fixPath(asset.source, 'image');
+                } else if (asset.type === 'image') {
+                    asset.imgObj = new Image();
+                    asset.imgObj.src = fixPath(asset.src, 'image');
+                } else if (asset.type === 'folder' && asset.children) {
+                    await Promise.all(asset.children.map(child => loadAsset(child)));
+                } else if (asset.type === 'comp' && asset.layers) {
+                    // コンポジション内のレイヤーの画像（互換用）
+                    asset.layers.forEach(layer => {
+                        if (layer.source && (!layer.imgObj || !layer.imgObj.src)) {
+                            layer.imgObj = new Image();
+                            layer.imgObj.src = fixPath(layer.source, 'image');
+                        }
+                    });
+                }
+            };
+            await Promise.all(opConfig.assets.map(asset => loadAsset(asset)));
+
+            // レイヤーへのimgObj紐付け
+            const comp = opConfig.assets.find(a => a.id === "comp_1");
             if (comp) {
                 comp.layers.forEach(layer => {
-                    if (layer.source) {
-                        layer.imgObj = new Image();
-                        if (layer.source.startsWith('data:image')) {
-                            layer.imgObj.src = layer.source;
-                        } else {
-                            // 絶対パスが含まれる場合は相対パス(images/...)に変換を試みる
-                            const parts = layer.source.split('/');
-                            const fileName = parts[parts.length - 1];
-                            layer.imgObj.src = `images/${fileName}`;
+                    const refId = layer.assetId || layer.animAssetId;
+                    const asset = (function findAsset(id, list) {
+                        for (let a of list) {
+                            if (a.id === id) return a;
+                            if (a.type === 'folder' && a.children) {
+                                let found = findAsset(id, a.children);
+                                if (found) return found;
+                            }
                         }
-                    }
+                        return null;
+                    })(refId, opConfig.assets);
+                    
+                    if (asset && asset.imgObj) layer.imgObj = asset.imgObj;
                 });
             }
         }
@@ -111,6 +156,8 @@ function endOP() {
     if (!isOpRunning) return;
     isOpRunning = false;
     opTime = 0;
+
+    if (typeof stopAllOPAudio === 'function') stopAllOPAudio();
 
     // UIの表示復帰
     document.getElementById('progress-container').style.display = 'block';

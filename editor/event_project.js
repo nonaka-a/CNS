@@ -284,8 +284,14 @@ window.event_refreshProjectList = function () {
 
             if (item.type === 'folder' && !item._collapsed && item.children) {
                 renderItems(item.children, container, depth + 1);
-            } else if (item.type === 'animation' && !item._collapsed && item.data) {
-                Object.keys(item.data).forEach(animKey => {
+            } else if (item.type === 'animation' && !item._collapsed) {
+                // アニメーション内にドロップされたアセットがあれば描画
+                if (item.children) {
+                    renderItems(item.children, container, depth + 1);
+                }
+                // アニメーションの各モーションを描画
+                if (item.data) {
+                    Object.keys(item.data).forEach(animKey => {
                     const subDiv = document.createElement('div');
                     subDiv.style.paddingLeft = `${(depth + 1) * 15 + 10}px`;
                     subDiv.style.paddingTop = '2px';
@@ -313,6 +319,7 @@ window.event_refreshProjectList = function () {
                     container.appendChild(subDiv);
                 });
             }
+        }
         });
     }
 
@@ -339,6 +346,8 @@ window.event_toRelativePath = function (fullPath) {
         savedPath = '../image/' + fullPath.split('image/').pop();
     } else if (fullPath.includes('sounds/')) {
         savedPath = '../sounds/' + fullPath.split('sounds/').pop();
+    } else if (fullPath.includes('sound/')) {
+        savedPath = '../sound/' + fullPath.split('sound/').pop();
     } else if (fullPath.includes('se/')) {
         savedPath = '../se/' + fullPath.split('se/').pop();
     } else if (fullPath.includes('bgm/')) {
@@ -445,7 +454,13 @@ window.event_exportJSON = function () {
             for (let k in obj) {
                 if ((k === 'source' || k === 'src') && typeof obj[k] === 'string') {
                     let val = obj[k];
-                    if (val.startsWith('data:image')) {
+                    if (obj.type === 'audio') {
+                        let name = obj.name || 'unknown';
+                        const parts = val.replace(/\\/g, '/').split('/');
+                        let fileName = parts[parts.length - 1];
+                        if (!fileName) fileName = name;
+                        obj[k] = 'sound/' + fileName;
+                    } else if (val.startsWith('data:image')) {
                         let name = obj.name || 'unknown';
                         if (name.includes(' ')) name = name.split(' ')[0];
                         if (!name.endsWith('.png')) name += '.png';
@@ -584,6 +599,11 @@ window.event_restoreAssetObjects = async function (list) {
             img.src = url;
             item.imgObj = img;
         } else if (item.type === 'audio' && item.src) {
+            // 壊れたパスの自動修復 (過去のエクスポートバグ対策)
+            if (item.src.endsWith('.mp3.png')) item.src = item.src.replace('.mp3.png', '.mp3');
+            if (item.src.startsWith('images/')) item.src = item.src.replace('images/', 'sound/');
+            if (item.src.startsWith('../images/')) item.src = item.src.replace('../images/', '../sound/');
+
             try {
                 let arrayBuffer;
                 // 1. まず fetch を試みる (相対パスの解決をブラウザ/Electronに任せる)

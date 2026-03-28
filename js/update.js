@@ -14,6 +14,10 @@ function update() {
             }
 
             opTime += FRAME_INTERVAL / 1000;
+            
+            // オーディオの同期処理（早期リターンの前に実行）
+            updateOPAudio();
+
             // OP終了判定
             const opComp = opConfig.assets.find(a => a.id === "comp_1");
             if (opComp && opTime >= opComp.duration) {
@@ -382,4 +386,71 @@ function update() {
     }
 
     if (distance >= goalDistance) endGame("GOAL!");
+}
+
+function updateOPAudio() {
+    if (!opConfig || !isOpRunning) {
+        stopAllOPAudio();
+        return;
+    }
+    const comp = opConfig.assets.find(a => a.id === "comp_1");
+    if (!comp) return;
+
+    comp.layers.forEach(layer => {
+        if (layer.type !== 'audio') return;
+        
+        const asset = (function findAsset(id, list) {
+             for (let a of list) {
+                 if (a.id === id) return a;
+                 if (a.type === 'folder' && a.children) {
+                     let found = findAsset(id, a.children);
+                     if (found) return found;
+                 }
+             }
+             return null;
+        })(layer.assetId, opConfig.assets);
+
+        if (!asset || !asset.audioBuffer) return;
+
+        const offset = opTime - layer.startTime;
+        const isWithinRange = (opTime >= layer.inPoint && opTime < layer.outPoint);
+        const isWithinBuffer = (offset >= 0 && offset < asset.audioBuffer.duration);
+
+        if (isWithinRange && isWithinBuffer && isSoundOn) {
+            if (!opAudioSources[layer.id]) {
+                const source = audioCtx.createBufferSource();
+                source.buffer = asset.audioBuffer;
+                
+                const gainNode = audioCtx.createGain();
+                source.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+                
+                // ボリューム設定 (dB -> Gain)
+                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
+                gainNode.gain.value = Math.pow(10, volDb / 20);
+
+                source.start(0, Math.max(0, offset));
+                opAudioSources[layer.id] = { source, gain: gainNode };
+                source.onended = () => {
+                    if (opAudioSources[layer.id] && opAudioSources[layer.id].source === source) delete opAudioSources[layer.id];
+                };
+            } else {
+                // 再生中のボリューム更新
+                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
+                opAudioSources[layer.id].gain.gain.setTargetAtTime(Math.pow(10, volDb / 20), audioCtx.currentTime, 0.05);
+            }
+        } else {
+            if (opAudioSources[layer.id]) {
+                try { opAudioSources[layer.id].source.stop(); } catch(e){}
+                delete opAudioSources[layer.id];
+            }
+        }
+    });
+}
+
+function stopAllOPAudio() {
+    Object.keys(opAudioSources).forEach(id => {
+        try { opAudioSources[id].source.stop(); } catch(e){}
+        delete opAudioSources[id];
+    });
 }

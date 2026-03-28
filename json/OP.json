@@ -11,6 +11,72 @@
       "fps": 30,
       "layers": [
         {
+          "id": "layer_audio_1774705677130",
+          "type": "audio",
+          "name": "jump2.mp3",
+          "assetId": "audio_17747056724440.8453252727029504",
+          "startTime": 8.466666666666667,
+          "inPoint": 8.466666666666667,
+          "outPoint": 8.870113378684808,
+          "expanded": true,
+          "trackIdx": 0,
+          "tracks": {
+            "volume": {
+              "label": "Volume (dB)",
+              "type": "number",
+              "keys": [],
+              "min": -60,
+              "max": 12,
+              "step": 0.1,
+              "initialValue": 0
+            }
+          }
+        },
+        {
+          "id": "layer_audio_1774705659393",
+          "type": "audio",
+          "name": "jump1.mp3",
+          "assetId": "audio_17747043393180.9517224669574024",
+          "startTime": 6.566666666666666,
+          "inPoint": 6.266666666666667,
+          "outPoint": 7.233333333333333,
+          "expanded": true,
+          "trackIdx": 1,
+          "tracks": {
+            "volume": {
+              "label": "Volume (dB)",
+              "type": "number",
+              "keys": [],
+              "min": -60,
+              "max": 12,
+              "step": 0.1,
+              "initialValue": 0
+            }
+          }
+        },
+        {
+          "id": "layer_audio_1774705611698",
+          "type": "audio",
+          "name": "Laser1.mp3",
+          "assetId": "audio_17747043257810.4436875518547019",
+          "startTime": 6.733333333333333,
+          "inPoint": 6.233333333333333,
+          "outPoint": 8.1,
+          "expanded": true,
+          "trackIdx": 0,
+          "tracks": {
+            "volume": {
+              "label": "Volume (dB)",
+              "type": "number",
+              "keys": [],
+              "min": -60,
+              "max": 12,
+              "step": 0.1,
+              "initialValue": 0
+            }
+          }
+        },
+        {
           "id": "layer_solid_1774624413474",
           "type": "solid",
           "name": "フラッシュ",
@@ -150,7 +216,7 @@
         {
           "id": "layer_1774614645943_16",
           "type": "solid",
-          "name": "暗転 コピー",
+          "name": "暗転2",
           "shape": "rect",
           "color": "#000000",
           "blendMode": "source-over",
@@ -243,7 +309,7 @@
           "strokeWidth": 0,
           "shadowOpacity": 0,
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 0.9666666666666667,
           "outPoint": 3.933333333333333,
           "tracks": {
@@ -329,7 +395,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774609433598_307",
@@ -430,7 +496,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617314071_228",
@@ -531,7 +597,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617419233_604",
@@ -632,7 +698,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617877799_446",
@@ -733,7 +799,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617659223_737",
@@ -834,7 +900,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617493367_343",
@@ -949,7 +1015,7 @@
               "initialValue": 0
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774618040392_858",
@@ -1018,7 +1084,7 @@
               "initialValue": 100
             }
           },
-          "locked": false
+          "locked": true
         },
         {
           "id": "layer_1774617268983_517",
@@ -1200,7 +1266,7 @@
           "source": "../images/sakuya.png",
           "blendMode": "source-over",
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 8.433333333333334,
           "outPoint": 30.333333333333332,
           "tracks": {
@@ -2198,80 +2264,6 @@
       ]
     },
     {
-      "type": "animation",
-      "name": "mitama",
-      "id": "anim_asset_1774607680468",
-      "data": {
-        "idle": {
-          "frames": [
-            {
-              "x": 0,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            },
-            {
-              "x": 128,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            },
-            {
-              "x": 256,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            },
-            {
-              "x": 384,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            }
-          ],
-          "fps": 10,
-          "loop": true
-        }
-      },
-      "source": "../images/mitama.png",
-      "_collapsed": false,
-      "imgObj": {}
-    },
-    {
-      "type": "animation",
-      "name": "droneA",
-      "id": "anim_asset_1774607770241",
-      "data": {
-        "idle": {
-          "frames": [
-            {
-              "x": 0,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            },
-            {
-              "x": 128,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            },
-            {
-              "x": 256,
-              "y": 0,
-              "w": 128,
-              "h": 128
-            }
-          ],
-          "fps": 15,
-          "loop": true
-        }
-      },
-      "source": "../images/droneA.png",
-      "_collapsed": false,
-      "imgObj": {}
-    },
-    {
       "type": "image",
       "name": "Gradation.png",
       "id": "img_17746125983530.7107841478393127",
@@ -2298,6 +2290,33 @@
       "id": "img_17746142812770.24859271920795867",
       "src": "../images/Laser.png",
       "imgObj": {}
+    },
+    {
+      "type": "audio",
+      "name": "Laser1.mp3",
+      "id": "audio_17747043257810.4436875518547019",
+      "src": "images/Laser1.mp3.png",
+      "audioBuffer": {},
+      "duration": 0.773922902494331,
+      "waveform": {}
+    },
+    {
+      "type": "audio",
+      "name": "jump1.mp3",
+      "id": "audio_17747043393180.9517224669574024",
+      "src": "images/jump1.mp3.png",
+      "audioBuffer": {},
+      "duration": 0.21410430839002267,
+      "waveform": {}
+    },
+    {
+      "type": "audio",
+      "name": "jump2.mp3",
+      "id": "audio_17747056724440.8453252727029504",
+      "src": "images/jump2.mp3.png",
+      "audioBuffer": {},
+      "duration": 0.4034467120181406,
+      "waveform": {}
     },
     {
       "type": "animation",
@@ -2564,7 +2583,81 @@
         }
       },
       "source": "../images/sakuya.png",
+      "_collapsed": true,
+      "imgObj": {}
+    },
+    {
+      "type": "animation",
+      "name": "droneA",
+      "id": "anim_asset_1774607770241",
+      "data": {
+        "idle": {
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            },
+            {
+              "x": 128,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            },
+            {
+              "x": 256,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            }
+          ],
+          "fps": 15,
+          "loop": true
+        }
+      },
+      "source": "../images/droneA.png",
       "_collapsed": false,
+      "imgObj": {}
+    },
+    {
+      "type": "animation",
+      "name": "mitama",
+      "id": "anim_asset_1774607680468",
+      "data": {
+        "idle": {
+          "frames": [
+            {
+              "x": 0,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            },
+            {
+              "x": 128,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            },
+            {
+              "x": 256,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            },
+            {
+              "x": 384,
+              "y": 0,
+              "w": 128,
+              "h": 128
+            }
+          ],
+          "fps": 10,
+          "loop": true
+        }
+      },
+      "source": "../images/mitama.png",
+      "_collapsed": true,
       "imgObj": {}
     }
   ]

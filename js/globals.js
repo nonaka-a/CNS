@@ -83,6 +83,7 @@ const droneEnergyImg = new Image();
 droneEnergyImg.src = 'images/drone_Energy.png';
 let audioCtx = null;
 const seBuffers = {};
+let opAudioSources = {}; // layerId -> sourceNode
 const bgm = new Audio('sound/BGM1.mp3');
 bgm.loop = true;
 bgm.volume = 0.4; // プレイの邪魔にならない程度の音量に設定
