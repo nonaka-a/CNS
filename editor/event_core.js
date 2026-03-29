@@ -245,17 +245,20 @@ window.initEventEditor = function () {
     event_canvasTimeline.addEventListener('dragover', event_onTimelineDragOver);
     event_canvasTimeline.addEventListener('drop', event_onTimelineDrop);
 
-    // AudioContext の初期化（ユーザー操作が必要）
-    const initAudio = () => {
-        if (!event_audioCtx) {
-            event_audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (event_audioCtx.state === 'suspended') {
-            event_audioCtx.resume();
+    // AudioContext の初期化 (オブジェクト作成は即時、再生許可はユーザー操作待ち)
+    if (!event_audioCtx) {
+        event_audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    const resumeAudio = () => {
+        if (event_audioCtx && event_audioCtx.state === 'suspended') {
+            event_audioCtx.resume().then(() => {
+                console.log("AudioContext resumed.");
+            });
         }
     };
-    window.addEventListener('mousedown', initAudio, { once: true });
-    window.addEventListener('keydown', initAudio, { once: true });
+    window.addEventListener('mousedown', resumeAudio, { once: true });
+    window.addEventListener('keydown', resumeAudio, { once: true });
 
     if (resizeHandle) {
         resizeHandle.addEventListener('mousedown', (e) => {

@@ -1202,6 +1202,174 @@
           "locked": false
         },
         {
+          "id": "layer_1774750203709_543",
+          "name": "sakuya_up.png",
+          "source": "../images/face/sakuya_up.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": true,
+          "inPoint": 10.7,
+          "outPoint": 28.066666666666666,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 10.8,
+                  "value": {
+                    "x": 781,
+                    "y": 280
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [
+                {
+                  "time": 10.7,
+                  "value": {
+                    "x": 11,
+                    "y": 11
+                  },
+                  "interpolation": "Linear",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 10.866666666666667,
+                  "value": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "interpolation": "Linear",
+                  "easeIn": true,
+                  "easeOut": false
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
+          "id": "layer_1774750135517_849",
+          "name": "mitama_up.png",
+          "source": "../images/face/mitama_up.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": true,
+          "inPoint": 8.766666666666666,
+          "outPoint": 28.066666666666666,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 8.766666666666666,
+                  "value": {
+                    "x": 196,
+                    "y": 280
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [
+                {
+                  "time": 8.766666666666666,
+                  "value": {
+                    "x": 11,
+                    "y": 11
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 8.933333333333334,
+                  "value": {
+                    "x": 100,
+                    "y": 100
+                  },
+                  "easeIn": true,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
           "id": "layer_1774612600529_164",
           "name": "Gradation.png",
           "source": "../images/Gradation.png",
@@ -1309,7 +1477,7 @@
                 {
                   "time": 8.7,
                   "value": {
-                    "x": 385.37005163511185,
+                    "x": 410.37005163511185,
                     "y": 297.934595524957
                   },
                   "interpolation": "Linear",
@@ -1361,8 +1529,8 @@
                 {
                   "time": 9.299999999999999,
                   "value": {
-                    "x": 140,
-                    "y": 140
+                    "x": 120,
+                    "y": 120
                   },
                   "easeIn": false,
                   "easeOut": false,
@@ -1519,7 +1687,21 @@
                   "interpolation": "Hold"
                 },
                 {
+                  "time": 5.566666666666666,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
                   "time": 5.633333333333333,
+                  "value": 0,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 5.7,
                   "value": 100,
                   "interpolation": "Hold",
                   "easeIn": false,
@@ -1533,28 +1715,77 @@
                   "easeOut": false
                 },
                 {
-                  "time": 5.833333333333333,
+                  "time": 5.8,
                   "value": 100,
                   "interpolation": "Hold",
                   "easeIn": false,
                   "easeOut": false
                 },
                 {
-                  "time": 6.2,
+                  "time": 5.866666666666666,
                   "value": 100,
                   "interpolation": "Hold",
                   "easeIn": false,
                   "easeOut": false
                 },
                 {
-                  "time": 6.266666666666667,
+                  "time": 5.933333333333334,
                   "value": 0,
                   "interpolation": "Hold",
                   "easeIn": false,
                   "easeOut": false
                 },
                 {
-                  "time": 6.4,
+                  "time": 6,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.066666666666666,
+                  "value": 0,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.133333333333333,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.166666666666667,
+                  "value": 0,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.233333333333333,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.3,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.366666666666666,
+                  "value": 0,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.433333333333334,
                   "value": 100,
                   "interpolation": "Hold",
                   "easeIn": false,
@@ -1569,6 +1800,20 @@
                 },
                 {
                   "time": 6.566666666666666,
+                  "value": 100,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.6,
+                  "value": 0,
+                  "interpolation": "Hold",
+                  "easeIn": false,
+                  "easeOut": false
+                },
+                {
+                  "time": 6.666666666666667,
                   "value": 100,
                   "interpolation": "Hold",
                   "easeIn": false,
@@ -1790,7 +2035,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 4.766666666666667,
+                  "time": 4.433333333333334,
                   "value": {
                     "x": 317.2388545395379,
                     "y": 287.6993166287016
@@ -1798,6 +2043,46 @@
                   "easeIn": true,
                   "easeOut": false,
                   "interpolation": "Linear"
+                },
+                {
+                  "time": 5.1,
+                  "value": {
+                    "x": 326.2388545395379,
+                    "y": 299.6993166287016
+                  },
+                  "easeIn": true,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 5.866666666666666,
+                  "value": {
+                    "x": 332.2388545395379,
+                    "y": 297.6993166287016
+                  },
+                  "easeIn": true,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 6.766666666666667,
+                  "value": {
+                    "x": 322.2388545395379,
+                    "y": 298.6993166287016
+                  },
+                  "easeIn": true,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 7.533333333333333,
+                  "value": {
+                    "x": 326.2388545395379,
+                    "y": 299.6993166287016
+                  },
+                  "interpolation": "Linear",
+                  "easeIn": true,
+                  "easeOut": true
                 }
               ],
               "step": 1,
@@ -2295,7 +2580,7 @@
       "type": "audio",
       "name": "Laser1.mp3",
       "id": "audio_17747043257810.4436875518547019",
-      "src": "images/Laser1.mp3.png",
+      "src": "sound/Laser1.mp3",
       "audioBuffer": {},
       "duration": 0.773922902494331,
       "waveform": {}
@@ -2304,7 +2589,7 @@
       "type": "audio",
       "name": "jump1.mp3",
       "id": "audio_17747043393180.9517224669574024",
-      "src": "images/jump1.mp3.png",
+      "src": "sound/jump1.mp3",
       "audioBuffer": {},
       "duration": 0.21410430839002267,
       "waveform": {}
@@ -2313,7 +2598,7 @@
       "type": "audio",
       "name": "jump2.mp3",
       "id": "audio_17747056724440.8453252727029504",
-      "src": "images/jump2.mp3.png",
+      "src": "sound/jump2.mp3",
       "audioBuffer": {},
       "duration": 0.4034467120181406,
       "waveform": {}
@@ -2658,6 +2943,20 @@
       },
       "source": "../images/mitama.png",
       "_collapsed": true,
+      "imgObj": {}
+    },
+    {
+      "type": "image",
+      "name": "mitama_up.png",
+      "id": "img_17747501259430.8471818482396668",
+      "src": "../images/face/mitama_up.png",
+      "imgObj": {}
+    },
+    {
+      "type": "image",
+      "name": "sakuya_up.png",
+      "id": "img_17747501259440.1408674574662625",
+      "src": "../images/face/sakuya_up.png",
       "imgObj": {}
     }
   ]

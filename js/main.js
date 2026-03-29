@@ -26,13 +26,23 @@ async function init() {
             const fixPath = (p, type) => {
                 if (!p) return p;
                 if (p.startsWith('data:')) return p;
-                const parts = p.replace(/\\/g, '/').split('/');
-                let fileName = parts[parts.length - 1];
-                // 過去のエクスポートバグで壊れた音声拡張子の修正
-                if (type === 'audio' && fileName.endsWith('.png')) {
-                    fileName = fileName.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
+                
+                let normalized = p.replace(/\\/g, '/');
+                if (type === 'audio') {
+                    // sound/ または sounds/ 以降を抽出
+                    let subPath = normalized.includes('sound/') ? normalized.split('sound/')[1] : 
+                                  normalized.includes('sounds/') ? normalized.split('sounds/')[1] : 
+                                  normalized.split('/').pop();
+                    // 過去のエクスポートバグ修正
+                    subPath = subPath.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
+                    return `sound/${subPath}`;
+                } else {
+                    // images/ または image/ 以降を抽出
+                    let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
+                                  normalized.includes('image/') ? normalized.split('image/')[1] : 
+                                  normalized.split('/').pop();
+                    return `images/${subPath}`;
                 }
-                return (type === 'audio') ? `sound/${fileName}` : `images/${fileName}`;
             };
 
             const loadAsset = async (asset) => {
