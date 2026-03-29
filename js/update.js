@@ -76,6 +76,7 @@ function update() {
     }
     
     sakuya.isOnPlat = checkOnPlat(sakuya);
+    if (sakuya.invincibleTimer > 0) sakuya.isOnPlat = true; // 点滅中は落下しない
     
     // ジャンプ（jumpOffsetにのみ影響）
     sakuya.vy += GRAVITY;
@@ -87,9 +88,22 @@ function update() {
             sakuya.isJumping = false;
             sakuya.jumpCount = 0;
         } else {
-            // 落下中：特に何もしない（offsetが正の値で増え続ける）
+            // 落下中：一定以上落ちたらペナルティを受けて復帰
             if (isSecondScene && sakuya.jumpOffset > 500) {
-                endGame("落下...");
+                sakuya.hp -= 10;
+                if (sakuya.hp <= 0) {
+                    sakuya.hp = 0;
+                    endGame("落下...");
+                } else {
+                    // ワープ復帰
+                    sakuya.jumpOffset = 0; // 画面内に即時出現（空中浮遊状態）
+                    sakuya.vy = 0;
+                    sakuya.invincibleTimer = 120; // 無敵・点滅時間（少し長めに設定）
+                    
+                    // 復帰ポイント：画面中央付近、奥から手前の中間位置
+                    sakuya.x = 400;
+                    sakuya.groundY = 360; // PERSPECTIVE_BASE_Y
+                }
             }
         }
     }
