@@ -1208,7 +1208,7 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 10.7,
           "outPoint": 28.066666666666666,
           "tracks": {
@@ -1219,7 +1219,7 @@
                 {
                   "time": 10.8,
                   "value": {
-                    "x": 781,
+                    "x": 780,
                     "y": 280
                   },
                   "easeIn": false,
@@ -1292,7 +1292,7 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 8.766666666666666,
           "outPoint": 28.066666666666666,
           "tracks": {
@@ -1303,7 +1303,7 @@
                 {
                   "time": 8.766666666666666,
                   "value": {
-                    "x": 196,
+                    "x": 220,
                     "y": 280
                   },
                   "easeIn": false,
@@ -1912,7 +1912,7 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": false,
+          "expanded": true,
           "inPoint": 6.6,
           "outPoint": 6.933333333333334,
           "tracks": {
@@ -1923,7 +1923,7 @@
                 {
                   "time": 6.6,
                   "value": {
-                    "x": 366.36338365314083,
+                    "x": 267.36338365314083,
                     "y": 693.6968456816339
                   },
                   "easeIn": false,
@@ -1931,9 +1931,9 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 6.933333333333334,
+                  "time": 6.8999999999999995,
                   "value": {
-                    "x": 790.1599938226325,
+                    "x": 862.1599938226325,
                     "y": -157.08281533531527
                   },
                   "easeIn": false,
@@ -1975,7 +1975,7 @@
               "keys": [
                 {
                   "time": 6.7,
-                  "value": 24.00000000000001,
+                  "value": 36.000000000000014,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
@@ -2384,7 +2384,7 @@
           "parent": "layer_solid_1774614469310",
           "expanded": false,
           "inPoint": 0,
-          "outPoint": 6.766666666666667,
+          "outPoint": 6.733333333333333,
           "tracks": {
             "motion": {
               "label": "Motion",
