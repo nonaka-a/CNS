@@ -1202,27 +1202,37 @@
           "locked": false
         },
         {
-          "id": "layer_1774750203709_543",
-          "name": "sakuya_up.png",
-          "source": "../images/face/sakuya_up.png",
+          "id": "layer_1774790845676_514",
+          "name": "mitama_up_1.png",
+          "source": "../images/anime/mitama_up/mitama_up_1.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
           "expanded": false,
-          "inPoint": 10.7,
-          "outPoint": 28.066666666666666,
+          "inPoint": 8.766666666666666,
+          "outPoint": 18.066666666666666,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 10.8,
+                  "time": 8.766666666666666,
                   "value": {
-                    "x": 780,
-                    "y": 280
+                    "x": -208,
+                    "y": 300
                   },
                   "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 8.966666666666667,
+                  "value": {
+                    "x": 203,
+                    "y": 300
+                  },
+                  "easeIn": true,
                   "easeOut": false,
                   "interpolation": "Linear"
                 }
@@ -1237,28 +1247,7 @@
               "label": "Scale",
               "type": "vector2",
               "linked": true,
-              "keys": [
-                {
-                  "time": 10.7,
-                  "value": {
-                    "x": 11,
-                    "y": 11
-                  },
-                  "interpolation": "Linear",
-                  "easeIn": false,
-                  "easeOut": false
-                },
-                {
-                  "time": 10.866666666666667,
-                  "value": {
-                    "x": 100,
-                    "y": 100
-                  },
-                  "interpolation": "Linear",
-                  "easeIn": true,
-                  "easeOut": false
-                }
-              ],
+              "keys": [],
               "step": 1,
               "initialValue": {
                 "x": 100,
@@ -1286,25 +1275,25 @@
           }
         },
         {
-          "id": "layer_1774750135517_849",
-          "name": "mitama_up.png",
-          "source": "../images/face/mitama_up.png",
+          "id": "layer_1774790849411_379",
+          "name": "mitama_up_2.png",
+          "source": "../images/anime/mitama_up/mitama_up_2.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
           "expanded": false,
-          "inPoint": 8.766666666666666,
-          "outPoint": 28.066666666666666,
+          "inPoint": 18.066666666666666,
+          "outPoint": 21.2,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 8.766666666666666,
+                  "time": 8.833333333333334,
                   "value": {
-                    "x": 220,
-                    "y": 280
+                    "x": 203,
+                    "y": 300
                   },
                   "easeIn": false,
                   "easeOut": false,
@@ -1321,28 +1310,7 @@
               "label": "Scale",
               "type": "vector2",
               "linked": true,
-              "keys": [
-                {
-                  "time": 8.766666666666666,
-                  "value": {
-                    "x": 11,
-                    "y": 11
-                  },
-                  "easeIn": false,
-                  "easeOut": false,
-                  "interpolation": "Linear"
-                },
-                {
-                  "time": 8.933333333333334,
-                  "value": {
-                    "x": 100,
-                    "y": 100
-                  },
-                  "easeIn": true,
-                  "easeOut": false,
-                  "interpolation": "Linear"
-                }
-              ],
+              "keys": [],
               "step": 1,
               "initialValue": {
                 "x": 100,
@@ -1368,6 +1336,205 @@
               "initialValue": 100
             }
           }
+        },
+        {
+          "id": "layer_1774790852045_980",
+          "name": "mitama_up_3.png",
+          "source": "../images/anime/mitama_up/mitama_up_3.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 21.2,
+          "outPoint": 26.666666666666668,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 8.833333333333334,
+                  "value": {
+                    "x": 203,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
+          "id": "layer_1774790853740_562",
+          "name": "mitama_up_4.png",
+          "source": "../images/anime/mitama_up/mitama_up_4.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": true,
+          "inPoint": 26.666666666666668,
+          "outPoint": 28.3,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 8.833333333333334,
+                  "value": {
+                    "x": 203,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 28.066666666666666,
+                  "value": {
+                    "x": 203,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 28.3,
+                  "value": {
+                    "x": -207,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
+          "id": "layer_1774781264859_260",
+          "name": "cut_in_test.png",
+          "source": "../images/cut_in_test.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 8.766666666666666,
+          "outPoint": 28.066666666666666,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          },
+          "visible": false
         },
         {
           "id": "layer_1774612600529_164",
@@ -1487,7 +1654,7 @@
                 {
                   "time": 10.9,
                   "value": {
-                    "x": 492.77108433734935,
+                    "x": 479.77108433734935,
                     "y": 297.934595524957
                   },
                   "interpolation": "Linear",
@@ -1529,8 +1696,8 @@
                 {
                   "time": 9.299999999999999,
                   "value": {
-                    "x": 120,
-                    "y": 120
+                    "x": 110,
+                    "y": 110
                   },
                   "easeIn": false,
                   "easeOut": false,
@@ -1912,7 +2079,7 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 6.6,
           "outPoint": 6.933333333333334,
           "tracks": {
@@ -2492,6 +2659,71 @@
           }
         },
         {
+          "id": "layer_1774767466040_595",
+          "name": "BG1.jpg",
+          "source": "../images/BG1.jpg",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 0,
+          "outPoint": 30,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [
+                {
+                  "time": 12.333333333333334,
+                  "value": {
+                    "x": 130,
+                    "y": 130
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          },
+          "visible": false,
+          "locked": true
+        },
+        {
           "id": "layer_solid_1774612297048",
           "type": "solid",
           "name": "Square",
@@ -2947,17 +3179,53 @@
     },
     {
       "type": "image",
-      "name": "mitama_up.png",
-      "id": "img_17747501259430.8471818482396668",
-      "src": "../images/face/mitama_up.png",
+      "name": "BG1.jpg",
+      "id": "img_17747674644040.9903758866060668",
+      "src": "../images/BG1.jpg",
       "imgObj": {}
     },
     {
       "type": "image",
-      "name": "sakuya_up.png",
-      "id": "img_17747501259440.1408674574662625",
-      "src": "../images/face/sakuya_up.png",
+      "name": "cut_in_test.png",
+      "id": "img_17747812636440.6439635713246632",
+      "src": "../images/cut_in_test.png",
       "imgObj": {}
+    },
+    {
+      "type": "folder",
+      "name": "mitama_up",
+      "id": "folder_17747908635810.8191417142140891",
+      "children": [
+        {
+          "type": "image",
+          "name": "mitama_up_3.png",
+          "id": "img_17747908313420.0763623084514018",
+          "src": "../images/anime/mitama_up/mitama_up_3.png",
+          "imgObj": {}
+        },
+        {
+          "type": "image",
+          "name": "mitama_up_4.png",
+          "id": "img_17747908313420.7378619612324675",
+          "src": "../images/anime/mitama_up/mitama_up_4.png",
+          "imgObj": {}
+        },
+        {
+          "type": "image",
+          "name": "mitama_up_2.png",
+          "id": "img_17747908313410.5914078531307018",
+          "src": "../images/anime/mitama_up/mitama_up_2.png",
+          "imgObj": {}
+        },
+        {
+          "type": "image",
+          "name": "mitama_up_1.png",
+          "id": "img_17747908313400.9868360799983593",
+          "src": "../images/anime/mitama_up/mitama_up_1.png",
+          "imgObj": {}
+        }
+      ],
+      "_collapsed": true
     }
   ]
 }
