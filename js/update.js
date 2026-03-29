@@ -8,6 +8,7 @@ function update() {
             if (opTime === 0) {
                 document.getElementById('progress-container').style.display = 'none';
                 document.getElementById('ninjutsu-container').style.display = 'none';
+                document.getElementById('debug-skip-btn').style.display = 'none';
                 document.querySelector('.hud').style.display = 'none';
                 document.getElementById('control-panel').style.display = 'none';
                 document.getElementById('skip-op-btn').style.display = 'block';
@@ -59,16 +60,38 @@ function update() {
         }
         sakuya.groundY += vy_depth;
     }
-    sakuya.groundY = Math.max(300, Math.min(sakuya.groundY, 420));
+    sakuya.groundY = Math.max(280, Math.min(sakuya.groundY, 440));
 
+    // 足場判定 (Area 2)
+    function checkOnPlat(obj) {
+        if (!isSecondScene) return true;
+        return platforms.some(p => {
+             const footX = obj.x + obj.w / 2;
+             const footY = obj.groundY;
+             if (footY < p.y_back || footY > p.y_front) return false;
+             const ratio = (footY - p.y_back) / (p.y_front - p.y_back);
+             const currentShift = (1 - ratio) * p.shift;
+             return footX >= p.x + currentShift && footX <= p.x + p.w + currentShift;
+        });
+    }
+    
+    sakuya.isOnPlat = checkOnPlat(sakuya);
+    
     // ジャンプ（jumpOffsetにのみ影響）
     sakuya.vy += GRAVITY;
     sakuya.jumpOffset += sakuya.vy;
     if (sakuya.jumpOffset > 0) {
-        sakuya.jumpOffset = 0;
-        sakuya.vy = 0;
-        sakuya.isJumping = false;
-        sakuya.jumpCount = 0;
+        if (sakuya.isOnPlat) {
+            sakuya.jumpOffset = 0;
+            sakuya.vy = 0;
+            sakuya.isJumping = false;
+            sakuya.jumpCount = 0;
+        } else {
+            // 落下中：特に何もしない（offsetが正の値で増え続ける）
+            if (isSecondScene && sakuya.jumpOffset > 500) {
+                endGame("落下...");
+            }
+        }
     }
 
     // 他の要素との互換性のために y を更新 (下位180pxがgroundYになる)
@@ -109,6 +132,11 @@ function update() {
             sakuya.frameTimer -= frameDuration;
             sakuya.currentFrame = (sakuya.currentFrame + 1) % anim.frames.length;
         }
+    }
+    
+    // ミタマの更新
+    if (mitama.groundY !== undefined) {
+        mitama.isOnPlat = checkOnPlat(mitama);
     }
 
     if (mitama.isHolding) {
@@ -212,8 +240,34 @@ function update() {
         }
     }
 
+    // 第二エリア：ビルの足場生成
+    if (isSecondScene && !isHalfwayTransitioning) {
+        // 一定距離（隙間）を空けて足場を生成
+        if (platforms.length === 0 || (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w < CANVAS_WIDTH - 600)) {
+            platforms.push({
+                x: CANVAS_WIDTH,
+                w: 2000,
+                h: 400,
+                y_back: 280,
+                y_front: 440,
+                shift: 80
+            });
+        }
+    }
+
+    // 足場の更新（移動）
+    for (let i = platforms.length - 1; i >= 0; i--) {
+        const p = platforms[i];
+        p.x -= isSecondScene ? 10 : 5; // エリア2は2倍速
+        if (p.x + p.w + 80 < -100) {
+            platforms.splice(i, 1);
+        }
+    }
+
     // 敵(ドローン)のスポーンと更新
-    if (!isHalfwayTransitioning && Math.random() < 0.005 && enemies.length < 5) {
+    const spawnRate = isSecondScene ? 0.0025 : 0.005;
+    const maxEnemies = isSecondScene ? 3 : 5;
+    if (!isHalfwayTransitioning && Math.random() < spawnRate && enemies.length < maxEnemies) {
         enemies.push({
             id: enemyIdCounter++, // 一意識別用ID
             x: -80, w: 80, h: 80,
@@ -232,7 +286,10 @@ function update() {
         if (e.x < e.targetX) e.x += e.vx;
         else e.x += Math.sin(Date.now() / 300 + e.offsetSeed) * 0.2;
 
-        e.jumpOffset += Math.sin(Date.now() / 200 + e.offsetSeed) * 0.4;
+        e.isOnPlat = checkOnPlat(e);
+        
+        // 移動：少し上下に揺れる
+        e.jumpOffset += Math.sin(Date.now() / 400 + e.offsetSeed) * 0.4;
         e.y = e.groundY - e.h + e.jumpOffset;
 
         // ドローンのアニメーション更新
@@ -342,7 +399,7 @@ function update() {
     }
 
     if (!isIntro && !isHalfwayTransitioning) {
-        distance += 5;
+        distance += 5; // 進捗速度は一定（エリア2でも長く遊べるように）
         
         // 中間地点チェック
         if (distance >= goalDistance / 2 && !halfwayReached) {
@@ -367,6 +424,15 @@ function update() {
         if (halfwayTransitionTimer > 180) { // 3秒間 (60fps * 3s = 180)
             isHalfwayTransitioning = false;
             isSecondScene = true;
+            // エリア2開始時の最初の足場（プレイヤーの足元に配置）
+            platforms = [{
+                x: 0,
+                w: 2500, // 最初は長めにしておく
+                h: 400,
+                y_back: 250,
+                y_front: 450,
+                shift: 0
+            }];
         }
     }
 

@@ -14,11 +14,12 @@ function draw() {
     ctx.save();
     ctx.translate(0, sakuya.cameraOffsetY);
 
-    // 一枚絵の背景
-    if (bgImg.complete) {
-        let loopX = -((distance * 2.0) % CANVAS_WIDTH);
-        ctx.drawImage(bgImg, loopX, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
-        ctx.drawImage(bgImg, loopX + CANVAS_WIDTH, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+    // 一枚絵の背景 (暗転が開始されたらBG2に切り替え予約、暗転中か明けるところで反映)
+    const currentBG = (halfwayReached && halfwayTransitionTimer >= 60) || isSecondScene ? bgImg2 : bgImg;
+    if (currentBG.complete) {
+        let loopX = -((distance * (isSecondScene ? 8.0 : 2.0)) % CANVAS_WIDTH);
+        ctx.drawImage(currentBG, loopX, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+        ctx.drawImage(currentBG, loopX + CANVAS_WIDTH, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
 
         // ビネット効果 (背景にのみ適用)
         if (vignetteImg.complete) {
@@ -28,27 +29,6 @@ function draw() {
             ctx.drawImage(vignetteImg, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
             ctx.restore();
         }
-    }
-
-    // 落ち影
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
-    const sakuyaScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-    ctx.beginPath();
-    ctx.ellipse(sakuya.x + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35 * sakuyaScale, 12 * sakuyaScale, 0, 0, Math.PI * 2);
-    ctx.fill();
-    
-    enemies.forEach(e => {
-        const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-        ctx.beginPath();
-        ctx.ellipse(e.x + e.w / 2, e.groundY, e.w * 0.35 * eScale, 6 * eScale, 0, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    if (!mitama.isHolding && mitama.groundY) {
-        const mitamaScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-        ctx.beginPath();
-        ctx.ellipse(mitama.x + mitama.w / 2, mitama.groundY, mitama.w * 0.4 * mitamaScale, 6 * mitamaScale, 0, 0, Math.PI * 2);
-        ctx.fill();
     }
 
     // 手裏剣
@@ -84,12 +64,22 @@ function draw() {
     }
     renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
     explosions.forEach(ex => renderQueue.push({ type: 'explosion', depth: ex.groundY, obj: ex }));
+    platforms.forEach(p => renderQueue.push({ type: 'platform', depth: p.y_back - 1, obj: p }));
     renderQueue.sort((a, b) => a.depth - b.depth);
 
     renderQueue.forEach(item => {
         if (item.type === 'enemy') {
             const e = item.obj;
             const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            
+            // 落ち影
+            if (e.isOnPlat) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(e.x + e.w / 2, e.groundY, e.w * 0.35 * eScale, 6 * eScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             ctx.save();
             ctx.translate(e.x + e.w / 2, e.groundY);
             ctx.scale(eScale, eScale);
@@ -104,7 +94,16 @@ function draw() {
             }
             ctx.restore();
         } else if (item.type === 'mitama') {
-            const mScale = 1.0 + (item.depth - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            
+            // 落ち影
+            if (mitama.isOnPlat) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(mitama.x + mitama.w / 2, mitama.groundY, mitama.w * 0.4 * mScale, 6 * mScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             if (mitama.img.complete && (!mitama.invincibleTimer || Math.floor(mitama.invincibleTimer / 4) % 2 === 0)) {
                 ctx.save();
                 ctx.translate(mitama.x + mitama.w / 2, (!mitama.isHolding ? mitama.groundY : sakuya.groundY));
@@ -146,6 +145,15 @@ function draw() {
             }
         } else if (item.type === 'sakuya') {
             const sScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            
+            // 落ち影
+            if (sakuya.isOnPlat) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.beginPath();
+                ctx.ellipse(sakuya.x + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35 * sScale, 12 * sScale, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
             ctx.save();
             ctx.translate(sakuya.x + sakuya.w / 2, sakuya.groundY);
             ctx.scale(sScale, sScale);
@@ -159,11 +167,37 @@ function draw() {
                 }
             }
             ctx.restore();
+        } else if (item.type === 'platform') {
+            const p = item.obj;
+            
+            // ビルの側面（正面）
+            ctx.fillStyle = '#333';
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y_front);
+            ctx.lineTo(p.x + p.w, p.y_front);
+            ctx.lineTo(p.x + p.w, p.y_front + p.h);
+            ctx.lineTo(p.x, p.y_front + p.h);
+            ctx.fill();
+
+            // ビルの屋上（平行四辺形）
+            ctx.fillStyle = '#555';
+            ctx.beginPath();
+            ctx.moveTo(p.x, p.y_front);
+            ctx.lineTo(p.x + p.w, p.y_front);
+            ctx.lineTo(p.x + p.w + p.shift, p.y_back);
+            ctx.lineTo(p.x + p.shift, p.y_back);
+            ctx.closePath();
+            ctx.fill();
+
+            // 屋上の輪郭（仮置きなので分かりやすく）
+            ctx.strokeStyle = '#888';
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
     });
 
-    // ガードレールを描画
-    if (guardrailImg.complete) {
+    // ガードレールを描画 (エリア1のみ、かつ遷移前のみ)
+    if (!isSecondScene && !halfwayReached && guardrailImg.complete) {
         const spacing = 650; // ガードレール同士の間隔を大幅に詰める
         let loopX = -((distance * 2.0) % spacing); // 背景（BG1.jpg）と同速
         for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {

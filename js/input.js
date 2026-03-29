@@ -32,6 +32,11 @@ function setupControls() {
         if (e.code === 'KeyV') shoot();
         if (e.code === 'KeyB') toggleMode();
         if (e.code === 'KeyN') subAction();
+
+        // 開発デバッグ用
+        if (e.code === 'Digit2') {
+            distance = goalDistance / 2 - 200;
+        }
     });
     window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = false;
@@ -49,22 +54,27 @@ function setupControls() {
         { id: 'btn-attack', action: toggleMode },
         { id: 'btn-mode', action: jump },
         { id: 'btn-settings', action: typeof toggleSettings !== 'undefined' ? toggleSettings : null },
-        { id: 'btn-sub', action: subAction }
+        { id: 'btn-sub', action: subAction },
+        { id: 'debug-skip-btn', action: () => { distance = goalDistance / 2 - 200; } }
     ];
 
     // ボタンのレクト情報をキャッシュする（レイアウトスライッシング防止）
-    function updateBtnRects() {
+    window.updateBtnRects = function() {
         btnMap.forEach(b => {
             const el = document.getElementById(b.id);
             if (el) {
-                b.rect = el.getBoundingClientRect();
-                b.el = el;
+                const rect = el.getBoundingClientRect();
+                // 画面外や非表示の場合はスキップ
+                if (rect.width > 0 && rect.height > 0) {
+                    b.rect = rect;
+                    b.el = el;
+                }
             }
         });
     }
     
     // 初期化時とリサイズ時にキャッシュを更新
-    updateBtnRects();
+    window.updateBtnRects();
     window.addEventListener('resize', () => {
         setTimeout(updateBtnRects, 100); // スケール反映待ち
     });

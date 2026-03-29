@@ -138,6 +138,16 @@ function startGame() {
     if (opConfig) {
         isOpRunning = true;
         opTime = 0;
+    } else {
+        // OPがない場合は即座にUI表示して本編開始
+        document.getElementById('progress-container').style.display = 'block';
+        document.getElementById('ninjutsu-container').style.display = 'block';
+        document.getElementById('debug-skip-btn').style.display = 'flex';
+        document.querySelector('.hud').style.display = 'block';
+        document.getElementById('control-panel').style.display = 'flex';
+        isIntro = true;
+        // 表示後にレクト情報を更新
+        if (window.updateBtnRects) window.updateBtnRects();
     }
     
     isGameRunning = true;
@@ -162,9 +172,13 @@ function endOP() {
     // UIの表示復帰
     document.getElementById('progress-container').style.display = 'block';
     document.getElementById('ninjutsu-container').style.display = 'block';
+    document.getElementById('debug-skip-btn').style.display = 'flex';
     document.querySelector('.hud').style.display = 'block';
     document.getElementById('control-panel').style.display = 'flex';
     document.getElementById('skip-op-btn').style.display = 'none';
+
+    // 表示後にレクト情報を更新
+    if (window.updateBtnRects) window.updateBtnRects();
 
     // ゲーム本編の開始準備
     sakuya.x = -100;

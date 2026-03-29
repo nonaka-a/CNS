@@ -119,6 +119,18 @@ body {
             font-size: 16px; font-weight: 900; color: #ffeb3b;
             text-shadow: 2px 2px 4px #000;
         }
+        #debug-skip-btn {
+            position: absolute; top: 76px; right: 2%;
+            width: 30px; height: 30px;
+            background: rgba(0,0,0,0.5); border: 1px solid #8c6e5e;
+            color: #8c6e5e; font-size: 14px;
+            display: flex; justify-content: center; align-items: center;
+            pointer-events: auto; cursor: pointer;
+            transition: all 0.2s;
+        }
+        #debug-skip-btn:active {
+            background: #8c6e5e; color: #fff;
+        }
 
         /* カスタムモーダル（ウィンドウ） */
         #modal-overlay {

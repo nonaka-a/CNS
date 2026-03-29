@@ -23,7 +23,7 @@
     
     <div id="ui-layer">
         <div id="skip-op-btn" onclick="skipOP()" ontouchend="skipOP()" style="display: none;">SKIP >></div>
-        <div id="progress-container">
+        <div id="progress-container" style="display: none;">
             <div class="corner tp-l"></div><div class="corner tp-r"></div>
             <div class="corner bt-l"></div><div class="corner bt-r"></div>
             <div id="progress-bar-track">
@@ -32,7 +32,7 @@
             </div>
         </div>
 
-        <div id="ninjutsu-container">
+        <div id="ninjutsu-container" style="display: none;">
             <div class="corner tp-l"></div><div class="corner tp-r"></div>
             <div class="corner bt-l"></div><div class="corner bt-r"></div>
             <div id="ninjutsu-bar-track">
@@ -40,6 +40,9 @@
             </div>
             <div id="ninjutsu-label">忍</div>
         </div>
+        
+        <!-- デバッグ用ボタン (タブレット用) -->
+        <div id="debug-skip-btn" style="display: none;">2</div>
 
         <div id="title-screen">
             <div id="title-window">
@@ -59,7 +62,7 @@
             </div>
         </div>
 
-        <div class="hud">
+        <div class="hud" style="display: none;">
             <div class="hp-row">
                 <span class="hp-label">咲耶</span>
                 <div id="sakuya-circles" class="circles"></div>
@@ -112,7 +115,7 @@
             </div>
         </div>
 
-        <div id="control-panel">
+        <div id="control-panel" style="display: none;">
             <div class="dir-pad">
                 <div id="btn-left" class="v-btn dir-btn">◀</div>
                 <div id="btn-right" class="v-btn dir-btn">▶</div>
