@@ -121,9 +121,9 @@ function update() {
 
     if (sakuya.jumpOffset < 0) {
         if (sakuya.vy < 0) {
-            nextAnim = mitama.isHolding ? 'jump_m_up' : 'junp_up';
+            nextAnim = mitama.isHolding ? 'jump_m_up' : 'jump_up';
         } else {
-            nextAnim = mitama.isHolding ? 'jump_m_Down' : 'junp_Down';
+            nextAnim = mitama.isHolding ? 'jump_m_Down' : 'jump_Down';
         }
     }
 

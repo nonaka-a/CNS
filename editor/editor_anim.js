@@ -256,21 +256,49 @@ window.anim_togglePlay = function () {
 
 // --- データ操作 ---
 window.anim_create = function (name) {
-    const newName = name || prompt("アニメーション名を入力 (例: run, jump)");
-    if (!newName) return;
-    if (anim_data[newName]) {
-        alert("その名前は既に使用されています");
+    if (name) {
+        if (anim_data[name]) { alert("その名前は既に使用されています"); return; }
+        anim_data[name] = { frames: [], fps: 10, loop: true };
+        anim_select(name);
+        anim_updateListUI();
         return;
     }
 
-    anim_data[newName] = {
-        frames: [],
-        fps: 10,
-        loop: true
+    // インライン入力で名前を入力させる
+    const list = document.getElementById('anim-list');
+    const div = document.createElement('div');
+    div.className = 'anim-item';
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = '例: run, jump';
+    input.style.cssText = 'width:100%;box-sizing:border-box;background:#444;color:#fff;border:1px solid #8f8;padding:4px 6px;font-size:inherit;outline:none;';
+
+    let done = false;
+    const commit = () => {
+        if (done) return;
+        done = true;
+        const newName = input.value.trim();
+        if (!newName) { div.remove(); return; }
+        if (anim_data[newName]) {
+            done = false;
+            alert("その名前は既に使用されています");
+            input.focus();
+            return;
+        }
+        anim_data[newName] = { frames: [], fps: 10, loop: true };
+        anim_select(newName);
+        anim_updateListUI();
     };
 
-    anim_select(newName);
-    anim_updateListUI();
+    input.onkeydown = (ev) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); commit(); }
+        else if (ev.key === 'Escape') { done = true; div.remove(); }
+    };
+    input.onblur = () => setTimeout(commit, 50);
+
+    div.appendChild(input);
+    list.appendChild(div);
+    input.focus();
 };
 
 window.anim_select = function (key) {
@@ -336,6 +364,7 @@ window.anim_moveFrame = function (fromIndex, toIndex) {
 };
 
 // --- UI更新 ---
+let anim_clickTimer = null;
 function anim_updateListUI() {
     const list = document.getElementById('anim-list');
     list.innerHTML = '';
@@ -344,7 +373,70 @@ function anim_updateListUI() {
         const div = document.createElement('div');
         div.className = 'anim-item' + (key === anim_currentKey ? ' selected' : '');
         div.textContent = key;
-        div.onclick = () => anim_select(key);
+
+        // シングルクリック（遅延実行、ダブルクリック時キャンセル）
+        div.onclick = () => {
+            clearTimeout(anim_clickTimer);
+            anim_clickTimer = setTimeout(() => {
+                anim_select(key);
+            }, 250);
+        };
+
+        // ダブルクリックでリネーム
+        div.ondblclick = (e) => {
+            clearTimeout(anim_clickTimer);
+            e.stopPropagation();
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = key;
+            input.style.cssText = 'width:100%;box-sizing:border-box;background:#444;color:#fff;border:1px solid #8f8;padding:4px 6px;font-size:inherit;outline:none;';
+
+            let committed = false;
+            const commitRename = () => {
+                if (committed) return;
+                // inputがDOMから外れていたら何もしない（prompt等による誤発火防止）
+                if (!document.contains(input)) return;
+                committed = true;
+                const newName = input.value.trim();
+                if (!newName || newName === key) {
+                    anim_updateListUI();
+                    return;
+                }
+                if (anim_data[newName]) {
+                    committed = false;
+                    alert('その名前は既に使用されています');
+                    input.focus();
+                    return;
+                }
+                // リネーム実行
+                anim_data[newName] = anim_data[key];
+                delete anim_data[key];
+                if (anim_currentKey === key) {
+                    anim_currentKey = newName;
+                    document.getElementById('inp-anim-name').value = newName;
+                }
+                anim_updateListUI();
+            };
+
+            input.onkeydown = (ev) => {
+                if (ev.key === 'Enter') {
+                    ev.preventDefault();
+                    commitRename();
+                } else if (ev.key === 'Escape') {
+                    committed = true;
+                    anim_updateListUI();
+                }
+            };
+            input.onblur = () => {
+                setTimeout(() => commitRename(), 50);
+            };
+
+            div.textContent = '';
+            div.appendChild(input);
+            input.focus();
+            input.select();
+        };
+
         list.appendChild(div);
     });
 }
