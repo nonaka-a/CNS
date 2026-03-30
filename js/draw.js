@@ -30,7 +30,7 @@ function draw() {
             
             // --- ここで light.png のサイズと位置を調整します ---
             const lightH = 350;       // 街灯の高さ
-            const lightOffsetX = 150; // X座標のズレ（ガードレールとの位置関係）
+            const lightOffsetX = -100; // X座標のズレ（ガードレールとの位置関係）
             const lightOffsetY = 550; // Y座標の基準位置（地面の高さなど）
             // ----------------------------------------------------
             
@@ -223,9 +223,9 @@ function draw() {
         // Streetlight.png (キャラより手前、ガードレールより奥)
         if (streetlightImg.complete) {
             // --- ここで Streetlight.png のサイズと位置を調整します ---
-            const streetH = 450;        // 奥側街灯の高さ
+            const streetH = 480;        // 奥側街灯の高さ
             const streetOffsetX = 150;  // X座標のズレ
-            const streetOffsetY = 420;  // Y座標の基準位置
+            const streetOffsetY = 460;  // Y座標の基準位置
             // ----------------------------------------------------------
             
             for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
