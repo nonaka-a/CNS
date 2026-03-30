@@ -1202,6 +1202,225 @@
           "locked": false
         },
         {
+          "id": "layer_1774857008449_660",
+          "name": "sakuya_up_1.png",
+          "source": "../images/anime/sakuya_up/sakuya_up_1.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 8.766666666666666,
+          "outPoint": 21.733333333333334,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 8.766666666666666,
+                  "value": {
+                    "x": 1198,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 8.966666666666667,
+                  "value": {
+                    "x": 799,
+                    "y": 300
+                  },
+                  "easeIn": true,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
+          "id": "layer_1774857011068_787",
+          "name": "sakuya_up_2.png",
+          "source": "../images/anime/sakuya_up/sakuya_up_2.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 21.733333333333334,
+          "outPoint": 25.3,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 11.733333333333333,
+                  "value": {
+                    "x": 799,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
+          "id": "layer_1774857012732_714",
+          "name": "sakuya_up_3.png",
+          "source": "../images/anime/sakuya_up/sakuya_up_3.png",
+          "imgObj": {},
+          "blendMode": "source-over",
+          "parent": null,
+          "expanded": false,
+          "inPoint": 25.3,
+          "outPoint": 28.3,
+          "tracks": {
+            "position": {
+              "label": "Position",
+              "type": "vector2",
+              "keys": [
+                {
+                  "time": 11.733333333333333,
+                  "value": {
+                    "x": 799,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 28.066666666666666,
+                  "value": {
+                    "x": 799,
+                    "y": 300
+                  },
+                  "easeIn": true,
+                  "easeOut": true,
+                  "interpolation": "Linear"
+                },
+                {
+                  "time": 28.3,
+                  "value": {
+                    "x": 1211,
+                    "y": 300
+                  },
+                  "easeIn": false,
+                  "easeOut": false,
+                  "interpolation": "Linear"
+                }
+              ],
+              "step": 1,
+              "initialValue": {
+                "x": 500,
+                "y": 300
+              }
+            },
+            "scale": {
+              "label": "Scale",
+              "type": "vector2",
+              "linked": true,
+              "keys": [],
+              "step": 1,
+              "initialValue": {
+                "x": 100,
+                "y": 100
+              }
+            },
+            "rotation": {
+              "label": "Rotation",
+              "type": "rotation",
+              "keys": [],
+              "min": -3600,
+              "max": 3600,
+              "step": 1,
+              "initialValue": 0
+            },
+            "opacity": {
+              "label": "Opacity",
+              "type": "number",
+              "keys": [],
+              "min": 0,
+              "max": 100,
+              "step": 1,
+              "initialValue": 100
+            }
+          }
+        },
+        {
           "id": "layer_1774790845676_514",
           "name": "mitama_up_1.png",
           "source": "../images/anime/mitama_up/mitama_up_1.png",
@@ -3226,6 +3445,27 @@
         }
       ],
       "_collapsed": true
+    },
+    {
+      "type": "image",
+      "name": "sakuya_up_1.png",
+      "id": "img_17748570031020.2996675464554538",
+      "src": "../images/anime/sakuya_up/sakuya_up_1.png",
+      "imgObj": {}
+    },
+    {
+      "type": "image",
+      "name": "sakuya_up_2.png",
+      "id": "img_17748570031060.04274126390681132",
+      "src": "../images/anime/sakuya_up/sakuya_up_2.png",
+      "imgObj": {}
+    },
+    {
+      "type": "image",
+      "name": "sakuya_up_3.png",
+      "id": "img_17748570031070.8165639728833926",
+      "src": "../images/anime/sakuya_up/sakuya_up_3.png",
+      "imgObj": {}
     }
   ]
 }
