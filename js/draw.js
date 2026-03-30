@@ -17,11 +17,30 @@ function draw() {
     // 一枚絵の背景 (暗転が開始されたらBG2に切り替え予約、暗転中か明けるところで反映)
     const currentBG = (halfwayReached && halfwayTransitionTimer >= 60) || isSecondScene ? bgImg2 : bgImg;
     if (currentBG.complete) {
-        let loopX = -((distance * (isSecondScene ? 8.0 : 2.0)) % CANVAS_WIDTH);
-        ctx.drawImage(currentBG, loopX, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
-        ctx.drawImage(currentBG, loopX + CANVAS_WIDTH, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+        const bgH = CANVAS_HEIGHT + 100;
+        const bgW = (bgH / currentBG.height) * currentBG.width; // 縦横比を維持した幅を計算
+        let loopX = -((distance * (isSecondScene ? 8.0 : 2.0)) % bgW);
+        ctx.drawImage(currentBG, loopX, -50, bgW, bgH);
+        ctx.drawImage(currentBG, loopX + bgW, -50, bgW, bgH);
 
-        // ビネット効果 (背景にのみ適用)
+        // light.png (一番奥)
+        if (!isSecondScene && !halfwayReached && lightImg.complete) {
+            const lightSpacing = 1950;
+            let lightLoopX = -((distance * 2.0) % lightSpacing);
+            
+            // --- ここで light.png のサイズと位置を調整します ---
+            const lightH = 350;       // 街灯の高さ
+            const lightOffsetX = 150; // X座標のズレ（ガードレールとの位置関係）
+            const lightOffsetY = 550; // Y座標の基準位置（地面の高さなど）
+            // ----------------------------------------------------
+            
+            for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
+                const w = (lightH / lightImg.height) * lightImg.width;
+                ctx.drawImage(lightImg, x + lightOffsetX, lightOffsetY - lightH, w, lightH);
+            }
+        }
+
+        // ビネット効果 (背景とlightのみに適用)
         if (vignetteImg.complete) {
             ctx.save();
             ctx.globalCompositeOperation = 'multiply';
@@ -196,19 +215,37 @@ function draw() {
         }
     });
 
-    // ガードレールを描画 (エリア1のみ、かつ遷移前のみ)
-    if (!isSecondScene && !halfwayReached && guardrailImg.complete) {
-        const spacing = 650; // ガードレール同士の間隔を大幅に詰める
-        let loopX = -((distance * 2.0) % spacing); // 背景（BG1.jpg）と同速
-        for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {
-            // y=380付近に配置
-            ctx.drawImage(guardrailImg, x, 380, 600, 110);
+    // Streetlightとガードレールを描画 (エリア1のみ、かつ遷移前のみ)
+    if (!isSecondScene && !halfwayReached) {
+        const lightSpacing = 1950; 
+        let lightLoopX = -((distance * 2.0) % lightSpacing); 
+        
+        // Streetlight.png (キャラより手前、ガードレールより奥)
+        if (streetlightImg.complete) {
+            // --- ここで Streetlight.png のサイズと位置を調整します ---
+            const streetH = 450;        // 奥側街灯の高さ
+            const streetOffsetX = 150;  // X座標のズレ
+            const streetOffsetY = 420;  // Y座標の基準位置
+            // ----------------------------------------------------------
+            
+            for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
+                const w = (streetH / streetlightImg.height) * streetlightImg.width;
+                ctx.drawImage(streetlightImg, x + streetOffsetX, streetOffsetY - streetH, w, streetH);
+            }
+        }
+
+        // ガードレール (キャラの手前)
+        if (guardrailImg.complete) {
+            const spacing = 650;
+            let loopX = -((distance * 2.0) % spacing);
+            for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {
+                // y=380付近に配置
+                ctx.drawImage(guardrailImg, x, 380, 600, 110);
+            }
         }
     }
 
     ctx.restore(); // カメラPANのtranslateをリセット (ここで一旦リセット)
-
-    // ビネット効果は背景描画直後に移動しました。
 
     // ビネットの上にレーザーを描画
     ctx.save();
@@ -286,6 +323,29 @@ function draw() {
         ctx.restore();
     }
 
+    // Streetlight_front.png (一番手前、レーザー・手裏剣・トランジションよりも手前)
+    // ただしカメラ追従(sakuya.cameraOffsetY)は適用して揺れを同期させる
+    if (!isSecondScene && !halfwayReached && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
+        ctx.save();
+        ctx.translate(0, sakuya.cameraOffsetY);
+        
+        // --- ここで一番手前の Streetlight_front.png のサイズと位置を調整します ---
+        const fgStreetH = 800;             // 一番手前の街灯の高さ
+        const fgStreetOffsetX = -100;      // X座標のズレ
+        const fgStreetOffsetY = CANVAS_HEIGHT + 140; // 画面下端を突き抜けるように配置
+        const fgScrollSpeed = 3.5;         // スクロール速度（奥は 2.0）
+        // ------------------------------------------------------------------
+        
+        const fgLightSpacing = 5000; // 手前は間隔も広めに設定
+        let fgLightLoopX = -((distance * fgScrollSpeed) % fgLightSpacing);
+        
+        for (let x = fgLightLoopX; x < CANVAS_WIDTH + fgLightSpacing; x += fgLightSpacing) {
+            const w = (fgStreetH / streetlightFrontImg.height) * streetlightFrontImg.width;
+            ctx.drawImage(streetlightFrontImg, x + fgStreetOffsetX, fgStreetOffsetY - fgStreetH, w, fgStreetH);
+        }
+        ctx.restore();
+    }
+
     // HP オーブ更新
     if (sakuya.lastHP !== sakuya.hp) {
         updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
@@ -327,18 +387,16 @@ function drawOP() {
     const comp = opConfig.assets.find(a => a.id === "comp_1");
     if (!comp) return;
 
-    // 背景画像 (130%スケールでスクロール)
+    // 背景画像 (縦横比を維持してスクロール)
     if (bgImg.complete) {
-        const scale = 1.3;
-        const sw = CANVAS_WIDTH * scale;
-        const sh = (CANVAS_HEIGHT + 100) * scale;
-        const scrollSpeed = 800; // さらに高速化
-        const loopX = -((opTime * scrollSpeed) % sw);
-        const offsetX = (CANVAS_WIDTH - sw) / 2;
-        const offsetY = (CANVAS_HEIGHT - sh) / 2;
+        const opBgH = CANVAS_HEIGHT + 100;
+        const opBgW = (opBgH / bgImg.height) * bgImg.width; // 縦横比を維持した幅
+        const scrollSpeed = 800; // スクロール速度
+        const loopX = -((opTime * scrollSpeed) % opBgW);
+        const offsetY = -50; // プレイ時と同じオフセット
 
-        ctx.drawImage(bgImg, loopX + offsetX, offsetY, sw, sh);
-        ctx.drawImage(bgImg, loopX + sw + offsetX, offsetY, sw, sh);
+        ctx.drawImage(bgImg, loopX, offsetY, opBgW, opBgH);
+        ctx.drawImage(bgImg, loopX + opBgW, offsetY, opBgW, opBgH);
     } else {
         ctx.fillStyle = "#000";
         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
