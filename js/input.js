@@ -79,12 +79,18 @@ function setupControls() {
         setTimeout(updateBtnRects, 100); // スケール反映待ち
     });
 
-    const handleTouch = (e) => {
+   const handleTouch = (e) => {
         if (e.cancelable) e.preventDefault();
         
         if (isOpRunning) {
             skipOP();
             return;
+        }
+
+        // デバッグボタンなどが後から表示された場合に備え、
+        // タッチ開始時に座標情報がないボタンがあれば一度更新を試みる
+        if (e.type === 'touchstart' && btnMap.some(b => !b.rect)) {
+            updateBtnRects();
         }
 
         let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
@@ -94,10 +100,13 @@ function setupControls() {
             for (let i = 0; i < e.touches.length; i++) {
                 const t = e.touches[i];
                 btnMap.forEach(b => {
-                    if (!b.rect) return;
-                    const margin = 15;
-                    if (t.clientX >= b.rect.left - margin && t.clientX <= b.rect.right + margin &&
-                        t.clientY >= b.rect.top - margin && t.clientY <= b.rect.bottom + margin) {
+                    // 要素が非表示(display:none)の場合は判定をスキップ
+                    if (!b.el || b.el.offsetParent === null) return;
+                    
+                    const rect = b.el.getBoundingClientRect();
+                    const margin = 20; // 判定に余裕を持たせる
+                    if (t.clientX >= rect.left - margin && t.clientX <= rect.right + margin &&
+                        t.clientY >= rect.top - margin && t.clientY <= rect.bottom + margin) {
                         
                         if (b.key) currentKeys[b.key] = true;
                         if (b.action && e.type === 'touchstart') b.action();

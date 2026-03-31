@@ -187,8 +187,10 @@ function endOP() {
     document.getElementById('control-panel').style.display = 'flex';
     document.getElementById('skip-op-btn').style.display = 'none';
 
-    // 表示後にレクト情報を更新
-    if (window.updateBtnRects) window.updateBtnRects();
+    // UIが表示された直後のブラウザのレイアウト確定を待ってから座標を取得
+    requestAnimationFrame(() => {
+        if (window.updateBtnRects) window.updateBtnRects();
+    });
 
     // ゲーム本編の開始準備
     sakuya.x = -100;

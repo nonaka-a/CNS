@@ -19,7 +19,10 @@ function draw() {
     if (currentBG.complete) {
         const bgH = CANVAS_HEIGHT + 100;
         const bgW = (bgH / currentBG.height) * currentBG.width; // 縦横比を維持した幅を計算
-        let loopX = -((distance * (isSecondScene ? 8.0 : 2.0)) % bgW);
+        
+        // エリア2(BG2)は遠景のためスクロール速度を大幅に下げる (例: 0.3)
+        const bgScrollSpeed = isSecondScene ? 0.05 : 2.0;
+        let loopX = -((distance * bgScrollSpeed) % bgW);
         ctx.drawImage(currentBG, loopX, -50, bgW, bgH);
         ctx.drawImage(currentBG, loopX + bgW, -50, bgW, bgH);
 
@@ -40,14 +43,16 @@ function draw() {
             }
         }
 
-        // ビネット効果 (背景とlightのみに適用)
-        if (vignetteImg.complete) {
+        // ビネット効果 (背景とlightのみに適用、エリアごとに画像を切り替え)
+        const currentVignette = isSecondScene ? vignette2Img : vignetteImg;
+        if (currentVignette.complete) {
             ctx.save();
             ctx.globalCompositeOperation = 'multiply';
             // カメラ追従のオフセット(-50)分も考慮して、背景と同じ領域に描画
-            ctx.drawImage(vignetteImg, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
+            ctx.drawImage(currentVignette, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
             ctx.restore();
         }
+
     }
 
     // 手裏剣
