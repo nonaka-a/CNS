@@ -331,6 +331,7 @@ function resetGameState() {
     enemies = [];
     enemyLasers = [];
     explosions = [];
+    platforms = []; // 足場をリセット
     bgX = 0;
     
     const progressBar = document.getElementById('progress-bar');

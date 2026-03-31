@@ -432,20 +432,20 @@ function update() {
         }
     }
     
-    // トランジション進行
+   // トランジション進行
     if (isHalfwayTransitioning) {
         halfwayTransitionTimer++;
         if (halfwayTransitionTimer > 180) { // 3秒間 (60fps * 3s = 180)
             isHalfwayTransitioning = false;
             isSecondScene = true;
-            // エリア2開始時の最初の足場（プレイヤーの足元に配置）
+            // エリア2開始時の最初の足場（通常ビルと同じ形状設定 w, y_back, y_front, shift に統一）
             platforms = [{
-                x: 0,
-                w: 2500, // 最初は長めにしておく
+                x: -500, // 画面の左外側から開始させることで、画像の端が見えるのを防ぐ
+                w: 2000, // 画像サイズに合わせて幅を統一
                 h: 400,
-                y_back: 250,
-                y_front: 450,
-                shift: 0
+                y_back: 280,
+                y_front: 440,
+                shift: 80
             }];
         }
     }

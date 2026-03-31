@@ -194,29 +194,19 @@ function draw() {
         } else if (item.type === 'platform') {
             const p = item.obj;
             
-            // ビルの側面（正面）
-            ctx.fillStyle = '#333';
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y_front);
-            ctx.lineTo(p.x + p.w, p.y_front);
-            ctx.lineTo(p.x + p.w, p.y_front + p.h);
-            ctx.lineTo(p.x, p.y_front + p.h);
-            ctx.fill();
+            // 共通のオフセット値を定義（屋上の調整に基づいた位置情報）
+            const roofOffsetX = -10; // 屋上および壁面のX軸微調整値
+            const roofOffsetY = -20; // 屋上および壁面のY軸微調整値
 
-            // ビルの屋上（平行四辺形）
-            ctx.fillStyle = '#555';
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y_front);
-            ctx.lineTo(p.x + p.w, p.y_front);
-            ctx.lineTo(p.x + p.w + p.shift, p.y_back);
-            ctx.lineTo(p.x + p.shift, p.y_back);
-            ctx.closePath();
-            ctx.fill();
+           // ビルの側面（壁面）を描画（topと同じ座標に描画）
+            if (buildingWallImg.complete) {
+                ctx.drawImage(buildingWallImg, p.x + roofOffsetX, p.y_back + roofOffsetY);
+            }
 
-            // 屋上の輪郭（仮置きなので分かりやすく）
-            ctx.strokeStyle = '#888';
-            ctx.lineWidth = 2;
-            ctx.stroke();
+            // ビルの屋上（Building_top.png）を描画（Wallと同じ座標に描画）
+            if (buildingTopImg.complete) {
+                ctx.drawImage(buildingTopImg, p.x + roofOffsetX, p.y_back + roofOffsetY);
+            }
         }
     });
 
