@@ -111,8 +111,13 @@ const seBuffers = {};
 let opAudioSources = {}; // layerId -> sourceNode
 const bgm = new Audio('sound/BGM1.mp3');
 bgm.loop = true;
-bgm.volume = 0.4; // プレイの邪魔にならない程度の音量に設定
+bgm.volume = 0.4;
 bgm.muted = !isSoundOn;
+
+const bgm2 = new Audio('sound/BGM2.mp3'); // 追加
+bgm2.loop = true;
+bgm2.volume = 0.4;
+bgm2.muted = !isSoundOn;
 
 async function loadSE(name, url) {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();

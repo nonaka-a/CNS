@@ -465,11 +465,24 @@ function update() {
         halfwayTransitionTimer++;
         
         // 暗転が明け始めるタイミング（120フレーム目）
-        if (halfwayTransitionTimer === 120) {
+         if (halfwayTransitionTimer === 120) {
             if (goalThresholdReached) {
                 // エリア3への移行
                 isSecondScene = false;
                 isThirdScene = true;
+                
+                // BGMの切り替え (BGM1をフェードアウトさせてBGM2を開始)
+                if (typeof fadeOutBGM === 'function') {
+                    fadeOutBGM(bgm, 1500); // 1.5秒かけてフェードアウト
+                } else {
+                    bgm.pause();
+                }
+
+                if (isSoundOn) {
+                    bgm2.volume = 0.4;
+                    bgm2.currentTime = 0;
+                    bgm2.play().catch(e => console.error("BGM2 playback failed:", e));
+                }
                 platforms = []; // 足場を完全に消去
                 
                 // プレイヤーを地面に配置

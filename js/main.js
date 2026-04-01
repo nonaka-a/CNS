@@ -1,4 +1,6 @@
 let initDone = false;
+let bgmFadeInterval = null; // BGMフェードアウト用のインターバル
+
 async function init() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
@@ -125,6 +127,9 @@ function startGame() {
     resetGameState();
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     bgm.currentTime = 0;
+    bgm2.currentTime = 0;
+    bgm.volume = 0.4;
+    bgm2.volume = 0.4;
     if (isSoundOn) bgm.play().catch(e => console.error("BGM playback failed:", e));
     document.getElementById('title-screen').style.display = 'none';
     
@@ -192,10 +197,31 @@ function fitWindow() {
     wrapper.style.transform = `scale(${scale})`;
 }
 
+function fadeOutBGM(targetBgm, duration = 1000) {
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    const startVolume = targetBgm.volume;
+    const step = startVolume / (duration / 50);
+    
+    bgmFadeInterval = setInterval(() => {
+        if (targetBgm.volume > step) {
+            targetBgm.volume -= step;
+        } else {
+            targetBgm.volume = 0;
+            targetBgm.pause();
+            targetBgm.volume = startVolume; // 次回再生用にリセット
+            clearInterval(bgmFadeInterval);
+            bgmFadeInterval = null;
+        }
+    }, 50);
+}
+
 function endGame(msg) {
     gameOver = true;
     isGameRunning = false;
+    // BGMを止める
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
+    bgm2.pause();
     document.getElementById('modal-text').innerText = msg;
     document.getElementById('modal-overlay').style.display = 'flex';
 }
@@ -212,19 +238,24 @@ function toggleSettings() {
         overlay.style.display = 'none';
         isPaused = false;
         if (isSoundOn && isGameRunning) {
-            bgm.play().catch(() => {});
+            if (isThirdScene) bgm2.play().catch(() => {});
+            else bgm.play().catch(() => {});
         }
     } else {
         overlay.style.display = 'flex';
         isPaused = true;
+        if (bgmFadeInterval) clearInterval(bgmFadeInterval);
         bgm.pause();
+        bgm2.pause();
     }
 }
 
 function backToTitle() {
     isGameRunning = false;
     isPaused = false;
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
+    bgm2.pause();
     document.getElementById('settings-overlay').style.display = 'none';
     document.getElementById('modal-overlay').style.display = 'none';
     document.getElementById('title-screen').style.display = 'flex';
@@ -233,11 +264,19 @@ function backToTitle() {
 function toggleSound() {
     isSoundOn = !isSoundOn;
     bgm.muted = !isSoundOn;
+    bgm2.muted = !isSoundOn;
     const btnText = document.getElementById('sound-btn-text');
     if (btnText) btnText.innerText = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
     if (isSoundOn) {
-        if (isGameRunning && !isPaused) bgm.play().catch(() => {});
-    } else bgm.pause();
+        if (isGameRunning && !isPaused) {
+            if (isThirdScene) bgm2.play().catch(() => {});
+            else bgm.play().catch(() => {});
+        }
+    } else {
+        if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+        bgm.pause();
+        bgm2.pause();
+    }
 }
 
 function toggleFullscreen() {
@@ -291,6 +330,17 @@ function resetGameState() {
     explosions = [];
     platforms = [];
     bgX = 0;
+
+    if (bgmFadeInterval) {
+        clearInterval(bgmFadeInterval);
+        bgmFadeInterval = null;
+    }
+    bgm.pause();
+    bgm2.pause();
+    bgm.volume = 0.4;
+    bgm2.volume = 0.4;
+    bgm.currentTime = 0;
+    bgm2.currentTime = 0;
     
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = '0%';
