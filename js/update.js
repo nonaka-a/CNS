@@ -260,7 +260,7 @@ function update() {
         if (platforms.length === 0 || (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w < CANVAS_WIDTH - 600)) {
             platforms.push({
                 x: CANVAS_WIDTH,
-                w: 2000,
+                w: 2000, // 画像サイズに合わせて幅を統一
                 h: 400,
                 y_back: 280,
                 y_front: 440,
@@ -432,21 +432,41 @@ function update() {
         }
     }
     
-   // トランジション進行
+    // トランジション進行
     if (isHalfwayTransitioning) {
         halfwayTransitionTimer++;
-        if (halfwayTransitionTimer > 180) { // 3秒間 (60fps * 3s = 180)
-            isHalfwayTransitioning = false;
+        
+        // 暗転が明け始めるタイミング（120フレーム目）でエリア2の準備を行う
+        if (halfwayTransitionTimer === 120) {
             isSecondScene = true;
-            // エリア2開始時の最初の足場（通常ビルと同じ形状設定 w, y_back, y_front, shift に統一）
+            
+            // エリア2開始時の最初の足場を生成
             platforms = [{
-                x: -500, // 画面の左外側から開始させることで、画像の端が見えるのを防ぐ
-                w: 2000, // 画像サイズに合わせて幅を統一
+                x: -500, 
+                w: 2000, 
                 h: 400,
                 y_back: 280,
                 y_front: 440,
                 shift: 80
             }];
+            
+            // プレイヤーをビルの中央付近にワープ
+            sakuya.x = 400;
+            sakuya.groundY = 360;
+            sakuya.jumpOffset = 0; // 空中復帰ではなく地上に配置
+            sakuya.vy = 0;
+            sakuya.isOnPlat = true;
+            
+            if (mitama.isHolding) {
+                mitama.x = sakuya.x + 10;
+                mitama.y = sakuya.y + 30;
+                mitama.groundY = sakuya.groundY;
+            }
+        }
+        
+        // トランジション完了
+        if (halfwayTransitionTimer > 180) { 
+            isHalfwayTransitioning = false;
         }
     }
 

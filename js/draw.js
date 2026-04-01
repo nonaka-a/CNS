@@ -26,8 +26,8 @@ function draw() {
         ctx.drawImage(currentBG, loopX, -50, bgW, bgH);
         ctx.drawImage(currentBG, loopX + bgW, -50, bgW, bgH);
 
-        // light.png (一番奥)
-        if (!isSecondScene && !halfwayReached && lightImg.complete) {
+        // light.png (一番奥、エリア1のみ、暗転中も維持)
+        if (!isSecondScene && lightImg.complete) {
             const lightSpacing = 1950;
             let lightLoopX = -((distance * 2.0) % lightSpacing);
             
@@ -198,7 +198,7 @@ function draw() {
             const roofOffsetX = -10; // 屋上および壁面のX軸微調整値
             const roofOffsetY = -20; // 屋上および壁面のY軸微調整値
 
-           // ビルの側面（壁面）を描画（topと同じ座標に描画）
+            // ビルの側面（壁面）を描画（topと同じ座標に描画）
             if (buildingWallImg.complete) {
                 ctx.drawImage(buildingWallImg, p.x + roofOffsetX, p.y_back + roofOffsetY);
             }
@@ -210,8 +210,8 @@ function draw() {
         }
     });
 
-    // Streetlightとガードレールを描画 (エリア1のみ、かつ遷移前のみ)
-    if (!isSecondScene && !halfwayReached) {
+    // Streetlightとガードレールを描画 (エリア1のみ、暗転中も維持)
+    if (!isSecondScene) {
         const lightSpacing = 1950; 
         let lightLoopX = -((distance * 2.0) % lightSpacing); 
         
@@ -319,8 +319,9 @@ function draw() {
     }
 
     // Streetlight_front.png (一番手前、レーザー・手裏剣・トランジションよりも手前)
+    // エリア1のみ、暗転中も維持
     // ただしカメラ追従(sakuya.cameraOffsetY)は適用して揺れを同期させる
-    if (!isSecondScene && !halfwayReached && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
+    if (!isSecondScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
         ctx.save();
         ctx.translate(0, sakuya.cameraOffsetY);
         
