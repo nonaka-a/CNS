@@ -35,6 +35,9 @@ let isHalfwayTransitioning = false;
 let halfwayTransitionTimer = 0;
 let isSecondScene = false;
 let isThirdScene = false; // エリア3フラグ
+let bossActive = false;   // ボス戦中フラグ
+let bossDefeated = false; // ボス撃破フラグ
+let bossSpawnTimer = 0;   // ボス登場までのタイマー
 let ninjutsuGauge = 0;
 const NINJUTSU_MAX = 10; // 10体倒すと満タン
 let ninjutsuFullTriggered = false;
@@ -94,6 +97,14 @@ const buildingTopImg = new Image();
 buildingTopImg.src = 'images/Building_top.png';
 const buildingWallImg = new Image();
 buildingWallImg.src = 'images/Building_Wall.png';
+
+const bossImg = new Image(); // ボス画像追加
+bossImg.src = 'images/iina.png';
+
+const boss = {
+    x: -500, y: 0, w: 300, h: 300, hp: 500, maxHp: 500,
+    groundY: 400, jumpOffset: 0, vx: 2, visible: false
+};
 
 let bgX = 0;
 let isSoundOn = true;

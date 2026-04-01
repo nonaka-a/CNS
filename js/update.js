@@ -1,7 +1,7 @@
 function update() {
     if (gameOver || isPaused) return;
 
-    // カメラズームの滑らかな更新 (エリア2 voltの時だけ0.75倍)
+    // カメラズームの滑らかな更新 (エリア2の時だけ0.75倍)
     let targetZoom = (isSecondScene && !isHalfwayTransitioning) ? 0.75 : 1.0;
     currentZoom += (targetZoom - currentZoom) * 0.05;
 
@@ -186,7 +186,7 @@ function update() {
         const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale + mitama.jumpOffset;
         
-        // ミタマのロスト判定（エリア2は画面外を考慮して左端を拡張）
+        // ミタマのロスト判定
         const lostThreshold = isSecondScene ? -200 : -mitama.w;
         if (mitama.x + mitama.w < lostThreshold) endGame("MITAMA LOST...");
     }
@@ -215,35 +215,62 @@ function update() {
         }
 
         let hit = false;
-        for (let j = enemies.length - 1; j >= 0; j--) {
-            const e = enemies[j];
-            // 2Dでの重なりと奥行き(groundY)の差異をかなり甘めにチェック
-            const isHit = b.x < e.x + e.w && b.x + b.w > e.x &&
-                          b.y < e.y + e.h && b.y + b.h > e.y &&
-                          Math.abs(b.groundY - e.groundY) < 80; 
-            if (isHit) {
-                // 爆発を生成
-                explosions.push({
-                    x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
-                    frame: 0, timer: 0
-                });
-                
-                // 爆発音
-                playSE('explosion');
 
-                // ドローンの予告レーザーをキャンセル
-                for (let k = enemyLasers.length - 1; k >= 0; k--) {
-                    if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) {
-                        enemyLasers.splice(k, 1);
-                    }
+        // ボスとの当たり判定
+        if (bossActive && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
+            b.y < boss.y + boss.h && b.y + b.h > boss.y &&
+            Math.abs(b.groundY - boss.groundY) < 150) {
+            
+            boss.hp -= 10;
+            explosions.push({
+                x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY,
+                frame: 0, timer: 0
+            });
+            playSE('explosion');
+            
+            if (boss.hp <= 0) {
+                boss.hp = 0;
+                bossActive = false;
+                bossDefeated = true;
+                boss.visible = false;
+                // 撃破時に派手な爆発をいくつか出す
+                for(let k=0; k<5; k++) {
+                    explosions.push({
+                        x: boss.x + Math.random()*boss.w, 
+                        y: boss.y + Math.random()*boss.h, 
+                        groundY: boss.groundY,
+                        frame: 0, timer: 0
+                    });
                 }
+            }
+            hit = true;
+        }
 
-                enemies.splice(j, 1);
-                ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
-                hit = true;
-                break;
+        if (!hit) {
+            for (let j = enemies.length - 1; j >= 0; j--) {
+                const e = enemies[j];
+                const isHit = b.x < e.x + e.w && b.x + b.w > e.x &&
+                              b.y < e.y + e.h && b.y + b.h > e.y &&
+                              Math.abs(b.groundY - e.groundY) < 80; 
+                if (isHit) {
+                    explosions.push({
+                        x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
+                        frame: 0, timer: 0
+                    });
+                    playSE('explosion');
+                    for (let k = enemyLasers.length - 1; k >= 0; k--) {
+                        if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) {
+                            enemyLasers.splice(k, 1);
+                        }
+                    }
+                    enemies.splice(j, 1);
+                    ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
+                    hit = true;
+                    break;
+                }
             }
         }
+
         if (hit) {
             bullets.splice(i, 1);
         }
@@ -268,12 +295,10 @@ function update() {
 
     // 第二エリア：ビルの足場生成
     if (isSecondScene && !isHalfwayTransitioning) {
-        // 一定距離（隙間）を空けて足場を生成
-        // ズームアウト(0.75倍)の影響を考慮し、1段ジャンプでギリギリ届く距離感にするため閾値を580に調整
         if (platforms.length === 0 || (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w < CANVAS_WIDTH + 400 - 580)) {
             platforms.push({
-                x: CANVAS_WIDTH + 400, // ズームアウトに対応して画面外から生成
-                w: 2000, // 画像サイズに合わせて幅を統一
+                x: CANVAS_WIDTH + 400,
+                w: 2000, 
                 h: 400,
                 y_back: 280,
                 y_front: 440,
@@ -286,7 +311,7 @@ function update() {
     for (let i = platforms.length - 1; i >= 0; i--) {
         const p = platforms[i];
         p.x -= isSecondScene ? 10 : 5; // エリア2は2倍速
-        if (p.x + p.w + 80 < -400) { // 画面外の判定を広げる
+        if (p.x + p.w + 80 < -400) {
             platforms.splice(i, 1);
         }
     }
@@ -296,15 +321,15 @@ function update() {
     const maxEnemies = isSecondScene ? 3 : 5;
     if (!isHalfwayTransitioning && Math.random() < spawnRate && enemies.length < maxEnemies) {
         enemies.push({
-            id: enemyIdCounter++, // 一意識別用ID
-            x: isSecondScene ? -400 : -80, // エリア2はズームアウトを考慮してより左から出現
+            id: enemyIdCounter++, 
+            x: isSecondScene ? -400 : -80,
             w: 80, h: 80,
-            groundY: 300 + Math.random() * 120, // 奥行き範囲を中間位置(300-420)へ再調整
+            groundY: 300 + Math.random() * 120, 
             jumpOffset: -80 - Math.random() * 80,
             targetX: 20 + Math.random() * 200, 
             vx: 0.8 + Math.random() * 0.7, 
             offsetSeed: Math.random() * 100,
-            laserTimer: Math.random() * 100, // レーザー発射の周期タイマー
+            laserTimer: Math.random() * 100, 
             currentAnim: 'idle',
             currentFrame: 0,
             frameTimer: 0
@@ -315,12 +340,9 @@ function update() {
         else e.x += Math.sin(Date.now() / 300 + e.offsetSeed) * 0.2;
 
         e.isOnPlat = checkOnPlat(e);
-        
-        // 移動：少し上下に揺れる
         e.jumpOffset += Math.sin(Date.now() / 400 + e.offsetSeed) * 0.4;
         e.y = e.groundY - e.h + e.jumpOffset;
 
-        // ドローンのアニメーション更新
         if (droneConfig) {
             const anim = droneConfig.data[e.currentAnim];
             e.frameTimer += FRAME_INTERVAL;
@@ -331,27 +353,45 @@ function update() {
             }
         }
 
-        // レーザー発射ロジック (頻度を約1/3に変更)
         e.laserTimer++;
-        if (e.laserTimer > 450) { // 約7.5秒ごとに発射
+        if (e.laserTimer > 450) { 
             e.laserTimer = 0;
-            // ミタマがリリースされている時は半々の確率で狙いを定る
             let target = (!mitama.isHolding && Math.random() > 0.5) ? mitama : sakuya;
-            let sx = e.x + e.w / 2 + 10; // 右側に維持
-            let sy = e.y + e.h / 2 + 2;  // 高さを少し下げ（中心付近）
+            let sx = e.x + e.w / 2 + 10;
+            let sy = e.y + e.h / 2 + 2;
             let tx = target.x + target.w / 2;
             let ty = target.y + target.h / 2; 
             let angle = Math.atan2(ty - sy, tx - sx);
             enemyLasers.push({
-                ownerId: e.id, // 発射元ID
+                ownerId: e.id, 
                 startX: sx, startY: sy,
                 angle: angle,
                 groundY: e.groundY,
-                duration: 25, // 画面に残る太いビームの持続時間
-                telegraphDuration: 48 // 約0.8秒(48f)の予告線タイマー。点滅しながら追尾せず固定
+                duration: 25,
+                telegraphDuration: 48 
             });
         }
     });
+
+    // ボス「イイナ」の更新
+    if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
+        if (!bossActive) {
+            bossSpawnTimer += FRAME_INTERVAL;
+            if (bossSpawnTimer >= 10000) { // 10秒
+                bossActive = true;
+                boss.visible = true;
+                boss.x = -boss.w - 100;
+            }
+        } else {
+            // ボスの移動ロジック（左から登場して画面左側に留まる）
+            if (boss.x < 50) boss.x += boss.vx;
+            else {
+                boss.x = 50 + Math.sin(Date.now() / 1000) * 20;
+                boss.jumpOffset = Math.sin(Date.now() / 500) * 15;
+            }
+            boss.y = boss.groundY - boss.h + boss.jumpOffset;
+        }
+    }
 
     // プレイヤーの無敵時間タイマー初期化・更新
     if (sakuya.invincibleTimer === undefined) sakuya.invincibleTimer = 0;
@@ -365,7 +405,7 @@ function update() {
         if (l.telegraphDuration > 0) {
             l.telegraphDuration--;
             if (l.telegraphDuration === 0) playSE('laser');
-            continue; // 予告線表示中は当たり判定なし
+            continue; 
         }
 
         l.duration--;
@@ -374,23 +414,19 @@ function update() {
             continue;
         }
 
-        // サクヤ当たり判定
         if (sakuya.invincibleTimer <= 0) {
             let px = sakuya.x + sakuya.w / 2;
             let py = sakuya.y + sakuya.h / 2;
-            // 距離 = |(px-sx)*sinA - (py-sy)*cosA|
             let dist = Math.abs((px - l.startX) * Math.sin(l.angle) - (py - l.startY) * Math.cos(l.angle));
-            // 内積 = 前方にいるか
             let dot = (px - l.startX) * Math.cos(l.angle) + (py - l.startY) * Math.sin(l.angle);
             
             if (dot > 0 && dist < 50 && Math.abs(l.groundY - sakuya.groundY) < 80) {
                 sakuya.hp -= 10;
-                sakuya.invincibleTimer = 40; // 無敵・点滅
+                sakuya.invincibleTimer = 40; 
                 if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
             }
         }
 
-        // ミタマ当たり判定
         if (!mitama.isHolding && mitama.invincibleTimer <= 0) {
             let px = mitama.x + mitama.w / 2;
             let py = mitama.y + mitama.h / 2;
@@ -410,10 +446,9 @@ function update() {
         giantShuriken.x += giantShuriken.vx;
         giantShuriken.angle += 0.5;
         
-        // 画面内の敵をすべてなぎ倒す
+        // 敵となぎ倒す
         for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
-            // 巨大なので判定は甘め（x軸が重なっていればOKぐらいの勢い）
             if (giantShuriken.x + giantShuriken.w > e.x && giantShuriken.x < e.x + e.w) {
                 explosions.push({
                     x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY,
@@ -423,38 +458,46 @@ function update() {
                 enemies.splice(j, 1);
             }
         }
-        if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; // 消滅判定も広げる
+        // ボスへのダメージ判定 (1フレームごとに判定)
+        if (bossActive && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
+            boss.hp -= 2; // 巨大手裏剣は多段ヒット
+            if (boss.hp <= 0) {
+                 boss.hp = 0;
+                 bossActive = false;
+                 bossDefeated = true;
+                 boss.visible = false;
+            }
+        }
+        if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; 
     }
 
     if (!isIntro && !isHalfwayTransitioning) {
-        distance += 5; // 進捗速度は一定
+        // 背景パンを維持するために、進捗が止まっている間も distance は増え続ける。
+        // ただし、本来の進捗（ゲージ等）の判定には「ボス戦中か」を考慮する。
+        distance += 5; 
         
-        // 50%：エリア1 → エリア2への切り替えチェック
+        // 50%：エリア1 → エリア2
         if (distance >= goalDistance * 0.5 && !halfwayReached) {
             halfwayReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
-            
             enemies = [];
             enemyLasers = [];
             bullets = [];
             explosions = [];
-            
             const progressMarker = document.getElementById('progress-halfway-marker');
             if (progressMarker) progressMarker.classList.add('reached');
         }
 
-        // 90%：エリア2 → エリア3への切り替えチェック
+        // 95%：エリア2 → エリア3
         if (distance >= goalDistance * 0.95 && !goalThresholdReached) {
             goalThresholdReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
-
             enemies = [];
             enemyLasers = [];
             bullets = [];
             explosions = [];
-
             const goalMarker = document.getElementById('progress-goal-marker');
             if (goalMarker) goalMarker.classList.add('reached');
         }
@@ -463,40 +506,31 @@ function update() {
     // トランジション進行
     if (isHalfwayTransitioning) {
         halfwayTransitionTimer++;
-        
-        // 暗転が明け始めるタイミング（120フレーム目）
-         if (halfwayTransitionTimer === 120) {
+        if (halfwayTransitionTimer === 120) {
             if (goalThresholdReached) {
-                // エリア3への移行
                 isSecondScene = false;
                 isThirdScene = true;
-                
-                // BGMの切り替え (BGM1をフェードアウトさせてBGM2を開始)
-                if (typeof fadeOutBGM === 'function') {
-                    fadeOutBGM(bgm, 1500); // 1.5秒かけてフェードアウト
-                } else {
-                    bgm.pause();
-                }
-
-                if (isSoundOn) {
-                    bgm2.volume = 0.4;
-                    bgm2.currentTime = 0;
-                    bgm2.play().catch(e => console.error("BGM2 playback failed:", e));
-                }
-                platforms = []; // 足場を完全に消去
-                
-                // プレイヤーを地面に配置
+                platforms = [];
                 sakuya.x = 400;
                 sakuya.groundY = GROUND_Y_POS;
                 sakuya.jumpOffset = 0;
                 sakuya.vy = 0;
                 sakuya.isOnPlat = true;
+                if (typeof fadeOutBGM === 'function') {
+                    fadeOutBGM(bgm, 1500);
+                } else {
+                    bgm.pause();
+                }
+                if (isSoundOn) {
+                    bgm2.volume = 0.4;
+                    bgm2.currentTime = 0;
+                    bgm2.play().catch(e => console.error("BGM2 playback failed:", e));
+                }
             } else if (halfwayReached) {
-                // エリア2への移行
                 isSecondScene = true;
                 platforms = [{
                     x: -500, 
-                    w: 2000, // 画像サイズに合わせて幅を統一
+                    w: 2000,
                     h: 400,
                     y_back: 280,
                     y_front: 440,
@@ -508,34 +542,40 @@ function update() {
                 sakuya.vy = 0;
                 sakuya.isOnPlat = true;
             }
-            
             if (mitama.isHolding) {
                 mitama.x = sakuya.x + 10;
                 mitama.y = sakuya.y + 30;
                 mitama.groundY = sakuya.groundY;
             }
         }
-        
         if (halfwayTransitionTimer > 180) { 
             isHalfwayTransitioning = false;
         }
     }
 
-    const progress = Math.min((distance / goalDistance) * 100, 100);
+    // 進捗ゲージに表示する数値の計算
+    // ボス戦中（登場待ち含む）は 95% 付近で値を固定する
+    let displayDistance = distance;
+    const bossBattleTriggerDistance = goalDistance * 0.95 + 1; // エリア3突入直後の距離
+    if (isThirdScene && !bossDefeated && distance > bossBattleTriggerDistance) {
+        displayDistance = bossBattleTriggerDistance;
+    } else if (isThirdScene && bossDefeated) {
+        // ボス撃破後は、撃破した瞬間の distance と displayDistance の差分を引いて 95% から再開させる必要があるが、
+        // 簡易的に「distance が進んでいる分」をそのまま反映（ゲージが一気に進む形）になるのを防ぐ場合は補正が必要。
+        // ここでは単純に撃破後は distance をそのまま表示。
+        displayDistance = distance;
+    }
+
+    const progress = Math.min((displayDistance / goalDistance) * 100, 100);
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = progress + '%';
     
-    // UIの更新: ホールド中は手裏剣ボタンをグレーアウト
     const shurikenBtn = document.getElementById('btn-jump');
     if (shurikenBtn) {
-        if (mitama.isHolding) {
-            shurikenBtn.classList.add('disabled');
-        } else {
-            shurikenBtn.classList.remove('disabled');
-        }
+        if (mitama.isHolding) shurikenBtn.classList.add('disabled');
+        else shurikenBtn.classList.remove('disabled');
     }
 
-    // 忍術ゲージUI更新
     const ninjutsuBar = document.getElementById('ninjutsu-bar');
     if (ninjutsuBar) {
         const percent = (ninjutsuGauge / NINJUTSU_MAX) * 100;
@@ -548,27 +588,23 @@ function update() {
         if (ninjutsuGauge >= NINJUTSU_MAX && !giantShuriken) {
             ninBtn.classList.remove('disabled');
             ninBtn.classList.add('shinobi-ready');
-            
-            // 初めて満タンになった瞬間にピカーンと光らせる
             if (!ninjutsuFullTriggered) {
                 ninjutsuFullTriggered = true;
                 ninBtn.classList.add('shinobi-flash');
-                playSE('flash'); // 満タンSE再生
+                playSE('flash');
                 setTimeout(() => {
                     ninBtn.classList.remove('shinobi-flash');
-                }, 600); // アニメーション時間分待って外す
+                }, 600);
             }
         } else {
             ninBtn.classList.add('disabled');
             ninBtn.classList.remove('shinobi-ready');
-            ninBtn.classList.remove('shinobi-flash'); // 強制リセット
-            if (ninjutsuGauge < NINJUTSU_MAX) {
-                ninjutsuFullTriggered = false;
-            }
+            ninBtn.classList.remove('shinobi-flash');
+            if (ninjutsuGauge < NINJUTSU_MAX) ninjutsuFullTriggered = false;
         }
     }
 
-    if (distance >= goalDistance) endGame("GOAL!");
+    if (displayDistance >= goalDistance) endGame("GOAL!");
 }
 
 function updateOPAudio() {
@@ -581,7 +617,6 @@ function updateOPAudio() {
 
     comp.layers.forEach(layer => {
         if (layer.type !== 'audio') return;
-        
         const asset = (function findAsset(id, list) {
              for (let a of list) {
                  if (a.id === id) return a;
@@ -592,33 +627,25 @@ function updateOPAudio() {
              }
              return null;
         })(layer.assetId, opConfig.assets);
-
         if (!asset || !asset.audioBuffer) return;
-
         const offset = opTime - layer.startTime;
         const isWithinRange = (opTime >= layer.inPoint && opTime < layer.outPoint);
         const isWithinBuffer = (offset >= 0 && offset < asset.audioBuffer.duration);
-
         if (isWithinRange && isWithinBuffer && isSoundOn) {
             if (!opAudioSources[layer.id]) {
                 const source = audioCtx.createBufferSource();
                 source.buffer = asset.audioBuffer;
-                
                 const gainNode = audioCtx.createGain();
                 source.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                
-                // ボリューム設定 (dB -> Gain)
                 const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
                 gainNode.gain.value = Math.pow(10, volDb / 20);
-
                 source.start(0, Math.max(0, offset));
                 opAudioSources[layer.id] = { source, gain: gainNode };
                 source.onended = () => {
                     if (opAudioSources[layer.id] && opAudioSources[layer.id].source === source) delete opAudioSources[layer.id];
                 };
             } else {
-                // 再生中のボリューム更新
                 const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
                 opAudioSources[layer.id].gain.gain.setTargetAtTime(Math.pow(10, volDb / 20), audioCtx.currentTime, 0.05);
             }
