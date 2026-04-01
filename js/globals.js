@@ -28,6 +28,7 @@ const PERSPECTIVE_BASE_Y = 360;
 const PERSPECTIVE_SCALE_FACTOR = 0.002;
 const goalDistance = 40000;
 let distance = 0;
+let bgDistance = 0; // 追加：背景スクロール専用の距離
 let halfwayReached = false;
 let goalThresholdReached = false;
 let isHalfwayTransitioning = false;
@@ -38,6 +39,7 @@ let currentZoom = 1.0; // カメラのズーム倍率
 let bossActive = false;
 let bossDefeated = false;
 let bossSpawnTimer = 0;
+let bossDefeatTimer = 0; // 追加：撃破後の経過時間
 let ninjutsuGauge = 0;
 const NINJUTSU_MAX = 10;
 let ninjutsuFullTriggered = false;
@@ -102,8 +104,10 @@ const bossImg = new Image();
 bossImg.src = 'images/iina.png';
 
 const boss = {
-    x: -500, y: 0, w: 300, h: 300, hp: 500, maxHp: 500,
-    groundY: 400, jumpOffset: 0, vx: 2, visible: false
+    x: -500, y: 0, w: 180, h: 220, hp: 250, maxHp: 250, // 体力と最大体力を250に変更
+    groundY: 400, jumpOffset: 0, vx: 2, visible: false,
+    animCounter: 0,
+    isArrived: false
 };
 
 let bgX = 0;

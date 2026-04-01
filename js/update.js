@@ -166,5 +166,18 @@ function update() {
         }
     }
 
+    // ボスHPゲージの更新
+    const bossHpContainer = document.getElementById('boss-hp-container');
+    const bossHpBar = document.getElementById('boss-hp-bar');
+    if (bossHpContainer && bossHpBar) {
+        if (bossActive && boss.visible) {
+            bossHpContainer.style.display = 'flex';
+            const hpPercent = (boss.hp / boss.maxHp) * 100;
+            bossHpBar.style.width = hpPercent + '%';
+        } else {
+            bossHpContainer.style.display = 'none';
+        }
+    }
+
     if (displayDistance >= goalDistance) endGame("GOAL!");
 }

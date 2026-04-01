@@ -26,9 +26,11 @@ function updateEntities() {
                 bossActive = false;
                 bossDefeated = true;
                 boss.visible = false;
+                bossDefeatTimer = 0; // タイマー開始
                 for(let k=0; k<5; k++) {
                     explosions.push({ x: boss.x + Math.random()*boss.w, y: boss.y + Math.random()*boss.h, groundY: boss.groundY, frame: 0, timer: 0 });
                 }
+                playSE('explosion');
             }
             hit = true;
         }
@@ -134,21 +136,30 @@ function updateEntities() {
     });
 
     // ボス「イイナ」の更新
-     if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
-        bossSpawnTimer += FRAME_INTERVAL; // 常にタイマーを進める
+    if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
+        bossSpawnTimer += FRAME_INTERVAL;
         if (!bossActive) {
-            if (bossSpawnTimer >= 7000) { // 10秒から7秒に短縮
+            if (bossSpawnTimer >= 7000) {
                 bossActive = true;
                 boss.visible = true;
-                boss.x = -500; // 画面外左
+                boss.x = -500;
+                boss.isArrived = false; // 出現時にリセット
             }
         } else {
-            // 移動ロジック
-            if (boss.x < 50) boss.x += boss.vx;
-            else {
-                boss.x = 50 + Math.sin(Date.now() / 1000) * 20;
-                boss.jumpOffset = Math.sin(Date.now() / 500) * 15;
+            boss.animCounter++;
+            
+            // 到着判定：一度 50 を超えたら浮遊モードに固定
+            if (!boss.isArrived) {
+                boss.x += boss.vx;
+                if (boss.x >= 50) {
+                    boss.isArrived = true;
+                }
+            } else {
+                // 浮遊モード：x座標の基本値を固定し、そこからのオフセットとしてサイン波を足す
+                boss.x = 50 + Math.sin(boss.animCounter * 0.03) * 20; 
+                boss.jumpOffset = -40 + Math.sin(boss.animCounter * 0.05) * 25;
             }
+            
             boss.y = boss.groundY - boss.h + boss.jumpOffset;
         }
     }

@@ -31,8 +31,25 @@ function updateWorld() {
 
     // トランジション（暗転）中やイントロ中でなければ進行させる
     if (!isIntro && !isHalfwayTransitioning) {
-        // 背景パンループのために distance は常に増加させる
-        distance += 5; 
+        let speed = 5;
+        // 背景は常に一定速度（または基本速度）で動かし続ける
+        bgDistance += 5;
+
+        // エリア3かつボス撃破演出中の制御（進捗距離 distance のみ制限）
+        if (isThirdScene) {
+            if (bossDefeated) {
+                bossDefeatTimer += FRAME_INTERVAL;
+                if (bossDefeatTimer < 5000) {
+                    speed = 0;
+                } else {
+                    speed = 2;
+                }
+            } else if (distance >= goalDistance * 0.95) {
+                speed = 0;
+            }
+        }
+
+        distance += speed;
         
         // 50%：エリア1 → エリア2への切り替えチェック
         // distance が丁度あるいは超過したタイミングで、かつまだ切り替わっていなければ実行

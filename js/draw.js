@@ -43,8 +43,8 @@ function draw() {
         
         let bgScrollSpeed = isThirdScene ? 2.0 : (isSecondScene ? 0.05 : 2.0);
         
-        // bgScrollSpeed を掛けた distance を bgW で割った余りをマイナスにしてループさせる
-        let startX = -((distance * bgScrollSpeed) % bgW);
+        // bgDistance を使用して背景ループを計算
+        let startX = -((bgDistance * bgScrollSpeed) % bgW);
         let drawX = startX;
         
         while (drawX > -800) drawX -= bgW;
@@ -57,7 +57,7 @@ function draw() {
 
         if (!isSecondScene && !isThirdScene && lightImg.complete) {
             const lightSpacing = 1950;
-            let lightLoopX = -((distance * 2.0) % lightSpacing);
+            let lightLoopX = -((bgDistance * 2.0) % lightSpacing);
             const lightH = 350;       
             let lx = lightLoopX;
             while (lx > -800) lx -= lightSpacing;
@@ -196,18 +196,26 @@ function draw() {
             if (buildingWallImg.complete) ctx.drawImage(buildingWallImg, p.x - 10, p.y_back - 20);
             if (buildingTopImg.complete) ctx.drawImage(buildingTopImg, p.x - 10, p.y_back - 20);
         } else if (item.type === 'boss') {
-            const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 1.05; // 1.1倍(110%)に変更
+            const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 1.05;
+            
+            // 落ち影の描画
+            const shadowAlpha = 0.3 - (Math.abs(boss.jumpOffset) / 500);
+            ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.1, shadowAlpha)})`;
+            ctx.beginPath();
+            const shadowShrink = 1.0 - (Math.abs(boss.jumpOffset) / 300);
+            // 影の位置は当たり判定（boss.w）の中央に合わせる
+            ctx.ellipse(boss.x + boss.w / 2, boss.groundY, boss.w * 0.6 * bScale * shadowShrink, 12 * bScale * shadowShrink, 0, 0, Math.PI * 2);
+            ctx.fill();
+
             ctx.save();
             if (bossImg.complete) {
-                const nw = bossImg.naturalWidth;
-                const nh = bossImg.naturalHeight;
-                // 当たり判定用サイズも1.1倍に同期
-                boss.w = nw * 1.1;
-                boss.h = nh * 1.1;
+                const nw = bossImg.naturalWidth * 1.1; // 描画用の拡大サイズ
+                const nh = bossImg.naturalHeight * 1.1;
 
+                // 描画位置の調整：当たり判定のセンターに画像（余白含む）のセンターを合わせる
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
-                ctx.drawImage(bossImg, -nw / 2, -nh + (boss.jumpOffset / 1.05), nw, nh);
+                ctx.drawImage(bossImg, -nw / 2, -nh + boss.jumpOffset, nw, nh);
             }
             ctx.restore();
         }
@@ -215,7 +223,7 @@ function draw() {
 
     if (!isSecondScene && !isThirdScene) {
         const lightSpacing = 1950; 
-        let lightLoopX = -((distance * 2.0) % lightSpacing); 
+        let lightLoopX = -((bgDistance * 2.0) % lightSpacing); 
         if (streetlightImg.complete) {
             let lx = lightLoopX;
             while (lx > -800) lx -= lightSpacing;
@@ -226,7 +234,7 @@ function draw() {
             }
         }
         if (guardrailImg.complete) {
-            let gx = -((distance * 2.0) % 650);
+            let gx = -((bgDistance * 2.0) % 650);
             while (gx > -800) gx -= 650;
             while (gx < CANVAS_WIDTH + 800) {
                 ctx.drawImage(guardrailImg, gx, 380, 600, 110);
@@ -299,7 +307,7 @@ function draw() {
     }
 
     if (!isSecondScene && !isThirdScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
-        let fgx = -((distance * 3.5) % 5000);
+        let fgx = -((bgDistance * 3.5) % 5000);
         while (fgx > -800) fgx -= 5000;
         while (fgx < CANVAS_WIDTH + 800) {
             const w = (800 / streetlightFrontImg.height) * streetlightFrontImg.width;
@@ -308,24 +316,6 @@ function draw() {
         }
     }
     ctx.restore();
-
-    // ボスHPゲージ
-    if (bossActive && boss.visible) {
-        const barW = 400;
-        const barH = 15;
-        const barX = (CANVAS_WIDTH - barW) / 2;
-        const barY = 60;
-        ctx.fillStyle = "rgba(0,0,0,0.5)";
-        ctx.fillRect(barX, barY, barW, barH);
-        ctx.fillStyle = "#ff0000";
-        ctx.fillRect(barX, barY, barW * (boss.hp / boss.maxHp), barH);
-        ctx.strokeStyle = "#ffffff";
-        ctx.strokeRect(barX, barY, barW, barH);
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 14px 'Sawarabi Mincho'";
-        ctx.textAlign = "center";
-        ctx.fillText("イイナ", CANVAS_WIDTH / 2, barY - 10);
-    }
 
     if (isHalfwayTransitioning) {
         let alpha = halfwayTransitionTimer < 60 ? halfwayTransitionTimer / 60 : (halfwayTransitionTimer < 120 ? 1 : 1 - ((halfwayTransitionTimer - 120) / 60));

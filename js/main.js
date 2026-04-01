@@ -271,6 +271,7 @@ function toggleFullscreen() {
 
 function resetGameState() {
     distance = 0;
+    bgDistance = 0;
     halfwayReached = false;
     goalThresholdReached = false;
     isHalfwayTransitioning = false;
@@ -281,6 +282,7 @@ function resetGameState() {
     bossActive = false;
     bossDefeated = false;
     bossSpawnTimer = 0;
+    bossDefeatTimer = 0;
     ninjutsuGauge = 0;
     ninjutsuFullTriggered = false;
     gameOver = false;
