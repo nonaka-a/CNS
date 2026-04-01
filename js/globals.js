@@ -29,6 +29,7 @@ const PERSPECTIVE_SCALE_FACTOR = 0.002; // 奥と手前でのサイズ変化率
 const goalDistance = 40000;
 let distance = 0;
 let halfwayReached = false;
+let currentZoom = 1.0; // 追加: カメラのズーム倍率
 let goalThresholdReached = false; // エリア3切り替え用フラグ
 let isHalfwayTransitioning = false;
 let halfwayTransitionTimer = 0;

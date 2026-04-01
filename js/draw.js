@@ -14,6 +14,13 @@ function draw() {
     ctx.save();
     ctx.translate(0, sakuya.cameraOffsetY);
 
+    // ズームアウトの適用 (画面の中央下部を基準にスケール)
+    if (currentZoom !== 1.0) {
+        ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.7);
+        ctx.scale(currentZoom, currentZoom);
+        ctx.translate(-CANVAS_WIDTH / 2, -CANVAS_HEIGHT * 0.7);
+    }
+
     // 一枚絵の背景
     let currentBG;
     if (isThirdScene) {
@@ -25,8 +32,17 @@ function draw() {
     }
 
     if (currentBG.complete) {
-        const bgH = CANVAS_HEIGHT + 100;
-        const bgW = (bgH / currentBG.height) * currentBG.width; 
+        // 背景画像の基本サイズ
+        let bgH = CANVAS_HEIGHT + 100;
+        let bgW = (bgH / currentBG.height) * currentBG.width; 
+
+        // ズームアウト時は背景を見切れさせないために拡大する
+        // 5%のバッファを追加して確実に端までカバーする
+        if (currentZoom !== 1.0) {
+            const invZoom = (1 / currentZoom) * 1.05;
+            bgH *= invZoom;
+            bgW *= invZoom;
+        }
         
         // エリア2は遠景、エリア1・3は通常速度
         let bgScrollSpeed;
@@ -38,9 +54,17 @@ function draw() {
             bgScrollSpeed = 2.0;
         }
 
-        let loopX = -((distance * bgScrollSpeed) % bgW);
-        ctx.drawImage(currentBG, loopX, -50, bgW, bgH);
-        ctx.drawImage(currentBG, loopX + bgW, -50, bgW, bgH);
+        let startX = -((distance * bgScrollSpeed) % bgW);
+        let drawX = startX;
+        
+        // ズームアウト時に左右にできる余白をカバーするため、描画範囲を広く取る
+        while (drawX > -800) drawX -= bgW;
+        while (drawX < CANVAS_WIDTH + 800) {
+            // 背景拡大時のY方向のズレを補正。上に表示するためオフセット量を強める
+            const offsetY = currentZoom !== 1.0 ? -120 - (bgH - (CANVAS_HEIGHT + 100)) / 2 : -50;
+            ctx.drawImage(currentBG, drawX, offsetY, bgW, bgH);
+            drawX += bgW;
+        }
 
         // light.png (一番奥、エリア1のみ、暗転中も維持)
         if (!isSecondScene && !isThirdScene && lightImg.complete) {
@@ -51,9 +75,12 @@ function draw() {
             const lightOffsetX = -100; 
             const lightOffsetY = 550; 
             
-            for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
+            let lx = lightLoopX;
+            while (lx > -800) lx -= lightSpacing;
+            while (lx < CANVAS_WIDTH + 800) {
                 const w = (lightH / lightImg.height) * lightImg.width;
-                ctx.drawImage(lightImg, x + lightOffsetX, lightOffsetY - lightH, w, lightH);
+                ctx.drawImage(lightImg, lx + lightOffsetX, lightOffsetY - lightH, w, lightH);
+                lx += lightSpacing;
             }
         }
 
@@ -61,6 +88,8 @@ function draw() {
         const currentVignette = (isSecondScene || isThirdScene) ? vignette2Img : vignetteImg;
         if (currentVignette.complete) {
             ctx.save();
+            // ビネットはズームの影響を受けないよう変換行列をリセットして画面全体に描画
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.globalCompositeOperation = 'multiply';
             ctx.drawImage(currentVignette, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
             ctx.restore();
@@ -225,26 +254,38 @@ function draw() {
             const streetOffsetX = 150;  
             const streetOffsetY = 460;  
             
-            for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
+            let lx = lightLoopX;
+            while (lx > -800) lx -= lightSpacing;
+            while (lx < CANVAS_WIDTH + 800) {
                 const w = (streetH / streetlightImg.height) * streetlightImg.width;
-                ctx.drawImage(streetlightImg, x + streetOffsetX, streetOffsetY - streetH, w, streetH);
+                ctx.drawImage(streetlightImg, lx + streetOffsetX, streetOffsetY - streetH, w, streetH);
+                lx += lightSpacing;
             }
         }
 
         if (guardrailImg.complete) {
             const spacing = 650;
             let loopX = -((distance * 2.0) % spacing);
-            for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {
-                ctx.drawImage(guardrailImg, x, 380, 600, 110);
+            let gx = loopX;
+            while (gx > -800) gx -= spacing;
+            while (gx < CANVAS_WIDTH + 800) {
+                ctx.drawImage(guardrailImg, gx, 380, 600, 110);
+                gx += spacing;
             }
         }
     }
 
-    ctx.restore(); 
+    ctx.restore(); // 一旦ズームとPANをリセット
 
-    // ビネットの上にレーザーを描画
+    // レーザーや巨大手裏剣にも再度PANとズームを適用
     ctx.save();
     ctx.translate(0, sakuya.cameraOffsetY);
+    if (currentZoom !== 1.0) {
+        ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.7);
+        ctx.scale(currentZoom, currentZoom);
+        ctx.translate(-CANVAS_WIDTH / 2, -CANVAS_HEIGHT * 0.7);
+    }
+
     enemyLasers.forEach(l => {
         const lScale = 1.0 + (l.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         ctx.save();
@@ -287,7 +328,6 @@ function draw() {
         }
         ctx.restore();
     });
-    ctx.restore();
 
     if (giantShuriken && syurikenImg.complete) {
         ctx.save();
@@ -299,6 +339,28 @@ function draw() {
         ctx.restore();
     }
 
+    // Streetlight_front.png (一番手前、エリア1のみ、暗転中も維持)
+    if (!isSecondScene && !isThirdScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
+        const fgStreetH = 800;             
+        const fgStreetOffsetX = -100;      
+        const fgStreetOffsetY = CANVAS_HEIGHT + 140; 
+        const fgScrollSpeed = 3.5;         
+        
+        const fgLightSpacing = 5000; 
+        let fgLightLoopX = -((distance * fgScrollSpeed) % fgLightSpacing);
+        
+        let fgx = fgLightLoopX;
+        while (fgx > -800) fgx -= fgLightSpacing;
+        while (fgx < CANVAS_WIDTH + 800) {
+            const w = (fgStreetH / streetlightFrontImg.height) * streetlightFrontImg.width;
+            ctx.drawImage(streetlightFrontImg, fgx + fgStreetOffsetX, fgStreetOffsetY - fgStreetH, w, fgStreetH);
+            fgx += fgLightSpacing;
+        }
+    }
+    
+    ctx.restore(); // レーザー等のPAN・ズームをリセット
+
+    // トランジション（暗転）はズームの影響を受けずに画面全体に描画
     if (isHalfwayTransitioning) {
         let alpha = 0;
         if (halfwayTransitionTimer < 60) {
@@ -312,26 +374,6 @@ function draw() {
         ctx.save();
         ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-        ctx.restore();
-    }
-
-    // Streetlight_front.png (一番手前、エリア1のみ、暗転中も維持)
-    if (!isSecondScene && !isThirdScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
-        ctx.save();
-        ctx.translate(0, sakuya.cameraOffsetY);
-        
-        const fgStreetH = 800;             
-        const fgStreetOffsetX = -100;      
-        const fgStreetOffsetY = CANVAS_HEIGHT + 140; 
-        const fgScrollSpeed = 3.5;         
-        
-        const fgLightSpacing = 5000; 
-        let fgLightLoopX = -((distance * fgScrollSpeed) % fgLightSpacing);
-        
-        for (let x = fgLightLoopX; x < CANVAS_WIDTH + fgLightSpacing; x += fgLightSpacing) {
-            const w = (fgStreetH / streetlightFrontImg.height) * streetlightFrontImg.width;
-            ctx.drawImage(streetlightFrontImg, x + fgStreetOffsetX, fgStreetOffsetY - fgStreetH, w, fgStreetH);
-        }
         ctx.restore();
     }
 

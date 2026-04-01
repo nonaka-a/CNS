@@ -3,7 +3,7 @@ function subAction() {
 
     // 巨大手裏剣の発射 (右から左へ)
     giantShuriken = {
-        x: CANVAS_WIDTH, // 画面右から出現
+        x: CANVAS_WIDTH + 400, // ズームアウトに対応するため画面外から出現させる
         y: -100,
         w: 650, h: 650, // 画面いっぱい
         vx: -20, // 左方向へ

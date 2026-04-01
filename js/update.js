@@ -1,6 +1,10 @@
 function update() {
     if (gameOver || isPaused) return;
 
+    // カメラズームの滑らかな更新 (エリア2 voltの時だけ0.75倍)
+    let targetZoom = (isSecondScene && !isHalfwayTransitioning) ? 0.75 : 1.0;
+    currentZoom += (targetZoom - currentZoom) * 0.05;
+
     // オープニングイベントの更新
     if (isOpRunning) {
         if (opConfig) {
@@ -51,7 +55,12 @@ function update() {
         }
         
         sakuya.x += sakuya.vx;
-        sakuya.x = Math.max(0, Math.min(sakuya.x, CANVAS_WIDTH - sakuya.w));
+        
+        // エリア2のズームアウトに対応した移動制限の計算
+        const zoomOffset = (CANVAS_WIDTH / currentZoom - CANVAS_WIDTH) / 2;
+        const minX = -zoomOffset;
+        const maxX = CANVAS_WIDTH + zoomOffset - sakuya.w;
+        sakuya.x = Math.max(minX, Math.min(sakuya.x, maxX));
 
         // 奥行き移動
         let vy_depth = 0;
@@ -177,7 +186,9 @@ function update() {
         const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale + mitama.jumpOffset;
         
-        if (mitama.x + mitama.w < 0) endGame("MITAMA LOST...");
+        // ミタマのロスト判定（エリア2は画面外を考慮して左端を拡張）
+        const lostThreshold = isSecondScene ? -200 : -mitama.w;
+        if (mitama.x + mitama.w < lostThreshold) endGame("MITAMA LOST...");
     }
 
     // Mitama animation update
@@ -198,7 +209,7 @@ function update() {
         b.angle -= 0.6;
         b.history.push({ x: b.x, y: b.y, angle: b.angle });
         if (b.history.length > 12) b.history.shift(); 
-        if (b.x + b.w < 0 || b.x > CANVAS_WIDTH) {
+        if (b.x + b.w < -400 || b.x > CANVAS_WIDTH + 400) { // 弾の消去判定も広げる
             bullets.splice(i, 1);
             continue;
         }
@@ -258,9 +269,10 @@ function update() {
     // 第二エリア：ビルの足場生成
     if (isSecondScene && !isHalfwayTransitioning) {
         // 一定距離（隙間）を空けて足場を生成
-        if (platforms.length === 0 || (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w < CANVAS_WIDTH - 600)) {
+        // ズームアウト(0.75倍)の影響を考慮し、1段ジャンプでギリギリ届く距離感にするため閾値を580に調整
+        if (platforms.length === 0 || (platforms[platforms.length - 1].x + platforms[platforms.length - 1].w < CANVAS_WIDTH + 400 - 580)) {
             platforms.push({
-                x: CANVAS_WIDTH,
+                x: CANVAS_WIDTH + 400, // ズームアウトに対応して画面外から生成
                 w: 2000, // 画像サイズに合わせて幅を統一
                 h: 400,
                 y_back: 280,
@@ -274,7 +286,7 @@ function update() {
     for (let i = platforms.length - 1; i >= 0; i--) {
         const p = platforms[i];
         p.x -= isSecondScene ? 10 : 5; // エリア2は2倍速
-        if (p.x + p.w + 80 < -100) {
+        if (p.x + p.w + 80 < -400) { // 画面外の判定を広げる
             platforms.splice(i, 1);
         }
     }
@@ -285,7 +297,8 @@ function update() {
     if (!isHalfwayTransitioning && Math.random() < spawnRate && enemies.length < maxEnemies) {
         enemies.push({
             id: enemyIdCounter++, // 一意識別用ID
-            x: -80, w: 80, h: 80,
+            x: isSecondScene ? -400 : -80, // エリア2はズームアウトを考慮してより左から出現
+            w: 80, h: 80,
             groundY: 300 + Math.random() * 120, // 奥行き範囲を中間位置(300-420)へ再調整
             jumpOffset: -80 - Math.random() * 80,
             targetX: 20 + Math.random() * 200, 
@@ -410,7 +423,7 @@ function update() {
                 enemies.splice(j, 1);
             }
         }
-        if (giantShuriken.x + giantShuriken.w < 0) giantShuriken = null;
+        if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; // 消滅判定も広げる
     }
 
     if (!isIntro && !isHalfwayTransitioning) {
@@ -470,7 +483,7 @@ function update() {
                 isSecondScene = true;
                 platforms = [{
                     x: -500, 
-                    w: 2000, 
+                    w: 2000, // 画像サイズに合わせて幅を統一
                     h: 400,
                     y_back: 280,
                     y_front: 440,
