@@ -42,12 +42,14 @@ function draw() {
         }
         
         let bgScrollSpeed = isThirdScene ? 2.0 : (isSecondScene ? 0.05 : 2.0);
+        
+        // bgScrollSpeed を掛けた distance を bgW で割った余りをマイナスにしてループさせる
         let startX = -((distance * bgScrollSpeed) % bgW);
         let drawX = startX;
         
         while (drawX > -800) drawX -= bgW;
         while (drawX < CANVAS_WIDTH + 800) {
-            // エリア2のみ拡大補正のオフセットを適用し、それ以外は-50に固定
+            // isSecondScene の場合は拡大補正用のオフセット、それ以外(エリア1・3)は -50 に固定
             const offsetY = needsBackgroundScale ? -120 - (bgH - (CANVAS_HEIGHT + 100)) / 2 : -50;
             ctx.drawImage(currentBG, drawX, offsetY, bgW, bgH);
             drawX += bgW;

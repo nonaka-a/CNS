@@ -24,22 +24,22 @@ let droneConfig = null;
 const GRAVITY = 0.8;
 const PLAYER_SPEED = 6;
 const GROUND_Y_POS = 420;
-const PERSPECTIVE_BASE_Y = 360;  // スケールが1.0倍になる基準のY座標
-const PERSPECTIVE_SCALE_FACTOR = 0.002; // 奥と手前でのサイズ変化率
+const PERSPECTIVE_BASE_Y = 360;
+const PERSPECTIVE_SCALE_FACTOR = 0.002;
 const goalDistance = 40000;
 let distance = 0;
 let halfwayReached = false;
-let currentZoom = 1.0; // 追加: カメラのズーム倍率
-let goalThresholdReached = false; // エリア3切り替え用フラグ
+let goalThresholdReached = false;
 let isHalfwayTransitioning = false;
 let halfwayTransitionTimer = 0;
 let isSecondScene = false;
-let isThirdScene = false; // エリア3フラグ
-let bossActive = false;   // ボス戦中フラグ
-let bossDefeated = false; // ボス撃破フラグ
-let bossSpawnTimer = 0;   // ボス登場までのタイマー
+let isThirdScene = false;
+let currentZoom = 1.0; // カメラのズーム倍率
+let bossActive = false;
+let bossDefeated = false;
+let bossSpawnTimer = 0;
 let ninjutsuGauge = 0;
-const NINJUTSU_MAX = 10; // 10体倒すと満タン
+const NINJUTSU_MAX = 10;
 let ninjutsuFullTriggered = false;
 let gameOver = false;
 let isOpRunning = false;
@@ -54,7 +54,7 @@ const sakuya = {
     jumpPower: -18, isJumping: false, hp: 100,
     img: new Image(),
     currentAnim: 'idle', currentFrame: 0, frameTimer: 0, jumpCount: 0,
-    attackTimer: 0
+    attackTimer: 0, invincibleTimer: 0, cameraOffsetY: 0
 };
 sakuya.img.src = 'images/sakuya.png';
 
@@ -63,7 +63,7 @@ const mitama = {
     isHolding: true,
     img: new Image(),
     currentAnim: 'idle', currentFrame: 0, frameTimer: 0,
-    jumpOffset: 0, vy: 0
+    jumpOffset: 0, vy: 0, invincibleTimer: 0
 };
 mitama.img.src = 'images/mitama.png';
 
@@ -77,7 +77,7 @@ const bgImg = new Image();
 bgImg.src = 'images/BG1.jpg';
 const bgImg2 = new Image();
 bgImg2.src = 'images/BG2.jpg';
-const bgImg3 = new Image(); // 新規追加
+const bgImg3 = new Image();
 bgImg3.src = 'images/BG3.jpg';
 const droneImg = new Image();
 droneImg.src = 'images/droneA.png';
@@ -98,7 +98,7 @@ buildingTopImg.src = 'images/Building_top.png';
 const buildingWallImg = new Image();
 buildingWallImg.src = 'images/Building_Wall.png';
 
-const bossImg = new Image(); // ボス画像追加
+const bossImg = new Image();
 bossImg.src = 'images/iina.png';
 
 const boss = {
@@ -113,44 +113,21 @@ let isPaused = false;
 let enemyIdCounter = 0;
 let giantShuriken = null;
 let explosions = [];
+let explosionConfig = null;
 const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
 const droneEnergyImg = new Image();
 droneEnergyImg.src = 'images/drone_Energy.png';
+
 let audioCtx = null;
 const seBuffers = {};
-let opAudioSources = {}; // layerId -> sourceNode
+let opAudioSources = {};
+let bgmFadeInterval = null;
 const bgm = new Audio('sound/BGM1.mp3');
 bgm.loop = true;
 bgm.volume = 0.4;
 bgm.muted = !isSoundOn;
-
-const bgm2 = new Audio('sound/BGM2.mp3'); // 追加
+const bgm2 = new Audio('sound/BGM2.mp3');
 bgm2.loop = true;
 bgm2.volume = 0.4;
 bgm2.muted = !isSoundOn;
-
-async function loadSE(name, url) {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    try {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        seBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
-    } catch (e) {
-        console.error(`Failed to load SE: ${name}`, e);
-    }
-}
-
-function playSE(name, volume = 1.0) {
-    if (!isSoundOn) return;
-    if (!audioCtx || !seBuffers[name]) return;
-    const source = audioCtx.createBufferSource();
-    source.buffer = seBuffers[name];
-    
-    const gainNode = audioCtx.createGain();
-    gainNode.gain.value = volume;
-    
-    source.connect(gainNode);
-    gainNode.connect(audioCtx.destination);
-    source.start(0);
-}

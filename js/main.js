@@ -1,5 +1,4 @@
 let initDone = false;
-let bgmFadeInterval = null; // BGMフェードアウト用のインターバル
 
 async function init() {
     canvas = document.getElementById('gameCanvas');
@@ -197,28 +196,9 @@ function fitWindow() {
     wrapper.style.transform = `scale(${scale})`;
 }
 
-function fadeOutBGM(targetBgm, duration = 1000) {
-    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
-    const startVolume = targetBgm.volume;
-    const step = startVolume / (duration / 50);
-    
-    bgmFadeInterval = setInterval(() => {
-        if (targetBgm.volume > step) {
-            targetBgm.volume -= step;
-        } else {
-            targetBgm.volume = 0;
-            targetBgm.pause();
-            targetBgm.volume = startVolume; // 次回再生用にリセット
-            clearInterval(bgmFadeInterval);
-            bgmFadeInterval = null;
-        }
-    }, 50);
-}
-
 function endGame(msg) {
     gameOver = true;
     isGameRunning = false;
-    // BGMを止める
     if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
     bgm2.pause();
@@ -297,6 +277,12 @@ function resetGameState() {
     halfwayTransitionTimer = 0;
     isSecondScene = false;
     isThirdScene = false;
+    currentZoom = 1.0;
+    bossActive = false;
+    bossDefeated = false;
+    bossSpawnTimer = 0;
+    ninjutsuGauge = 0;
+    ninjutsuFullTriggered = false;
     gameOver = false;
     isIntro = true;
     isPaused = false;
@@ -313,7 +299,7 @@ function resetGameState() {
     sakuya.attackTimer = 0;
     sakuya.currentAnim = 'idle';
     sakuya.currentFrame = 0;
-    if (sakuya.invincibleTimer !== undefined) sakuya.invincibleTimer = 0;
+    sakuya.invincibleTimer = 0;
     
     mitama.hp = 50;
     mitama.isHolding = true;
@@ -322,7 +308,11 @@ function resetGameState() {
     mitama.frameTimer = 0;
     mitama.jumpOffset = 0;
     mitama.vy = 0;
-    if (mitama.invincibleTimer !== undefined) mitama.invincibleTimer = 0;
+    mitama.invincibleTimer = 0;
+
+    boss.hp = boss.maxHp;
+    boss.visible = false;
+    boss.x = -500;
     
     bullets = [];
     enemies = [];
