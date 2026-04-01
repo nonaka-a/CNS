@@ -35,7 +35,10 @@ function setupControls() {
 
         // 開発デバッグ用
         if (e.code === 'Digit2') {
-            distance = goalDistance / 2 - 200;
+            distance = goalDistance * 0.5 - 200;
+        }
+        if (e.code === 'Digit3') {
+            distance = goalDistance * 0.95 - 200;
         }
     });
     window.addEventListener('keyup', (e) => {
@@ -55,7 +58,8 @@ function setupControls() {
         { id: 'btn-mode', action: jump },
         { id: 'btn-settings', action: typeof toggleSettings !== 'undefined' ? toggleSettings : null },
         { id: 'btn-sub', action: subAction },
-        { id: 'debug-skip-btn', action: () => { distance = goalDistance / 2 - 200; } }
+        { id: 'debug-skip-btn', action: () => { distance = goalDistance * 0.5 - 200; } },
+        { id: 'debug-skip-btn-3', action: () => { distance = goalDistance * 0.9 - 200; } }
     ];
 
     // ボタンのレクト情報をキャッシュする（レイアウトスライッシング防止）
@@ -79,7 +83,7 @@ function setupControls() {
         setTimeout(updateBtnRects, 100); // スケール反映待ち
     });
 
-   const handleTouch = (e) => {
+    const handleTouch = (e) => {
         if (e.cancelable) e.preventDefault();
         
         if (isOpRunning) {

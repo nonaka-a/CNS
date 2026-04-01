@@ -29,15 +29,12 @@ async function init() {
                 
                 let normalized = p.replace(/\\/g, '/');
                 if (type === 'audio') {
-                    // sound/ または sounds/ 以降を抽出
                     let subPath = normalized.includes('sound/') ? normalized.split('sound/')[1] : 
                                   normalized.includes('sounds/') ? normalized.split('sounds/')[1] : 
                                   normalized.split('/').pop();
-                    // 過去のエクスポートバグ修正
                     subPath = subPath.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
                     return `sound/${subPath}`;
                 } else {
-                    // images/ または image/ 以降を抽出
                     let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
                                   normalized.includes('image/') ? normalized.split('image/')[1] : 
                                   normalized.split('/').pop();
@@ -64,7 +61,6 @@ async function init() {
                 } else if (asset.type === 'folder' && asset.children) {
                     await Promise.all(asset.children.map(child => loadAsset(child)));
                 } else if (asset.type === 'comp' && asset.layers) {
-                    // コンポジション内のレイヤーの画像（互換用）
                     asset.layers.forEach(layer => {
                         if (layer.source && (!layer.imgObj || !layer.imgObj.src)) {
                             layer.imgObj = new Image();
@@ -75,7 +71,6 @@ async function init() {
             };
             await Promise.all(opConfig.assets.map(asset => loadAsset(asset)));
 
-            // レイヤーへのimgObj紐付け
             const comp = opConfig.assets.find(a => a.id === "comp_1");
             if (comp) {
                 comp.layers.forEach(layer => {
@@ -96,7 +91,6 @@ async function init() {
             }
         }
 
-        // SEの先行ロード
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
         await loadSE('laser', 'sound/Laser1.mp3');
@@ -116,7 +110,6 @@ async function init() {
     sakuya.groundY = GROUND_Y_POS;
     initDone = true;
 
-    // STARTボタンを正常な表示に戻し、有効化する
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
         startBtn.style.opacity = '1';
@@ -128,35 +121,24 @@ async function init() {
 }
 
 function startGame() {
-    if (!initDone || isGameRunning) return; // ロード中または二重起動防止
-    
+    if (!initDone || isGameRunning) return; 
     resetGameState();
-    
-    // iOS/iPadでの低遅延再生を有効にするためユーザー操作時に再開
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
-
-    // BGMの再生開始
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     bgm.currentTime = 0;
-    if (isSoundOn) {
-        bgm.play().catch(e => console.error("BGM playback failed:", e));
-    }
-
+    if (isSoundOn) bgm.play().catch(e => console.error("BGM playback failed:", e));
     document.getElementById('title-screen').style.display = 'none';
     
     if (opConfig) {
         isOpRunning = true;
         opTime = 0;
     } else {
-        // OPがない場合は即座にUI表示して本編開始
         document.getElementById('progress-container').style.display = 'block';
         document.getElementById('ninjutsu-container').style.display = 'block';
         document.getElementById('debug-skip-btn').style.display = 'flex';
+        document.getElementById('debug-skip-btn-3').style.display = 'flex';
         document.querySelector('.hud').style.display = 'block';
         document.getElementById('control-panel').style.display = 'flex';
         isIntro = true;
-        // 表示後にレクト情報を更新
         if (window.updateBtnRects) window.updateBtnRects();
     }
     
@@ -166,8 +148,6 @@ function startGame() {
 }
 
 function skipOP() {
-    // iPadなどで「開始」ボタンを押した際のイベントが残っており、
-    // 開始直後にそのままスキップされてしまうのを防ぐため、0.5秒の猶予を設ける
     if (opTime < 0.5) return;
     endOP();
 }
@@ -179,38 +159,30 @@ function endOP() {
 
     if (typeof stopAllOPAudio === 'function') stopAllOPAudio();
 
-    // UIの表示復帰
     document.getElementById('progress-container').style.display = 'block';
     document.getElementById('ninjutsu-container').style.display = 'block';
     document.getElementById('debug-skip-btn').style.display = 'flex';
+    document.getElementById('debug-skip-btn-3').style.display = 'flex';
     document.querySelector('.hud').style.display = 'block';
     document.getElementById('control-panel').style.display = 'flex';
     document.getElementById('skip-op-btn').style.display = 'none';
 
-    // UIが表示された直後のブラウザのレイアウト確定を待ってから座標を取得
     requestAnimationFrame(() => {
         if (window.updateBtnRects) window.updateBtnRects();
     });
 
-    // ゲーム本編の開始準備
     sakuya.x = -100;
     isIntro = true;
 }
 
-
 function gameLoop(timestamp) {
     if (!lastFrameTime) lastFrameTime = timestamp;
     const elapsed = timestamp - lastFrameTime;
-
-    // TARGET_FPS (60fps) 以上時間が経過したときのみ更新・描画
     if (elapsed >= FRAME_INTERVAL) {
-        // 次のフレームまでの余剰時間を考慮して更新
         lastFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
-        
         update();
         draw();
     }
-
     if (isGameRunning) requestAnimationFrame(gameLoop);
 }
 
@@ -223,17 +195,11 @@ function fitWindow() {
 function endGame(msg) {
     gameOver = true;
     isGameRunning = false;
-    
-    // BGMの停止
     bgm.pause();
-
     document.getElementById('modal-text').innerText = msg;
     document.getElementById('modal-overlay').style.display = 'flex';
 }
 
-/**
- * --- SETTINGS & CONTROL ---
- */
 let settingsTimer = 0;
 function toggleSettings() {
     const now = Date.now();
@@ -267,19 +233,11 @@ function backToTitle() {
 function toggleSound() {
     isSoundOn = !isSoundOn;
     bgm.muted = !isSoundOn;
-    
     const btnText = document.getElementById('sound-btn-text');
-    if (btnText) {
-        btnText.innerText = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
-    }
-    
+    if (btnText) btnText.innerText = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
     if (isSoundOn) {
-        if (isGameRunning && !isPaused) {
-            bgm.play().catch(() => {});
-        }
-    } else {
-        bgm.pause();
-    }
+        if (isGameRunning && !isPaused) bgm.play().catch(() => {});
+    } else bgm.pause();
 }
 
 function toggleFullscreen() {
@@ -288,18 +246,18 @@ function toggleFullscreen() {
             console.error(`Error attempting to enable full-screen mode: ${err.message}`);
         });
     } else {
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        }
+        if (document.exitFullscreen) document.exitFullscreen();
     }
 }
 
 function resetGameState() {
     distance = 0;
     halfwayReached = false;
+    goalThresholdReached = false;
     isHalfwayTransitioning = false;
     halfwayTransitionTimer = 0;
     isSecondScene = false;
+    isThirdScene = false;
     gameOver = false;
     isIntro = true;
     isPaused = false;
@@ -331,13 +289,15 @@ function resetGameState() {
     enemies = [];
     enemyLasers = [];
     explosions = [];
-    platforms = []; // 足場をリセット
+    platforms = [];
     bgX = 0;
     
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = '0%';
     const progressMarker = document.getElementById('progress-halfway-marker');
     if (progressMarker) progressMarker.classList.remove('reached');
+    const goalMarker = document.getElementById('progress-goal-marker');
+    if (goalMarker) goalMarker.classList.remove('reached');
 }
 
 init();

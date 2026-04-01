@@ -9,6 +9,7 @@ function update() {
                 document.getElementById('progress-container').style.display = 'none';
                 document.getElementById('ninjutsu-container').style.display = 'none';
                 document.getElementById('debug-skip-btn').style.display = 'none';
+                document.getElementById('debug-skip-btn-3').style.display = 'none';
                 document.querySelector('.hud').style.display = 'none';
                 document.getElementById('control-panel').style.display = 'none';
                 document.getElementById('skip-op-btn').style.display = 'block';
@@ -62,7 +63,7 @@ function update() {
     }
     sakuya.groundY = Math.max(280, Math.min(sakuya.groundY, 440));
 
-    // 足場判定 (Area 2)
+    // 足場判定 (Area 2専用)
     function checkOnPlat(obj) {
         if (!isSecondScene) return true;
         return platforms.some(p => {
@@ -413,15 +414,14 @@ function update() {
     }
 
     if (!isIntro && !isHalfwayTransitioning) {
-        distance += 5; // 進捗速度は一定（エリア2でも長く遊べるように）
+        distance += 5; // 進捗速度は一定
         
-        // 中間地点チェック
-        if (distance >= goalDistance / 2 && !halfwayReached) {
+        // 50%：エリア1 → エリア2への切り替えチェック
+        if (distance >= goalDistance * 0.5 && !halfwayReached) {
             halfwayReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
             
-            // 敵や弾を消去して仕切り直す
             enemies = [];
             enemyLasers = [];
             bullets = [];
@@ -430,32 +430,58 @@ function update() {
             const progressMarker = document.getElementById('progress-halfway-marker');
             if (progressMarker) progressMarker.classList.add('reached');
         }
+
+        // 90%：エリア2 → エリア3への切り替えチェック
+        if (distance >= goalDistance * 0.95 && !goalThresholdReached) {
+            goalThresholdReached = true;
+            isHalfwayTransitioning = true;
+            halfwayTransitionTimer = 0;
+
+            enemies = [];
+            enemyLasers = [];
+            bullets = [];
+            explosions = [];
+
+            const goalMarker = document.getElementById('progress-goal-marker');
+            if (goalMarker) goalMarker.classList.add('reached');
+        }
     }
     
     // トランジション進行
     if (isHalfwayTransitioning) {
         halfwayTransitionTimer++;
         
-        // 暗転が明け始めるタイミング（120フレーム目）でエリア2の準備を行う
+        // 暗転が明け始めるタイミング（120フレーム目）
         if (halfwayTransitionTimer === 120) {
-            isSecondScene = true;
-            
-            // エリア2開始時の最初の足場を生成
-            platforms = [{
-                x: -500, 
-                w: 2000, 
-                h: 400,
-                y_back: 280,
-                y_front: 440,
-                shift: 80
-            }];
-            
-            // プレイヤーをビルの中央付近にワープ
-            sakuya.x = 400;
-            sakuya.groundY = 360;
-            sakuya.jumpOffset = 0; // 空中復帰ではなく地上に配置
-            sakuya.vy = 0;
-            sakuya.isOnPlat = true;
+            if (goalThresholdReached) {
+                // エリア3への移行
+                isSecondScene = false;
+                isThirdScene = true;
+                platforms = []; // 足場を完全に消去
+                
+                // プレイヤーを地面に配置
+                sakuya.x = 400;
+                sakuya.groundY = GROUND_Y_POS;
+                sakuya.jumpOffset = 0;
+                sakuya.vy = 0;
+                sakuya.isOnPlat = true;
+            } else if (halfwayReached) {
+                // エリア2への移行
+                isSecondScene = true;
+                platforms = [{
+                    x: -500, 
+                    w: 2000, 
+                    h: 400,
+                    y_back: 280,
+                    y_front: 440,
+                    shift: 80
+                }];
+                sakuya.x = 400;
+                sakuya.groundY = 360;
+                sakuya.jumpOffset = 0;
+                sakuya.vy = 0;
+                sakuya.isOnPlat = true;
+            }
             
             if (mitama.isHolding) {
                 mitama.x = sakuya.x + 10;
@@ -464,7 +490,6 @@ function update() {
             }
         }
         
-        // トランジション完了
         if (halfwayTransitionTimer > 180) { 
             isHalfwayTransitioning = false;
         }

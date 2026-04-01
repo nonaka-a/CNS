@@ -14,28 +14,42 @@ function draw() {
     ctx.save();
     ctx.translate(0, sakuya.cameraOffsetY);
 
-    // 一枚絵の背景 (暗転が開始されたらBG2に切り替え予約、暗転中か明けるところで反映)
-    const currentBG = (halfwayReached && halfwayTransitionTimer >= 60) || isSecondScene ? bgImg2 : bgImg;
+    // 一枚絵の背景
+    let currentBG;
+    if (isThirdScene) {
+        currentBG = bgImg3;
+    } else if ((halfwayReached && halfwayTransitionTimer >= 60) || isSecondScene) {
+        currentBG = bgImg2;
+    } else {
+        currentBG = bgImg;
+    }
+
     if (currentBG.complete) {
         const bgH = CANVAS_HEIGHT + 100;
-        const bgW = (bgH / currentBG.height) * currentBG.width; // 縦横比を維持した幅を計算
+        const bgW = (bgH / currentBG.height) * currentBG.width; 
         
-        // エリア2(BG2)は遠景のためスクロール速度を大幅に下げる (例: 0.3)
-        const bgScrollSpeed = isSecondScene ? 0.05 : 2.0;
+        // エリア2は遠景、エリア1・3は通常速度
+        let bgScrollSpeed;
+        if (isThirdScene) {
+            bgScrollSpeed = 2.0;
+        } else if (isSecondScene) {
+            bgScrollSpeed = 0.05;
+        } else {
+            bgScrollSpeed = 2.0;
+        }
+
         let loopX = -((distance * bgScrollSpeed) % bgW);
         ctx.drawImage(currentBG, loopX, -50, bgW, bgH);
         ctx.drawImage(currentBG, loopX + bgW, -50, bgW, bgH);
 
         // light.png (一番奥、エリア1のみ、暗転中も維持)
-        if (!isSecondScene && lightImg.complete) {
+        if (!isSecondScene && !isThirdScene && lightImg.complete) {
             const lightSpacing = 1950;
             let lightLoopX = -((distance * 2.0) % lightSpacing);
             
-            // --- ここで light.png のサイズと位置を調整します ---
-            const lightH = 350;       // 街灯の高さ
-            const lightOffsetX = -100; // X座標のズレ（ガードレールとの位置関係）
-            const lightOffsetY = 550; // Y座標の基準位置（地面の高さなど）
-            // ----------------------------------------------------
+            const lightH = 350;       
+            const lightOffsetX = -100; 
+            const lightOffsetY = 550; 
             
             for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
                 const w = (lightH / lightImg.height) * lightImg.width;
@@ -44,15 +58,13 @@ function draw() {
         }
 
         // ビネット効果 (背景とlightのみに適用、エリアごとに画像を切り替え)
-        const currentVignette = isSecondScene ? vignette2Img : vignetteImg;
+        const currentVignette = (isSecondScene || isThirdScene) ? vignette2Img : vignetteImg;
         if (currentVignette.complete) {
             ctx.save();
             ctx.globalCompositeOperation = 'multiply';
-            // カメラ追従のオフセット(-50)分も考慮して、背景と同じ領域に描画
             ctx.drawImage(currentVignette, 0, -50, CANVAS_WIDTH, CANVAS_HEIGHT + 100);
             ctx.restore();
         }
-
     }
 
     // 手裏剣
@@ -60,7 +72,7 @@ function draw() {
         const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         if (syurikenImg.complete) {
             b.history.forEach((h, idx) => {
-                if (idx % 2 === 0) return; // 1つおきに描画をスキップして間引く
+                if (idx % 2 === 0) return; 
                 const trailAlpha = (idx / b.history.length) * 0.6;
                 const trailScaleRatio = 0.3 + (idx / b.history.length) * 0.7;
                 ctx.save();
@@ -88,7 +100,12 @@ function draw() {
     }
     renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
     explosions.forEach(ex => renderQueue.push({ type: 'explosion', depth: ex.groundY, obj: ex }));
-    platforms.forEach(p => renderQueue.push({ type: 'platform', depth: p.y_back - 1, obj: p }));
+    
+    // エリア3ではビルは描画しない
+    if (!isThirdScene) {
+        platforms.forEach(p => renderQueue.push({ type: 'platform', depth: p.y_back - 1, obj: p }));
+    }
+
     renderQueue.sort((a, b) => a.depth - b.depth);
 
     renderQueue.forEach(item => {
@@ -96,7 +113,6 @@ function draw() {
             const e = item.obj;
             const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             
-            // 落ち影
             if (e.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.beginPath();
@@ -120,7 +136,6 @@ function draw() {
         } else if (item.type === 'mitama') {
             const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             
-            // 落ち影
             if (mitama.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.beginPath();
@@ -137,12 +152,8 @@ function draw() {
                     const anim = mitamaConfig.data[mitama.currentAnim];
                     const frame = anim.frames[mitama.currentFrame];
                     if (!mitama.isHolding) {
-                        // リリース中：groundYを軸に、通常の浮遊高さ + jumpOffset分を加算して描画
                         ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset, mitama.w, mitama.h);
                     } else {
-                        // ホールド中：sakuya.y（ジャンプオフセット込み）+ 30pxの相対位置に描画
-                        // 既に translate(sakuya.groundY) されている想定なので、sakuya.h と jumpOffset を相殺して調整
-                        // drawImage 自体は -h-100 に描かれている想定
                         ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, -mitama.h - 100 + sakuya.jumpOffset, mitama.w, mitama.h);
                     }
                 } else {
@@ -170,7 +181,6 @@ function draw() {
         } else if (item.type === 'sakuya') {
             const sScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             
-            // 落ち影
             if (sakuya.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.beginPath();
@@ -193,17 +203,12 @@ function draw() {
             ctx.restore();
         } else if (item.type === 'platform') {
             const p = item.obj;
-            
-            // 共通のオフセット値を定義（屋上の調整に基づいた位置情報）
-            const roofOffsetX = -10; // 屋上および壁面のX軸微調整値
-            const roofOffsetY = -20; // 屋上および壁面のY軸微調整値
+            const roofOffsetX = -10; 
+            const roofOffsetY = -20; 
 
-            // ビルの側面（壁面）を描画（topと同じ座標に描画）
             if (buildingWallImg.complete) {
                 ctx.drawImage(buildingWallImg, p.x + roofOffsetX, p.y_back + roofOffsetY);
             }
-
-            // ビルの屋上（Building_top.png）を描画（Wallと同じ座標に描画）
             if (buildingTopImg.complete) {
                 ctx.drawImage(buildingTopImg, p.x + roofOffsetX, p.y_back + roofOffsetY);
             }
@@ -211,17 +216,14 @@ function draw() {
     });
 
     // Streetlightとガードレールを描画 (エリア1のみ、暗転中も維持)
-    if (!isSecondScene) {
+    if (!isSecondScene && !isThirdScene) {
         const lightSpacing = 1950; 
         let lightLoopX = -((distance * 2.0) % lightSpacing); 
         
-        // Streetlight.png (キャラより手前、ガードレールより奥)
         if (streetlightImg.complete) {
-            // --- ここで Streetlight.png のサイズと位置を調整します ---
-            const streetH = 480;        // 奥側街灯の高さ
-            const streetOffsetX = 150;  // X座標のズレ
-            const streetOffsetY = 460;  // Y座標の基準位置
-            // ----------------------------------------------------------
+            const streetH = 480;        
+            const streetOffsetX = 150;  
+            const streetOffsetY = 460;  
             
             for (let x = lightLoopX; x < CANVAS_WIDTH + lightSpacing; x += lightSpacing) {
                 const w = (streetH / streetlightImg.height) * streetlightImg.width;
@@ -229,18 +231,16 @@ function draw() {
             }
         }
 
-        // ガードレール (キャラの手前)
         if (guardrailImg.complete) {
             const spacing = 650;
             let loopX = -((distance * 2.0) % spacing);
             for (let x = loopX; x < CANVAS_WIDTH + spacing; x += spacing) {
-                // y=380付近に配置
                 ctx.drawImage(guardrailImg, x, 380, 600, 110);
             }
         }
     }
 
-    ctx.restore(); // カメラPANのtranslateをリセット (ここで一旦リセット)
+    ctx.restore(); 
 
     // ビネットの上にレーザーを描画
     ctx.save();
@@ -289,27 +289,24 @@ function draw() {
     });
     ctx.restore();
 
-    // 巨大手裏剣の描画（ビネットの上、HUDの下）
     if (giantShuriken && syurikenImg.complete) {
         ctx.save();
         ctx.translate(giantShuriken.x + giantShuriken.w / 2, giantShuriken.y + giantShuriken.h / 2);
         ctx.rotate(giantShuriken.angle);
-        // 発光感
         ctx.shadowBlur = 40;
         ctx.shadowColor = "#ffeb3b";
         ctx.drawImage(syurikenImg, -giantShuriken.w / 2, -giantShuriken.h / 2, giantShuriken.w, giantShuriken.h);
         ctx.restore();
     }
 
-    // トランジション（中間切り替え）の描画
     if (isHalfwayTransitioning) {
         let alpha = 0;
         if (halfwayTransitionTimer < 60) {
-            alpha = halfwayTransitionTimer / 60; // フェードアウト（暗転）
+            alpha = halfwayTransitionTimer / 60; 
         } else if (halfwayTransitionTimer < 120) {
-            alpha = 1; // 暗転保持
+            alpha = 1; 
         } else {
-            alpha = 1 - ((halfwayTransitionTimer - 120) / 60); // フェードイン（明ける）
+            alpha = 1 - ((halfwayTransitionTimer - 120) / 60); 
         }
         
         ctx.save();
@@ -318,21 +315,17 @@ function draw() {
         ctx.restore();
     }
 
-    // Streetlight_front.png (一番手前、レーザー・手裏剣・トランジションよりも手前)
-    // エリア1のみ、暗転中も維持
-    // ただしカメラ追従(sakuya.cameraOffsetY)は適用して揺れを同期させる
-    if (!isSecondScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
+    // Streetlight_front.png (一番手前、エリア1のみ、暗転中も維持)
+    if (!isSecondScene && !isThirdScene && typeof streetlightFrontImg !== 'undefined' && streetlightFrontImg.complete) {
         ctx.save();
         ctx.translate(0, sakuya.cameraOffsetY);
         
-        // --- ここで一番手前の Streetlight_front.png のサイズと位置を調整します ---
-        const fgStreetH = 800;             // 一番手前の街灯の高さ
-        const fgStreetOffsetX = -100;      // X座標のズレ
-        const fgStreetOffsetY = CANVAS_HEIGHT + 140; // 画面下端を突き抜けるように配置
-        const fgScrollSpeed = 3.5;         // スクロール速度（奥は 2.0）
-        // ------------------------------------------------------------------
+        const fgStreetH = 800;             
+        const fgStreetOffsetX = -100;      
+        const fgStreetOffsetY = CANVAS_HEIGHT + 140; 
+        const fgScrollSpeed = 3.5;         
         
-        const fgLightSpacing = 5000; // 手前は間隔も広めに設定
+        const fgLightSpacing = 5000; 
         let fgLightLoopX = -((distance * fgScrollSpeed) % fgLightSpacing);
         
         for (let x = fgLightLoopX; x < CANVAS_WIDTH + fgLightSpacing; x += fgLightSpacing) {
@@ -342,7 +335,6 @@ function draw() {
         ctx.restore();
     }
 
-    // HP オーブ更新
     if (sakuya.lastHP !== sakuya.hp) {
         updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya');
         sakuya.lastHP = sakuya.hp;
@@ -375,21 +367,17 @@ function updateHPCircles(containerId, hp, count, type) {
     }
 }
 
-/**
- * --- OP (Opening Event) Player ---
- */
 function drawOP() {
     if (!opConfig) return;
     const comp = opConfig.assets.find(a => a.id === "comp_1");
     if (!comp) return;
 
-    // 背景画像 (縦横比を維持してスクロール)
     if (bgImg.complete) {
         const opBgH = CANVAS_HEIGHT + 100;
-        const opBgW = (opBgH / bgImg.height) * bgImg.width; // 縦横比を維持した幅
-        const scrollSpeed = 800; // スクロール速度
+        const opBgW = (opBgH / bgImg.height) * bgImg.width; 
+        const scrollSpeed = 800; 
         const loopX = -((opTime * scrollSpeed) % opBgW);
-        const offsetY = -50; // プレイ時と同じオフセット
+        const offsetY = -50; 
 
         ctx.drawImage(bgImg, loopX, offsetY, opBgW, opBgH);
         ctx.drawImage(bgImg, loopX + opBgW, offsetY, opBgW, opBgH);
@@ -398,7 +386,6 @@ function drawOP() {
         ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
-    // レイヤーの重なり順を考慮して、配列を逆順（背面から）に描画
     const layers = [...comp.layers].reverse();
 
     layers.forEach(layer => {
@@ -406,13 +393,9 @@ function drawOP() {
         if (opTime < layer.inPoint || opTime > layer.outPoint) return;
 
         ctx.save();
-        
-        // 階層構造（親子関係）の座標変換を適用
         applyHierarchyTransforms(layer, comp, opTime);
-
         const opacity = getOpTrackValue(layer.tracks.opacity, opTime, 100) / 100;
-        ctx.globalAlpha *= opacity; // 親のアルファがあれば継承（簡易）
-
+        ctx.globalAlpha *= opacity; 
         if (layer.blendMode && layer.blendMode !== 'source-over') {
             ctx.globalCompositeOperation = layer.blendMode;
         }
@@ -422,13 +405,8 @@ function drawOP() {
             const textToShow = layer.text.substring(0, Math.floor(layer.text.length * (typewriter / 100)));
             ctx.font = `bold ${layer.fontSize}px ${layer.fontFamily}`;
             ctx.fillStyle = layer.color;
-            ctx.textAlign = "left"; // 左揃えに変更
+            ctx.textAlign = "left"; 
             ctx.textBaseline = "middle";
-            
-            // 左揃えの場合、中央配置(500)ならテキスト幅の半分程度左から開始させる調整が必要な場合があるが、
-            // ユーザー指定の「左位置固定」を優先し、アンカーポイントを左端にする。
-            // もし中央寄せに見せたい場合は、ここで measureText を使ってオフセットする。
-            // ここでは一旦シンプルに left 描画にする。
             const metrics = ctx.measureText(layer.text);
             const xOffset = -metrics.width / 2; 
 
@@ -449,8 +427,6 @@ function drawOP() {
             }
         } else if (layer.type === 'solid') {
             ctx.fillStyle = layer.color;
-            // 円形や親子関係がある場合は 100x100 を基準サイズとする（エディタの仕様に合わせる）
-            // 親がなく矩形の場合はコンポジションサイズ（暗転用）とする
             const isSmallShape = layer.shape === 'circle' || layer.parent;
             const w = layer.width || (isSmallShape ? 100 : comp.width);
             const h = layer.height || (isSmallShape ? 100 : comp.height);
@@ -470,18 +446,15 @@ function drawOP() {
 }
 
 function applyHierarchyTransforms(layer, comp, time) {
-    // 親があれば先に適用（再帰）
     if (layer.parent) {
         const parentLayer = comp.layers.find(l => l.id === layer.parent);
         if (parentLayer) {
             applyHierarchyTransforms(parentLayer, comp, time);
         }
     }
-
     const pos = getOpTrackValue(layer.tracks.position, time, {x:500, y:300});
     const scale = getOpTrackValue(layer.tracks.scale, time, {x:100, y:100});
     const rotation = getOpTrackValue(layer.tracks.rotation, time, 0) * (Math.PI / 180);
-
     ctx.translate(pos.x, pos.y);
     ctx.rotate(rotation);
     ctx.scale(scale.x / 100, scale.y / 100);
@@ -495,32 +468,15 @@ function getOpTrackValue(track, time, def) {
     let nextIdx = keys.findIndex(k => k.time > time);
     if (nextIdx === -1) return keys[keys.length - 1].value;
     if (nextIdx === 0) return keys[0].value;
-
     const prev = keys[nextIdx - 1];
     const next = keys[nextIdx];
-
-    // 停止（Hold）キーフレームの処理
-    if (prev.interpolation === "Hold") {
-        return prev.value;
-    }
-
+    if (prev.interpolation === "Hold") return prev.value;
     let ratio = (time - prev.time) / (next.time - prev.time);
-
-    // イージングの処理
-    if (prev.easeOut && next.easeIn) {
-        // Ease In Out (Smoothstep)
-        ratio = ratio * ratio * (3 - 2 * ratio);
-    } else if (next.easeIn) {
-        // 到着時に減速 (Ease In)
-        ratio = 1 - (1 - ratio) * (1 - ratio);
-    } else if (prev.easeOut) {
-        // 出発時に加速 (Ease Out)
-        ratio = ratio * ratio;
-    }
-
-    if (typeof prev.value === 'number') {
-        return prev.value + (next.value - prev.value) * ratio;
-    } else if (prev.value && typeof prev.value.x === 'number') {
+    if (prev.easeOut && next.easeIn) ratio = ratio * ratio * (3 - 2 * ratio);
+    else if (next.easeIn) ratio = 1 - (1 - ratio) * (1 - ratio);
+    else if (prev.easeOut) ratio = ratio * ratio;
+    if (typeof prev.value === 'number') return prev.value + (next.value - prev.value) * ratio;
+    else if (prev.value && typeof prev.value.x === 'number') {
         return {
             x: prev.value.x + (next.value.x - prev.value.x) * ratio,
             y: prev.value.y + (next.value.y - prev.value.y) * ratio

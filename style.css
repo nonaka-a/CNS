@@ -58,8 +58,8 @@ body {
             border-radius: 10px;
             transition: width 0.1s;
         }
-        #progress-halfway-marker {
-            position: absolute; left: 50%; top: 50%;
+        #progress-halfway-marker, #progress-goal-marker {
+            position: absolute; top: 50%;
             transform: translate(-50%, -50%);
             width: 14px; height: 14px;
             background: rgba(140, 140, 140, 0.7);
@@ -69,7 +69,10 @@ body {
             z-index: 10;
             transition: all 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28);
         }
-        #progress-halfway-marker.reached {
+        #progress-halfway-marker { left: 50%; }
+        #progress-goal-marker { left: 95%; }
+        
+        #progress-halfway-marker.reached, #progress-goal-marker.reached {
             background: #ff1493;
             border-color: #fff;
             box-shadow: 0 0 15px #ff1493, inset 0 0 5px #fff;
@@ -119,8 +122,8 @@ body {
             font-size: 16px; font-weight: 900; color: #ffeb3b;
             text-shadow: 2px 2px 4px #000;
         }
-        #debug-skip-btn {
-            position: absolute; top: 76px; right: 2%;
+        #debug-skip-btn, #debug-skip-btn-3 {
+            position: absolute; right: 2%;
             width: 30px; height: 30px;
             background: rgba(0,0,0,0.5); border: 1px solid #8c6e5e;
             color: #8c6e5e; font-size: 14px;
@@ -128,7 +131,10 @@ body {
             pointer-events: auto; cursor: pointer;
             transition: all 0.2s;
         }
-        #debug-skip-btn:active {
+        #debug-skip-btn { top: 76px; }
+        #debug-skip-btn-3 { top: 110px; }
+
+        #debug-skip-btn:active, #debug-skip-btn-3:active {
             background: #8c6e5e; color: #fff;
         }
 
