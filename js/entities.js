@@ -70,10 +70,20 @@ function updateEntities() {
         }
     }
 
-    // 敵(ドローン)のスポーンと更新
+   // 敵(ドローン)のスポーンと更新
     const spawnRate = isSecondScene ? 0.0025 : 0.005;
     const maxEnemies = isSecondScene ? 3 : 5;
-    if (!isHalfwayTransitioning && Math.random() < spawnRate && enemies.length < maxEnemies) {
+    
+    // エリア3でのモブ出現制限：ボス登場から10秒（600フレーム）経過後のみ許可
+    let canSpawnMob = true;
+    if (isThirdScene) {
+        // ボスがまだ出ていない、または登場してから10秒経っていない場合はスポーンさせない
+        if (!bossActive || bossSpawnTimer < (7000 + 10000)) { 
+            canSpawnMob = false;
+        }
+    }
+
+    if (!isHalfwayTransitioning && canSpawnMob && Math.random() < spawnRate && enemies.length < maxEnemies) {
         enemies.push({
             id: enemyIdCounter++, 
             x: isSecondScene ? -400 : -80,
@@ -124,15 +134,16 @@ function updateEntities() {
     });
 
     // ボス「イイナ」の更新
-    if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
+     if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
+        bossSpawnTimer += FRAME_INTERVAL; // 常にタイマーを進める
         if (!bossActive) {
-            bossSpawnTimer += FRAME_INTERVAL;
-            if (bossSpawnTimer >= 10000) {
+            if (bossSpawnTimer >= 7000) { // 10秒から7秒に短縮
                 bossActive = true;
                 boss.visible = true;
-                boss.x = -boss.w - 100;
+                boss.x = -500; // 画面外左
             }
         } else {
+            // 移動ロジック
             if (boss.x < 50) boss.x += boss.vx;
             else {
                 boss.x = 50 + Math.sin(Date.now() / 1000) * 20;

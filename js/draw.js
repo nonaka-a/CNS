@@ -196,12 +196,18 @@ function draw() {
             if (buildingWallImg.complete) ctx.drawImage(buildingWallImg, p.x - 10, p.y_back - 20);
             if (buildingTopImg.complete) ctx.drawImage(buildingTopImg, p.x - 10, p.y_back - 20);
         } else if (item.type === 'boss') {
-            const bScale = 1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 1.05; // 1.1倍(110%)に変更
             ctx.save();
-            ctx.translate(boss.x + boss.w / 2, boss.groundY);
-            ctx.scale(bScale, bScale);
             if (bossImg.complete) {
-                ctx.drawImage(bossImg, -boss.w / 2, -boss.h + boss.jumpOffset, boss.w, boss.h);
+                const nw = bossImg.naturalWidth;
+                const nh = bossImg.naturalHeight;
+                // 当たり判定用サイズも1.1倍に同期
+                boss.w = nw * 1.1;
+                boss.h = nh * 1.1;
+
+                ctx.translate(boss.x + boss.w / 2, boss.groundY);
+                ctx.scale(bScale, bScale);
+                ctx.drawImage(bossImg, -nw / 2, -nh + (boss.jumpOffset / 1.05), nw, nh);
             }
             ctx.restore();
         }
