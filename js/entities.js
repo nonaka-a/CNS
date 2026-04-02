@@ -257,7 +257,7 @@ function updateEntities() {
         if (sakuya.invincibleTimer <= 0) {
             if (e.x < sakuya.x + sakuya.w && e.x + e.w > sakuya.x &&
                 e.y < sakuya.y + sakuya.h && e.y + e.h > sakuya.y &&
-                Math.abs(e.groundY - sakuya.groundY) < 80) {
+                Math.abs(e.groundY - sakuya.groundY) < 50) {
                 sakuya.hp -= 10;
                 sakuya.invincibleTimer = 40;
                 if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
@@ -303,7 +303,7 @@ function updateEntities() {
 
         let hit = false;
         if (sakuya.invincibleTimer <= 0) {
-            if (Math.abs((o.x + o.w/2) - (sakuya.x + sakuya.w/2)) < 40 && Math.abs((o.y + o.h/2) - (sakuya.y + sakuya.h/2)) < 40 && Math.abs(o.groundY - sakuya.groundY) < 80) {
+            if (Math.abs((o.x + o.w/2) - (sakuya.x + sakuya.w/2)) < 40 && Math.abs((o.y + o.h/2) - (sakuya.y + sakuya.h/2)) < 40 && Math.abs(o.groundY - sakuya.groundY) < 50) {
                 sakuya.hp -= 10;
                 sakuya.invincibleTimer = 40; 
                 if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
@@ -319,7 +319,8 @@ function updateEntities() {
             }
         }
 
-        if (hit || o.timer > 600) {
+        // 8秒(480F)経過、またはヒットで消滅
+        if (hit || o.timer > 480) {
             onibis.splice(i, 1);
         }
     }
@@ -369,7 +370,7 @@ function updateEntities() {
             let px = sakuya.x + sakuya.w / 2; let py = sakuya.y + sakuya.h / 2;
             let dist = Math.abs((px - l.startX) * Math.sin(l.angle) - (py - l.startY) * Math.cos(l.angle));
             let dot = (px - l.startX) * Math.cos(l.angle) + (py - l.startY) * Math.sin(l.angle);
-            if (dot > 0 && dist < 50 && Math.abs(l.groundY - sakuya.groundY) < 80) {
+            if (dot > 0 && dist < 50 && Math.abs(l.groundY - sakuya.groundY) < 50) {
                 sakuya.hp -= 10;
                 sakuya.invincibleTimer = 40; 
                 if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }

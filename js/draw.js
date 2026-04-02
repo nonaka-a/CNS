@@ -167,7 +167,7 @@ function draw() {
             // 足場がある場合のみ、地面への紫色の照り返し（影）を描画
             if (checkOnPlat(o)) {
                 ctx.save();
-                const shadowAlpha = (o.timer > 540) ? (1.0 - ((o.timer - 540) / 60)) * 0.4 : 0.4;
+                const shadowAlpha = (o.timer > 420) ? (1.0 - ((o.timer - 420) / 60)) * 0.4 : 0.4;
                 const shadowSize = o.w * 0.6 * oScale;
                 
                 // 地面の中心座標を計算
@@ -193,8 +193,8 @@ function draw() {
             ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
             ctx.scale(oScale, oScale);
             
-            if (o.timer > 540) {
-                ctx.globalAlpha = 1.0 - ((o.timer - 540) / 60);
+            if (o.timer > 420) {
+                ctx.globalAlpha = 1.0 - ((o.timer - 420) / 60);
             }
 
             if (onibiImg.complete && onibiConfig) {
