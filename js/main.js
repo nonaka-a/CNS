@@ -103,6 +103,10 @@ async function init() {
         await loadSE('puni', 'sound/puni.mp3');
         await loadSE('puni2', 'sound/puni2.mp3');
         await loadSE('flash', 'sound/flash.mp3');
+        await loadSE('gather_energy', 'sound/B_Gather_energy.mp3'); // ドローンB：チャージ
+        await loadSE('charge_dash', 'sound/B_Charge.mp3');         // ドローンB：突進
+        await loadSE('soft_flame', 'sound/C_Soft_flame.mp3');
+        await loadSE('damage', 'sound/damage.mp3'); // ダメージSE
     } catch (e) {
         console.error("Failed to load configs:", e);
     }

@@ -60,6 +60,7 @@ function updateEntities() {
                         ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
                     } else {
                         // ダメージ生存時（点滅無敵）
+                        playSE('damage', 1.0); // ダメージSE
                         e.invincibleTimer = 15;
                     }
                     break;
@@ -87,7 +88,7 @@ function updateEntities() {
     // --- エリア1 出現テーブル定義 (エリア1終了は dist: 20000) ---
     const area1Waves = [
         // --- 前半 (0 〜 8000) ---
-        { dist: 0,     types: ['A', 'A'] },             
+        { dist: 50,     types: ['A', 'A'] },             
         { dist: 1000,  types: ['A', 'A', 'A'] },        
         { dist: 3000,  types: ['A', 'A'] },             
         { dist: 3500,  types: ['A', 'A'] },             
@@ -184,6 +185,7 @@ function updateEntities() {
                     if (e.stateTimer > 180) { // 約3秒でチャージへ
                         e.state = 'charge';
                         e.stateTimer = 0;
+                        playSE('gather_energy', 0.8); // チャージSE
                     }
                 }
                 if (e.targetGroundY && Math.abs(e.groundY - e.targetGroundY) > 2) {
@@ -194,6 +196,7 @@ function updateEntities() {
                 if (e.stateTimer > 60) { // 1秒(60F)チャージ
                     e.state = 'dash';
                     e.stateTimer = 0;
+                    playSE('charge_dash', 0.9); // 突進SE
                 }
             } else if (e.state === 'dash') {
                 e.x += 15; 
@@ -225,6 +228,7 @@ function updateEntities() {
 
             if (e.stateTimer > 200 && !myOnibiExists) { 
                 e.stateTimer = 0;
+                playSE('soft_flame', 0.7); // 鬼火SE
                 let target = (!mitama.isHolding && Math.random() > 0.5) ? mitama : sakuya;
                 let sx = e.x + e.w / 2;
                 let sy = e.y + e.h / 2;
