@@ -139,11 +139,11 @@ function updateEntities() {
     if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
         bossSpawnTimer += FRAME_INTERVAL;
         if (!bossActive) {
-            if (bossSpawnTimer >= 7000) {
+            if (bossSpawnTimer >= 5500) { // 7000から4000に短縮（3秒早く登場）
                 bossActive = true;
                 boss.visible = true;
                 boss.x = -500;
-                boss.isArrived = false; // 出現時にリセット
+                boss.isArrived = false;
             }
         } else {
             boss.animCounter++;

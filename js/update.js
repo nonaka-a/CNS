@@ -170,7 +170,8 @@ function update() {
     const bossHpContainer = document.getElementById('boss-hp-container');
     const bossHpBar = document.getElementById('boss-hp-bar');
     if (bossHpContainer && bossHpBar) {
-        if (bossActive && boss.visible) {
+        // bossSpawnTimerが「登場閾値4000 + 5000 = 9000ms」を超えたら表示
+        if (bossActive && boss.visible && bossSpawnTimer >= 10000) {
             bossHpContainer.style.display = 'flex';
             const hpPercent = (boss.hp / boss.maxHp) * 100;
             bossHpBar.style.width = hpPercent + '%';

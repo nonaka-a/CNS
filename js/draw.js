@@ -196,7 +196,7 @@ function draw() {
             if (buildingWallImg.complete) ctx.drawImage(buildingWallImg, p.x - 10, p.y_back - 20);
             if (buildingTopImg.complete) ctx.drawImage(buildingTopImg, p.x - 10, p.y_back - 20);
         } else if (item.type === 'boss') {
-            const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 1.05;
+            const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 0.9;
             
             // 落ち影の描画
             const shadowAlpha = 0.3 - (Math.abs(boss.jumpOffset) / 500);
