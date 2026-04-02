@@ -312,7 +312,7 @@ function draw() {
         const fgScale = 0.7; // 拡大率（1.0で標準、大きくすると全体が拡大）
         const fgH = (CANVAS_HEIGHT + 100) * fgScale;
         const fgW = (fgH / bgImg3_front.height) * bgImg3_front.width;
-        const fgOffsetY = 280; // Y座標の調整（マイナスで上へ、プラスで下へ）
+        const fgOffsetY = 320; // Y座標の調整（マイナスで上へ、プラスで下へ）
         const fgScrollSpeed = 2.5; // スクロール速度（背景の2.0より大きく設定）
         // ------------------------------------
 
