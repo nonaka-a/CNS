@@ -57,7 +57,7 @@ function updateWorld() {
             halfwayReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
-            enemies = []; enemyLasers = []; bullets = []; explosions = [];
+            enemies = []; enemyLasers = []; bullets = []; explosions = []; onibis = [];
             const progressMarker = document.getElementById('progress-halfway-marker');
             if (progressMarker) progressMarker.classList.add('reached');
         }
@@ -67,7 +67,7 @@ function updateWorld() {
             goalThresholdReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
-            enemies = []; enemyLasers = []; bullets = []; explosions = [];
+            enemies = []; enemyLasers = []; bullets = []; explosions = []; onibis = [];
             const goalMarker = document.getElementById('progress-goal-marker');
             if (goalMarker) goalMarker.classList.add('reached');
         }

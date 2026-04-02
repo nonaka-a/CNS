@@ -17,6 +17,7 @@ const keys = {
 let sakuyaConfig = null;
 let mitamaConfig = null;
 let droneConfig = null;
+let onibiConfig = null; // 追加：鬼火の設定
 
 /**
  * --- GAME LOGIC ---
@@ -28,18 +29,19 @@ const PERSPECTIVE_BASE_Y = 360;
 const PERSPECTIVE_SCALE_FACTOR = 0.002;
 const goalDistance = 40000;
 let distance = 0;
-let bgDistance = 0; // 追加：背景スクロール専用の距離
+let bgDistance = 0;
+let spawnWaveIndex = 0; // 追加：出現パターンの進行管理
 let halfwayReached = false;
 let goalThresholdReached = false;
 let isHalfwayTransitioning = false;
 let halfwayTransitionTimer = 0;
 let isSecondScene = false;
 let isThirdScene = false;
-let currentZoom = 1.0; // カメラのズーム倍率
+let currentZoom = 1.0; 
 let bossActive = false;
 let bossDefeated = false;
 let bossSpawnTimer = 0;
-let bossDefeatTimer = 0; // 追加：撃破後の経過時間
+let bossDefeatTimer = 0; 
 let ninjutsuGauge = 0;
 const NINJUTSU_MAX = 10;
 let ninjutsuFullTriggered = false;
@@ -72,6 +74,7 @@ mitama.img.src = 'images/mitama.png';
 let bullets = [];
 let enemies = [];
 let enemyLasers = [];
+let onibis = []; // 追加：鬼火の配列
 let platforms = [];
 const syurikenImg = new Image();
 syurikenImg.src = 'images/syuriken_2.png';
@@ -81,10 +84,12 @@ const bgImg2 = new Image();
 bgImg2.src = 'images/BG2.jpg';
 const bgImg3 = new Image();
 bgImg3.src = 'images/BG3.jpg';
-const bgImg3_front = new Image(); // 追加
-bgImg3_front.src = 'images/BG3_front.png'; // 追加
+const bgImg3_front = new Image(); 
+bgImg3_front.src = 'images/BG3_front.png'; 
 const droneImg = new Image();
 droneImg.src = 'images/droneA.png';
+const onibiImg = new Image(); // 追加：鬼火の画像
+onibiImg.src = 'images/onibi.png';
 const guardrailImg = new Image();
 guardrailImg.src = 'images/Guardrail.png';
 const vignetteImg = new Image();
@@ -106,7 +111,7 @@ const bossImg = new Image();
 bossImg.src = 'images/iina.png';
 
 const boss = {
-    x: -500, y: 0, w: 180, h: 220, hp: 250, maxHp: 250, // 体力と最大体力を250に変更
+    x: -500, y: 0, w: 180, h: 220, hp: 250, maxHp: 250, 
     groundY: 400, jumpOffset: 0, vx: 2, visible: false,
     animCounter: 0,
     isArrived: false

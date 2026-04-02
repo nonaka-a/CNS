@@ -19,6 +19,9 @@ async function init() {
         const resDrone = await fetch('json/droneA.json');
         droneConfig = await resDrone.json();
 
+        const resOnibi = await fetch('json/onibi.json'); // 追加：鬼火の設定ロード
+        onibiConfig = await resOnibi.json();
+
         const resOP = await fetch('json/OP.json');
         opConfig = await resOP.json();
 
@@ -272,6 +275,7 @@ function toggleFullscreen() {
 function resetGameState() {
     distance = 0;
     bgDistance = 0;
+    spawnWaveIndex = 0; // 追加
     halfwayReached = false;
     goalThresholdReached = false;
     isHalfwayTransitioning = false;
@@ -315,10 +319,12 @@ function resetGameState() {
     boss.hp = boss.maxHp;
     boss.visible = false;
     boss.x = -500;
+    boss.isArrived = false;
     
     bullets = [];
     enemies = [];
     enemyLasers = [];
+    onibis = []; // 追加：鬼火の初期化
     explosions = [];
     platforms = [];
     bgX = 0;

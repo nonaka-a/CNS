@@ -33,7 +33,6 @@ function draw() {
         let bgH = CANVAS_HEIGHT + 100;
         let bgW = (bgH / currentBG.height) * currentBG.width; 
         
-        // エリア2（isSecondScene）かつズームアウト中のみ背景を拡大する
         const needsBackgroundScale = isSecondScene && currentZoom !== 1.0;
         if (needsBackgroundScale) {
             const invZoom = (1 / currentZoom) * 1.05;
@@ -43,13 +42,11 @@ function draw() {
         
         let bgScrollSpeed = isThirdScene ? 2.0 : (isSecondScene ? 0.05 : 2.0);
         
-        // bgDistance を使用して背景ループを計算
         let startX = -((bgDistance * bgScrollSpeed) % bgW);
         let drawX = startX;
         
         while (drawX > -800) drawX -= bgW;
         while (drawX < CANVAS_WIDTH + 800) {
-            // isSecondScene の場合は拡大補正用のオフセット、それ以外(エリア1・3)は -50 に固定
             const offsetY = needsBackgroundScale ? -120 - (bgH - (CANVAS_HEIGHT + 100)) / 2 : -50;
             ctx.drawImage(currentBG, drawX, offsetY, bgW, bgH);
             drawX += bgW;
@@ -103,6 +100,7 @@ function draw() {
 
     const renderQueue = [];
     enemies.forEach(e => renderQueue.push({ type: 'enemy', depth: e.groundY, obj: e }));
+    onibis.forEach(o => renderQueue.push({ type: 'onibi', depth: o.groundY, obj: o })); // 追加
     if (!mitama.isHolding && mitama.groundY) renderQueue.push({ type: 'mitama', depth: mitama.groundY });
     renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
     explosions.forEach(ex => renderQueue.push({ type: 'explosion', depth: ex.groundY, obj: ex }));
@@ -114,6 +112,9 @@ function draw() {
     renderQueue.forEach(item => {
         if (item.type === 'enemy') {
             const e = item.obj;
+            // ダメージ時の点滅
+            if (e.invincibleTimer > 0 && Math.floor(e.invincibleTimer / 4) % 2 === 0) return;
+
             const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (e.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -124,6 +125,31 @@ function draw() {
             ctx.save();
             ctx.translate(e.x + e.w / 2, e.groundY);
             ctx.scale(eScale, eScale);
+
+           // ドローンBのチャージおよび体当たり中の発光表現（画像の外まで光らせる）
+            if (e.type === 'B' && (e.state === 'charge' || e.state === 'dash')) {
+                ctx.save();
+                // 本体の描画中心（画像の中央付近）に合わせて光の座標を調整
+                const centerX = 0;
+                const centerY = -e.h / 2 + e.jumpOffset;
+                const pulse = e.state === 'dash' ? 1.2 : (0.5 + 0.7 * (e.stateTimer / 60));
+                
+                const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, e.w * pulse);
+                gradient.addColorStop(0, 'rgba(255, 255, 150, 0.9)'); // 中心は明るく
+                gradient.addColorStop(0.4, 'rgba(255, 255, 0, 0.4)'); // 外側へ向かって黄色く
+                gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');    // 縁は透明に
+                
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, e.w * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // 本体自体も加算合成で少し明るくする
+                ctx.globalCompositeOperation = 'lighter';
+            }
+
             if (droneImg.complete) {
                 if (droneConfig) {
                     const anim = droneConfig.data[e.currentAnim];
@@ -132,6 +158,49 @@ function draw() {
                 } else {
                     ctx.drawImage(droneImg, -e.w / 2, -e.h + e.jumpOffset, e.w, e.h);
                 }
+            }
+            ctx.restore();
+       } else if (item.type === 'onibi') {
+            const o = item.obj;
+            const oScale = 1.0 + (o.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            
+            // 足場がある場合のみ、地面への紫色の照り返し（影）を描画
+            if (checkOnPlat(o)) {
+                ctx.save();
+                const shadowAlpha = (o.timer > 540) ? (1.0 - ((o.timer - 540) / 60)) * 0.4 : 0.4;
+                const shadowSize = o.w * 0.6 * oScale;
+                
+                // 地面の中心座標を計算
+                const centerX = o.x + o.w / 2;
+                const centerY = o.groundY;
+                
+                const shadowGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, shadowSize);
+                shadowGrad.addColorStop(0, `rgba(180, 0, 255, ${shadowAlpha})`); 
+                shadowGrad.addColorStop(1, 'rgba(180, 0, 255, 0)');              
+                
+                ctx.globalCompositeOperation = 'lighter'; 
+                ctx.fillStyle = shadowGrad;
+                ctx.beginPath();
+                ctx.ellipse(centerX, centerY, shadowSize, shadowSize * 0.3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 鬼火本体の描画（本体は足場に関係なく空中に表示される）
+
+            // 鬼火本体の描画
+            ctx.save();
+            ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
+            ctx.scale(oScale, oScale);
+            
+            if (o.timer > 540) {
+                ctx.globalAlpha = 1.0 - ((o.timer - 540) / 60);
+            }
+
+            if (onibiImg.complete && onibiConfig) {
+                const anim = onibiConfig.data.idle;
+                const frame = anim.frames[o.frame];
+                ctx.drawImage(onibiImg, frame.x, frame.y, frame.w, frame.h, -o.w / 2, -o.h / 2, o.w, o.h);
             }
             ctx.restore();
         } else if (item.type === 'mitama') {
@@ -198,21 +267,18 @@ function draw() {
         } else if (item.type === 'boss') {
             const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 0.9;
             
-            // 落ち影の描画
             const shadowAlpha = 0.3 - (Math.abs(boss.jumpOffset) / 500);
             ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.1, shadowAlpha)})`;
             ctx.beginPath();
             const shadowShrink = 1.0 - (Math.abs(boss.jumpOffset) / 300);
-            // 影の位置は当たり判定（boss.w）の中央に合わせる
             ctx.ellipse(boss.x + boss.w / 2, boss.groundY, boss.w * 0.6 * bScale * shadowShrink, 12 * bScale * shadowShrink, 0, 0, Math.PI * 2);
             ctx.fill();
 
             ctx.save();
             if (bossImg.complete) {
-                const nw = bossImg.naturalWidth * 1.1; // 描画用の拡大サイズ
+                const nw = bossImg.naturalWidth * 1.1; 
                 const nh = bossImg.naturalHeight * 1.1;
 
-                // 描画位置の調整：当たり判定のセンターに画像（余白含む）のセンターを合わせる
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
                 ctx.drawImage(bossImg, -nw / 2, -nh + boss.jumpOffset, nw, nh);
@@ -306,15 +372,12 @@ function draw() {
         ctx.restore();
     }
 
-   // エリア3の最前面背景 (BG3_front.png)
     if (isThirdScene && bgImg3_front.complete) {
-        // --- サイズと位置の調整用パラメータ ---
-        const fgScale = 0.7; // 拡大率（1.0で標準、大きくすると全体が拡大）
+        const fgScale = 0.7; 
         const fgH = (CANVAS_HEIGHT + 100) * fgScale;
         const fgW = (fgH / bgImg3_front.height) * bgImg3_front.width;
-        const fgOffsetY = 320; // Y座標の調整（マイナスで上へ、プラスで下へ）
-        const fgScrollSpeed = 2.5; // スクロール速度（背景の2.0より大きく設定）
-        // ------------------------------------
+        const fgOffsetY = 320; 
+        const fgScrollSpeed = 2.5; 
 
         let fgstartX = -((bgDistance * fgScrollSpeed) % fgW);
         let fgdrawX = fgstartX;
