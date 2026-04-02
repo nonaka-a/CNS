@@ -15,7 +15,7 @@ function updateEntities() {
         // ボスとの当たり判定
         if (bossActive && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
             b.y < boss.y + boss.h && b.y + b.h > boss.y &&
-            Math.abs(b.groundY - boss.groundY) < 100) {
+            Math.abs(b.groundY - boss.groundY) < 80) {
             
             boss.hp -= 10;
             explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
