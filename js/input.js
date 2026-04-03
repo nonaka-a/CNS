@@ -29,7 +29,7 @@ function setupControls() {
         
         // アクションキー
         if (e.code === 'Space') jump();
-        if (e.code === 'KeyV') shoot();
+        if (e.code === 'KeyV') keys.Shoot = true;
         if (e.code === 'KeyB') toggleMode();
         if (e.code === 'KeyN') subAction();
 
@@ -46,6 +46,7 @@ function setupControls() {
         if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = false;
         if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.ArrowUp = false;
         if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.ArrowDown = false;
+        if (e.code === 'KeyV') keys.Shoot = false;
     });
 
     const btnMap = [
@@ -53,7 +54,7 @@ function setupControls() {
         { id: 'btn-right', key: 'ArrowRight' },
         { id: 'btn-up', key: 'ArrowUp' },
         { id: 'btn-down', key: 'ArrowDown' },
-        { id: 'btn-jump', action: shoot },
+        { id: 'btn-jump', key: 'Shoot' }, // shootアクションをキー管理に変更
         { id: 'btn-attack', action: toggleMode },
         { id: 'btn-mode', action: jump },
         { id: 'btn-settings', action: typeof toggleSettings !== 'undefined' ? toggleSettings : null },
@@ -97,7 +98,7 @@ function setupControls() {
             updateBtnRects();
         }
 
-        let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false };
+        let currentKeys = { ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false, Shoot: false };
         let activeIds = new Set();
 
         if (e.type !== 'touchend') {

@@ -62,6 +62,9 @@ function update() {
             if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
             else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
             else if (sakuya.jumpOffset === 0) sakuya.vx = 0;
+
+            // 長押し射撃の対応
+            if (keys.Shoot) shoot();
         }
         sakuya.x += sakuya.vx;
 
@@ -150,7 +153,6 @@ function update() {
         }
     }
 
-    if (sakuya.attackTimer > 0) sakuya.attackTimer--;
     if (sakuya.invincibleTimer > 0) sakuya.invincibleTimer--;
     
     if (mitama.invincibleTimer > 0) mitama.invincibleTimer--;

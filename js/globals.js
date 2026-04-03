@@ -11,7 +11,7 @@ const FRAME_INTERVAL = 1000 / TARGET_FPS;
 
 const keys = {
     ArrowLeft: false, ArrowRight: false, ArrowUp: false, ArrowDown: false,
-    KeyA: false, KeyB: false, KeyC: false, KeyD: false
+    KeyA: false, KeyB: false, KeyC: false, KeyD: false, Shoot: false
 };
 
 let sakuyaConfig = null;
