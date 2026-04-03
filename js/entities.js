@@ -589,7 +589,30 @@ function updateEntities() {
     // 巨大手裏剣の更新
     if (giantShuriken) {
         giantShuriken.x += giantShuriken.vx;
-        giantShuriken.angle += 0.5;
+        giantShuriken.angle -= 0.3; // 回転速度を0.3まで落とす（重厚感アップ）
+        
+        // 咲耶のスライド演出
+        if (sakuya.hissatsuSlideX !== undefined) {
+            sakuya.hissatsuSlideX += (sakuya.x - sakuya.hissatsuSlideX) * 0.25; 
+            if (Math.abs(sakuya.hissatsuSlideX - sakuya.x) < 1) sakuya.hissatsuSlideX = undefined;
+        }
+        
+        // 画面揺れの追加
+        screenShake = Math.max(screenShake, 15); 
+        
+        // 黄色の賑やかしパーティクル生成
+        for (let k = 0; k < 5; k++) {
+            particles.push({
+                x: giantShuriken.x + giantShuriken.w * Math.random(),
+                y: giantShuriken.y + giantShuriken.h * Math.random(),
+                vx: -15 - Math.random() * 20,
+                vy: (Math.random() - 0.5) * 10,
+                life: 1.0,
+                size: 1 + Math.random() * 4, // サイズを半分（1〜5px）に
+                color: `rgba(255, ${200 + Math.random() * 55}, 0, 1)`
+            });
+        }
+
         for (let j = enemies.length - 1; j >= 0; j--) {
             const e = enemies[j];
             if (giantShuriken.x + giantShuriken.w > e.x && giantShuriken.x < e.x + e.w) {
@@ -626,6 +649,17 @@ function updateEntities() {
             }
         }
         if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; 
+    }
+
+    // パーティクルの更新
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        if (p.life <= 0) {
+            particles.splice(i, 1);
+        }
     }
 }
 

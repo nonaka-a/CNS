@@ -26,6 +26,12 @@ function draw() {
     sakuya.cameraOffsetY += (targetPanY - sakuya.cameraOffsetY) * 0.1;
 
     ctx.save();
+    // 画面揺れの適用
+    if (screenShake > 0) {
+        ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
+        screenShake *= 0.95; // 徐々に減衰
+        if (screenShake < 0.1) screenShake = 0;
+    }
     ctx.translate(0, sakuya.cameraOffsetY);
 
     if (currentZoom !== 1.0) {
@@ -287,17 +293,20 @@ function draw() {
             }
         } else if (item.type === 'sakuya') {
             const sScale = 1.0 + (sakuya.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            const drawX = (sakuya.hissatsuSlideX !== undefined) ? sakuya.hissatsuSlideX : sakuya.x;
             if (sakuya.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
                 ctx.beginPath();
-                ctx.ellipse(sakuya.x + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35 * sScale, 12 * sScale, 0, 0, Math.PI * 2);
+                ctx.ellipse(drawX + sakuya.w / 2, sakuya.groundY, sakuya.w * 0.35 * sScale, 12 * sScale, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
             ctx.save();
-            ctx.translate(sakuya.x + sakuya.w / 2, sakuya.groundY);
+            ctx.translate(drawX + sakuya.w / 2, sakuya.groundY);
             ctx.scale(sScale, sScale);
             if (sakuya.img.complete && (!sakuya.invincibleTimer || Math.floor(sakuya.invincibleTimer / 4) % 2 === 0)) {
-                if (sakuyaConfig) {
+                if (typeof giantShuriken !== 'undefined' && giantShuriken && typeof sakuyaHissatsuImg !== 'undefined' && sakuyaHissatsuImg.complete) {
+                    ctx.drawImage(sakuyaHissatsuImg, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
+                } else if (sakuyaConfig) {
                     const anim = sakuyaConfig.data[sakuya.currentAnim];
                     const frame = anim.frames[sakuya.currentFrame];
                     ctx.drawImage(sakuya.img, frame.x, frame.y, frame.w, frame.h, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
@@ -310,7 +319,9 @@ function draw() {
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
                     ctx.globalAlpha = sakuya.healFlashTimer / 30;
-                    if (sakuyaConfig) {
+                    if (typeof giantShuriken !== 'undefined' && giantShuriken && typeof sakuyaHissatsuImg !== 'undefined' && sakuyaHissatsuImg.complete) {
+                        for(let k=0; k<3; k++) ctx.drawImage(sakuyaHissatsuImg, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
+                    } else if (sakuyaConfig) {
                         const anim = sakuyaConfig.data[sakuya.currentAnim];
                         const frame = anim.frames[sakuya.currentFrame];
                         for(let k=0; k<3; k++) ctx.drawImage(sakuya.img, frame.x, frame.y, frame.w, frame.h, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
@@ -502,13 +513,13 @@ function draw() {
         ctx.restore();
     }
 
-    if (giantShuriken && syurikenImg.complete) {
+    if (giantShuriken && typeof giantSyurikenImg !== 'undefined' && giantSyurikenImg.complete) {
         ctx.save();
         ctx.translate(giantShuriken.x + giantShuriken.w / 2, giantShuriken.y + giantShuriken.h / 2);
         ctx.rotate(giantShuriken.angle);
         ctx.shadowBlur = 40;
         ctx.shadowColor = "#ffeb3b";
-        ctx.drawImage(syurikenImg, -giantShuriken.w / 2, -giantShuriken.h / 2, giantShuriken.w, giantShuriken.h);
+        ctx.drawImage(giantSyurikenImg, -giantShuriken.w / 2, -giantShuriken.h / 2, giantShuriken.w, giantShuriken.h);
         ctx.restore();
     }
 
@@ -537,6 +548,20 @@ function draw() {
             ctx.drawImage(streetlightFrontImg, fgx - 100, CANVAS_HEIGHT + 140 - 800, w, 800);
             fgx += 5000;
         }
+    }
+    // パーティクルの描画
+    if (particles.length > 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.life;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.restore();
     }
     ctx.restore();
 

@@ -5,11 +5,12 @@ function subAction() {
     giantShuriken = {
         x: CANVAS_WIDTH + 400, // ズームアウトに対応するため画面外から出現させる
         y: -100,
-        w: 650, h: 650, // 画面いっぱい
-        vx: -20, // 左方向へ
+        w: 520, h: 520, // サイズを80%に調整
+        vx: -45, // 速度を元の高速設定(-45)に戻す
         angle: 0
     };
 
+    sakuya.hissatsuSlideX = CANVAS_WIDTH + 500; // 右画面外から登場
     sakuya.attackTimer = 30; // 投擲アニメーションを長めに再生
     ninjutsuGauge = 0;
     playSE('shuriken', 1.0);
