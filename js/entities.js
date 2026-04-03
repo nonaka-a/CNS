@@ -12,14 +12,65 @@ function updateEntities() {
         }
 
         let hit = false;
-        // ボスとの当たり判定
-        if (bossActive && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
+        
+        // 先に敵（盾になるドローン等）との当たり判定
+        for (let j = enemies.length - 1; j >= 0; j--) {
+            const e = enemies[j];
+            if (e.type === 'B' && e.state === 'dash') continue;
+            if (e.invincibleTimer > 0) continue;
+
+            const isHit = b.x < e.x + e.w && b.x + b.w > e.x &&
+                          b.y < e.y + e.h && b.y + b.h > e.y &&
+                          Math.abs(b.groundY - e.groundY) < 80; 
+            if (isHit) {
+                e.hp--;
+                hit = true;
+                if (e.hp <= 0) {
+                    explosions.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY, frame: 0, timer: 0 });
+                    playSE('explosion');
+                    for (let k = enemyLasers.length - 1; k >= 0; k--) {
+                        if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) enemyLasers.splice(k, 1);
+                    }
+                    enemies.splice(j, 1);
+                    ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
+                } else {
+                    playSE('damage', 1.0); 
+                    e.invincibleTimer = 15;
+                }
+                break;
+            }
+        }
+
+        // 敵に当たらなかった場合のみボスとの当たり判定
+        if (!hit && bossActive && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
             b.y < boss.y + boss.h && b.y + b.h > boss.y &&
             Math.abs(b.groundY - boss.groundY) < 80) {
             
-            boss.hp -= 10;
-            explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
-            playSE('explosion');
+            if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
+                explosions.push({ x: b.x, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
+                playSE('explosion');
+            } else {
+                boss.hp -= 10;
+                explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
+                playSE('explosion');
+                
+                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                    boss.state = 'intro';
+                    boss.stateTimer = 0;
+                    boss.patternIndex = 1;
+                    boss.telegraphDuration = 0;
+                    playSE('damage', 1.2); // キャンセル時の音を少し強調
+                    // 陣形ドローンの退避指示
+                    enemies.forEach(e => {
+                        if (e.isBossShield) {
+                            e.retreating = true;
+                            e.vx = -12;
+                        }
+                    });
+                } else {
+                    playSE('damage', 0.8); // 通常ダメージ音
+                }
+            }
             
             if (boss.hp <= 0) {
                 boss.hp = 0;
@@ -35,38 +86,6 @@ function updateEntities() {
             hit = true;
         }
 
-        if (!hit) {
-            for (let j = enemies.length - 1; j >= 0; j--) {
-                const e = enemies[j];
-                // ドローンBの体当たり中のみ無敵
-                if (e.type === 'B' && e.state === 'dash') continue;
-                // 被弾後の無敵時間中はスルー
-                if (e.invincibleTimer > 0) continue;
-
-                const isHit = b.x < e.x + e.w && b.x + b.w > e.x &&
-                              b.y < e.y + e.h && b.y + b.h > e.y &&
-                              Math.abs(b.groundY - e.groundY) < 80; 
-                if (isHit) {
-                    e.hp--;
-                    hit = true;
-                    if (e.hp <= 0) {
-                        // 撃破時
-                        explosions.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY, frame: 0, timer: 0 });
-                        playSE('explosion');
-                        for (let k = enemyLasers.length - 1; k >= 0; k--) {
-                            if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) enemyLasers.splice(k, 1);
-                        }
-                        enemies.splice(j, 1);
-                        ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
-                    } else {
-                        // ダメージ生存時（点滅無敵）
-                        playSE('damage', 1.0); // ダメージSE
-                        e.invincibleTimer = 15;
-                    }
-                    break;
-                }
-            }
-        }
         if (hit) bullets.splice(i, 1);
     }
 
@@ -125,8 +144,9 @@ function updateEntities() {
             }
         } else {
             // --- エリア2・3: 従来の確率ベース ---
-            const spawnRate = isSecondScene ? 0.0025 : 0.005;
-            if (Math.random() < spawnRate && enemies.length < (isSecondScene ? 3 : 5)) {
+            const spawnRate = isThirdScene ? 0.002 : (isSecondScene ? 0.0025 : 0.005);
+            const maxRandomEnemies = isThirdScene ? 3 : (isSecondScene ? 3 : 5);
+            if (Math.random() < spawnRate && enemies.filter(e => !e.isBossShield).length < maxRandomEnemies) {
                 let availableTypes = isSecondScene ? ['A', 'A', 'C'] : ['A', 'A', 'B', 'C'];
                 let type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
                 spawnEnemy(type);
@@ -155,22 +175,33 @@ function updateEntities() {
 
         // タイプ別の行動ロジック
         if (e.type === 'A') {
-            if (e.x < e.targetX) e.x += e.vx;
-            else e.x += Math.sin(Date.now() / 300 + e.offsetSeed) * 0.2;
+            if (e.retreating) {
+                e.x += e.vx; // 退避時は指定された速度で移動
+                if (e.x + e.w < -200) {
+                    enemies.splice(i, 1);
+                    return;
+                }
+            } else {
+                if (e.x < e.targetX) e.x += e.vx;
+                else e.x += Math.sin(Date.now() / 300 + e.offsetSeed) * 0.2;
 
-            e.laserTimer++;
-            if (e.laserTimer > 450) { 
-                e.laserTimer = 0;
-                let target = (!mitama.isHolding && Math.random() > 0.5) ? mitama : sakuya;
-                let sx = e.x + e.w / 2 + 10;
-                let sy = e.y + e.h / 2 + 2;
-                let tx = target.x + target.w / 2;
-                let ty = target.y + target.h / 2; 
-                let angle = Math.atan2(ty - sy, tx - sx);
-                enemyLasers.push({
-                    ownerId: e.id, startX: sx, startY: sy, angle: angle,
-                    groundY: e.groundY, duration: 25, telegraphDuration: 48 
-                });
+                if (!e.isBossShield) { // 盾ドローンは射撃しない
+                    e.laserTimer++;
+                    if (e.laserTimer > e.laserThreshold) { 
+                        e.laserTimer = 0;
+                        e.laserThreshold = 300 + Math.random() * 150; 
+                        let target = (!mitama.isHolding && Math.random() > 0.5) ? mitama : sakuya;
+                        let sx = e.x + e.w / 2 + 10;
+                        let sy = e.y + e.h / 2 + 2;
+                        let tx = target.x + target.w / 2;
+                        let ty = target.y + target.h / 2; 
+                        let angle = Math.atan2(ty - sy, tx - sx);
+                        enemyLasers.push({
+                            ownerId: e.id, startX: sx, startY: sy, angle: angle,
+                            groundY: e.groundY, duration: 25, telegraphDuration: 66, maxTelegraph: 66
+                        });
+                    }
+                }
             }
         } 
         else if (e.type === 'B') {
@@ -340,12 +371,125 @@ function updateEntities() {
             
             if (!boss.isArrived) {
                 boss.x += boss.vx;
-                if (boss.x >= 50) {
+                if (boss.x >= boss.originalX) {
                     boss.isArrived = true;
+                    boss.state = 'intro';
+                    boss.stateTimer = 0;
                 }
             } else {
-                boss.x = 50 + Math.sin(boss.animCounter * 0.03) * 20; 
-                boss.jumpOffset = -40 + Math.sin(boss.animCounter * 0.05) * 25;
+                boss.stateTimer++;
+                let hoverY = -40 + Math.sin(boss.animCounter * 0.05) * 25;
+                let hoverX = boss.originalX + Math.sin(boss.animCounter * 0.03) * 20;
+
+                if (boss.state === 'intro') {
+                    if (boss.stateTimer > 120) {
+                        boss.stateTimer = 0;
+                        if (boss.patternIndex === 1) boss.state = 'barrier';
+                        else boss.state = 'charge';
+                    }
+                    boss.x = hoverX;
+                    boss.jumpOffset = hoverY;
+                }
+                else if (boss.state === 'barrier') {
+                    if (boss.stateTimer === 180) {
+                        boss.state = 'dash';
+                        boss.dashTargetX = sakuya.x + 50; 
+                        playSE('charge_dash', 1.0); 
+                    }
+                    if (boss.state === 'barrier') {
+                        boss.x = hoverX;
+                        boss.jumpOffset = hoverY;
+                    }
+                    if (boss.stateTimer >= 480) {
+                        boss.state = 'intro';
+                        boss.stateTimer = 0;
+                        boss.patternIndex = 2; // 次はビーム
+                    }
+                }
+                else if (boss.state === 'dash') {
+                    boss.x += 18; 
+                    boss.jumpOffset = hoverY; 
+                    if (boss.x > boss.dashTargetX + 100 || boss.x > CANVAS_WIDTH) {
+                        boss.state = 'retreat';
+                    }
+                }
+                else if (boss.state === 'retreat') {
+                    boss.x -= 12;
+                    boss.jumpOffset = hoverY;
+                    if (boss.x <= boss.originalX) {
+                        boss.x = boss.originalX;
+                        boss.state = 'barrier'; 
+                    }
+                }
+                else if (boss.state === 'charge') {
+                    if (boss.stateTimer === 1) {
+                        spawnBossDrones();
+                        boss.laserDuration = 0;
+                        boss.telegraphDuration = -1; // 陣形到着まで待機
+                    }
+                    boss.x = hoverX;
+                    boss.jumpOffset = hoverY;
+
+                    // 盾ドローンがすべて配置についたかチェック
+                    if (boss.telegraphDuration === -1) {
+                        const shieldDrones = enemies.filter(e => e.isBossShield);
+                        const allArrived = shieldDrones.length > 0 && shieldDrones.every(e => Math.abs(e.x - e.targetX) < 5);
+                        if (allArrived) {
+                            boss.telegraphDuration = 420; // 7秒チャージ開始
+                            playSE('gather_energy', 1.0);
+                        }
+                    }
+
+                    if (boss.telegraphDuration > 0) {
+                        boss.telegraphDuration--;
+                    } else if (boss.telegraphDuration === 0 && boss.laserDuration === 0) {
+                        boss.laserDuration = 60; 
+                        playSE('laser', 1.0); 
+                    }
+
+                    if (boss.laserDuration > 0) {
+                        boss.laserDuration--;
+                        if (boss.laserDuration === 0) {
+                            // 陣形ドローンの退避指示
+                            enemies.forEach(e => {
+                                if (e.isBossShield) {
+                                    e.retreating = true;
+                                    e.vx = -12; // 左へ素早く
+                                }
+                            });
+                            boss.state = 'intro';
+                            boss.stateTimer = 0;
+                            boss.patternIndex = 1; // 次はバリア
+                        }
+                    }
+                }
+                
+                // ボス本体およびバリアとの接触判定（咲耶）
+                if (sakuya.invincibleTimer <= 0) {
+                    if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
+                        let bx = boss.x + boss.w / 2;
+                        let by = boss.y + boss.h / 2;
+                        let sx = sakuya.x + sakuya.w / 2;
+                        let sy = sakuya.y + sakuya.h / 2;
+                        let dist = Math.hypot(bx - sx, by - sy);
+                        
+                        let hitRadius = (boss.state === 'barrier') ? 140 : 80;
+                        if (dist < hitRadius && Math.abs(boss.groundY - sakuya.groundY) < 100) {
+                            sakuya.hp -= 10; // ライフ1個分
+                            sakuya.invincibleTimer = 40; 
+                            if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
+                        }
+                    }
+                }
+
+                // 巨大レーザーの当たり判定（咲耶）
+                if (boss.laserDuration > 0) {
+                    if (sakuya.invincibleTimer <= 0 && sakuya.jumpOffset > -120) { 
+                        sakuya.hp -= 20; // ライフ2個分
+                        sakuya.invincibleTimer = 40;
+                        if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
+                    }
+                }
             }
             boss.y = boss.groundY - boss.h + boss.jumpOffset;
         }
@@ -402,7 +546,27 @@ function updateEntities() {
             }
         }
         if (bossActive && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
-            boss.hp -= 2;
+            if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
+                // Giant shuriken deals no damage during barrier, but passes through
+            } else {
+                boss.hp -= 2;
+                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                    boss.state = 'intro';
+                    boss.stateTimer = 0;
+                    boss.patternIndex = 1;
+                    boss.telegraphDuration = 0;
+                    playSE('damage', 1.2);
+                    // 陣形ドローンの退避指示
+                    enemies.forEach(e => {
+                        if (e.isBossShield) {
+                            e.retreating = true;
+                            e.vx = -12;
+                        }
+                    });
+                } else {
+                    playSE('damage', 0.8);
+                }
+            }
             if (boss.hp <= 0) {
                  boss.hp = 0; bossActive = false; bossDefeated = true; boss.visible = false;
                  bossDefeatTimer = 0;
@@ -429,12 +593,46 @@ function spawnEnemy(type) {
         targetX: 20 + Math.random() * 200, 
         vx: 0.8 + Math.random() * 0.7, 
         offsetSeed: Math.random() * 100,
-        laserTimer: Math.random() * 100, 
+        laserTimer: Math.random() * 200, 
+        laserThreshold: 280 + Math.random() * 180, 
         currentAnim: anim,
         currentFrame: 0,
         frameTimer: 0,
         state: 'approach',
         stateTimer: 0,
-        invincibleTimer: 0
+        invincibleTimer: 0,
+        targetX: isThirdScene ? (300 + Math.random() * 200) : (20 + Math.random() * 200) 
     });
+}
+
+function spawnBossDrones() {
+    // 2列（奥3体、手前3体）の均等配置 - もっと右（咲耶側）へ
+    let xs = [400, 400, 400, 300, 300, 300];
+    let ys = [260, 340, 420, 260, 340, 420];
+    for(let i=0; i<6; i++) {
+        enemies.push({
+            id: enemyIdCounter++, 
+            type: 'A',
+            hp: 2,
+            maxHp: 2,
+            x: -200, 
+            w: 80, h: 80,
+            groundY: ys[i], 
+            targetGroundY: null,
+            jumpOffset: -80,
+            targetX: xs[i], 
+            vx: 12,  
+            offsetSeed: i * 30,
+            laserTimer: -9999, 
+            laserThreshold: 99999, 
+            currentAnim: 'idle',
+            currentFrame: 0,
+            frameTimer: 0,
+            state: 'approach',
+            stateTimer: 0,
+            invincibleTimer: 0,
+            isBossShield: true,
+            retreating: false
+        });
+    }
 }

@@ -284,6 +284,65 @@ function draw() {
                 ctx.drawImage(bossImg, -nw / 2, -nh + boss.jumpOffset, nw, nh);
             }
             ctx.restore();
+
+            // バリアの描画 (ボス画像の上に被せる)
+            if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
+                let barrierAlpha = 0.6 + Math.sin(Date.now() / 150) * 0.2;
+                if (boss.state === 'barrier') {
+                    if (boss.stateTimer < 60) barrierAlpha *= (boss.stateTimer / 60);
+                    else if (boss.stateTimer > 420) barrierAlpha *= ((480 - boss.stateTimer) / 60);
+                }
+                ctx.save();
+                ctx.translate(boss.x + boss.w / 2, boss.groundY - boss.h / 2 + boss.jumpOffset);
+                ctx.scale(bScale, bScale);
+                ctx.globalCompositeOperation = 'lighter';
+                let grad = ctx.createRadialGradient(0, 0, 80, 0, 0, 150);
+                grad.addColorStop(0, `rgba(255, 100, 100, 0)`);
+                grad.addColorStop(0.7, `rgba(255, 0, 30, ${barrierAlpha})`);
+                grad.addColorStop(1, `rgba(255, 0, 0, 0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(0, 0, 150, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 巨大ビームの充填エフェクト
+            if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                let chargeProgress = 1.0 - (boss.telegraphDuration / 420);
+                let pulse = Math.sin(Date.now() / (50 - 40 * chargeProgress)) * 0.5 + 0.5;
+                ctx.save();
+                ctx.translate(boss.x + boss.w / 2 + 60, boss.groundY - boss.h / 2 + boss.jumpOffset);
+                ctx.scale(bScale, bScale);
+                ctx.globalCompositeOperation = 'lighter';
+                
+                let ringRadius = 50 + 100 * (1 - chargeProgress);
+                if (droneEnergyImg.complete) {
+                    ctx.rotate(Date.now() / 200);
+                    ctx.globalAlpha = pulse * chargeProgress;
+                    ctx.drawImage(droneEnergyImg, -ringRadius, -ringRadius, ringRadius * 2, ringRadius * 2);
+                }
+                
+                // 照準線
+                if (Math.floor(boss.telegraphDuration / 4) % 2 === 0) {
+                    ctx.setTransform(1, 0, 0, 1, 0, sakuya.cameraOffsetY);
+                    if (currentZoom !== 1.0) {
+                        ctx.translate(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.7);
+                        ctx.scale(currentZoom, currentZoom);
+                        ctx.translate(-CANVAS_WIDTH / 2, -CANVAS_HEIGHT * 0.7);
+                    }
+                    ctx.lineCap = 'butt';
+                    ctx.strokeStyle = `rgba(255, 10, 50, ${chargeProgress})`;
+                    ctx.lineWidth = 4 * bScale;
+                    ctx.setLineDash([20, 20]);
+                    ctx.beginPath(); 
+                    ctx.moveTo(boss.x + boss.w / 2 + 60, boss.groundY - boss.h / 2 + boss.jumpOffset); 
+                    ctx.lineTo(2000, boss.groundY - boss.h / 2 + boss.jumpOffset); 
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                }
+                ctx.restore();
+            }
         }
     });
 
@@ -326,7 +385,7 @@ function draw() {
         ctx.rotate(l.angle);
         
         if (l.telegraphDuration > 0) {
-            const chargeProgress = 1.0 - (l.telegraphDuration / 48);
+            const chargeProgress = 1.0 - (l.telegraphDuration / (l.maxTelegraph || 48));
             const pulseFreq = 25 - 18 * chargeProgress; 
             const pulse = (Math.sin(Date.now() / pulseFreq) * 0.4 + 0.6);
             const easedProgress = 1 - Math.pow(1 - chargeProgress, 4); 
@@ -361,6 +420,26 @@ function draw() {
         }
         ctx.restore();
     });
+
+    if (bossActive && boss.laserDuration > 0) {
+        const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 0.9;
+        ctx.save();
+        ctx.translate(boss.x + boss.w / 2 + 60, boss.groundY - boss.h / 2 + boss.jumpOffset);
+        
+        let w = (boss.laserDuration > 15) ? 120 : boss.laserDuration * 8;
+        let p = (boss.laserDuration > 15) ? (Math.sin(Date.now() / 30) * 0.2 + 0.8) : 1.0;
+        
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        ctx.strokeStyle = `rgba(255, 30, 80, ${0.9 * p})`;
+        ctx.lineWidth = w * bScale;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(2000, 0); ctx.stroke();
+        
+        ctx.strokeStyle = `rgba(255, 200, 255, ${1.0 * p})`;
+        ctx.lineWidth = w * 0.5 * bScale;
+        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(2000, 0); ctx.stroke();
+        ctx.restore();
+    }
 
     if (giantShuriken && syurikenImg.complete) {
         ctx.save();

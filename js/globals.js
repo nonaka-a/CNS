@@ -111,10 +111,11 @@ const bossImg = new Image();
 bossImg.src = 'images/iina.png';
 
 const boss = {
-    x: -500, y: 0, w: 180, h: 220, hp: 250, maxHp: 250, 
+    x: -500, y: 0, w: 180, h: 220, hp: 450, maxHp: 450, 
     groundY: 400, jumpOffset: 0, vx: 2, visible: false,
     animCounter: 0,
-    isArrived: false
+    isArrived: false,
+    state: 'intro', stateTimer: 0, patternIndex: 1, originalX: 50, laserDuration: 0, telegraphDuration: 0
 };
 
 let bgX = 0;

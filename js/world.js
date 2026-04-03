@@ -80,11 +80,33 @@ function updateWorld() {
                 isSecondScene = false; isThirdScene = true; platforms = [];
                 sakuya.x = 400; sakuya.groundY = GROUND_Y_POS;
                 sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.isOnPlat = true;
-                if (typeof fadeOutBGM === 'function') fadeOutBGM(bgm, 1500);
-                else bgm.pause();
+                // BGM切り替え (bgm -> bgm2)
+                if (bgmFadeInterval) {
+                    clearInterval(bgmFadeInterval);
+                    bgmFadeInterval = null;
+                }
+                bgm.pause();
+                bgm.currentTime = 0;
+                
                 if (isSoundOn) {
-                    bgm2.volume = 0.4; bgm2.currentTime = 0;
-                    bgm2.play().catch(e => console.error("BGM2 playback failed:", e));
+                    bgm2.volume = 0.4;
+                    bgm2.currentTime = 0;
+                    const playPromise = bgm2.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.error("BGM2 playback failed, retrying on user interaction:", e);
+                            // 失敗した場合、次のユーザー操作（タップ等）で再試行する保険
+                            const retryPlay = () => {
+                                if (isThirdScene && isSoundOn && bgm2.paused) {
+                                    bgm2.play();
+                                }
+                                window.removeEventListener('touchstart', retryPlay);
+                                window.removeEventListener('mousedown', retryPlay);
+                            };
+                            window.addEventListener('touchstart', retryPlay);
+                            window.addEventListener('mousedown', retryPlay);
+                        });
+                    }
                 }
             } else if (halfwayReached) {
                 isSecondScene = true;
