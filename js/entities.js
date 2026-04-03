@@ -53,7 +53,7 @@ function updateEntities() {
                 explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
                 playSE('explosion');
                 
-                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
+                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
                     boss.patternIndex = 1;
@@ -603,7 +603,7 @@ function updateEntities() {
                 // Giant shuriken deals no damage during barrier, but passes through
             } else {
                 boss.hp -= 2;
-                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
+                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
                     boss.patternIndex = 1;
