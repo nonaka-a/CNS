@@ -172,47 +172,79 @@ function update() {
 
 
     const progress = Math.min((displayDistance / goalDistance) * 100, 100);
-    const progressBar = document.getElementById('progress-bar');
-    if (progressBar) progressBar.style.width = progress + '%';
+    if (!window.uiCache) window.uiCache = {};
     
-    const shurikenBtn = document.getElementById('btn-jump');
-    if (shurikenBtn) {
-        if (mitama.isHolding) shurikenBtn.classList.add('disabled');
-        else shurikenBtn.classList.remove('disabled');
+    if (window.uiCache.progress !== progress) {
+        const progressBar = document.getElementById('progress-bar');
+        if (progressBar) progressBar.style.width = progress + '%';
+        window.uiCache.progress = progress;
+    }
+    
+    if (window.uiCache.mitamaHolding !== mitama.isHolding) {
+        const shurikenBtn = document.getElementById('btn-jump');
+        if (shurikenBtn) {
+            if (mitama.isHolding) shurikenBtn.classList.add('disabled');
+            else shurikenBtn.classList.remove('disabled');
+        }
+        window.uiCache.mitamaHolding = mitama.isHolding;
     }
 
-    const ninjutsuBar = document.getElementById('ninjutsu-bar');
-    if (ninjutsuBar) {
-        ninjutsuBar.style.width = (ninjutsuGauge / NINJUTSU_MAX) * 100 + '%';
-        if (ninjutsuGauge >= NINJUTSU_MAX) ninjutsuBar.classList.add('full');
-        else ninjutsuBar.classList.remove('full');
-    }
-    const ninBtn = document.getElementById('btn-sub');
-    if (ninBtn) {
-        if (ninjutsuGauge >= NINJUTSU_MAX && !giantShuriken) {
-            ninBtn.classList.remove('disabled'); ninBtn.classList.add('shinobi-ready');
-            if (!ninjutsuFullTriggered) {
-                ninjutsuFullTriggered = true; ninBtn.classList.add('shinobi-flash'); playSE('flash');
-                setTimeout(() => { ninBtn.classList.remove('shinobi-flash'); }, 600);
-            }
-        } else {
-            ninBtn.classList.add('disabled'); ninBtn.classList.remove('shinobi-ready'); ninBtn.classList.remove('shinobi-flash');
-            if (ninjutsuGauge < NINJUTSU_MAX) ninjutsuFullTriggered = false;
+    if (window.uiCache.ninjutsuGauge !== ninjutsuGauge) {
+        const ninjutsuBar = document.getElementById('ninjutsu-bar');
+        if (ninjutsuBar) {
+            ninjutsuBar.style.width = (ninjutsuGauge / NINJUTSU_MAX) * 100 + '%';
+            if (ninjutsuGauge >= NINJUTSU_MAX) ninjutsuBar.classList.add('full');
+            else ninjutsuBar.classList.remove('full');
         }
+        window.uiCache.ninjutsuGauge = ninjutsuGauge;
+    }
+    
+    const isNinjutsuMax = (ninjutsuGauge >= NINJUTSU_MAX);
+    const hasGiantShuriken = !!giantShuriken;
+    if (window.uiCache.isNinjutsuMax !== isNinjutsuMax || window.uiCache.hasGiantShuriken !== hasGiantShuriken) {
+        const ninBtn = document.getElementById('btn-sub');
+        if (ninBtn) {
+            if (isNinjutsuMax && !hasGiantShuriken) {
+                if (!ninBtn.classList.contains('shinobi-ready')) {
+                    ninBtn.classList.remove('disabled'); 
+                    ninBtn.classList.add('shinobi-ready');
+                }
+                if (!ninjutsuFullTriggered) {
+                    ninjutsuFullTriggered = true; 
+                    ninBtn.classList.add('shinobi-flash'); 
+                    playSE('flash');
+                    setTimeout(() => { ninBtn.classList.remove('shinobi-flash'); }, 600);
+                }
+            } else {
+                if (!ninBtn.classList.contains('disabled')) {
+                    ninBtn.classList.add('disabled'); 
+                    ninBtn.classList.remove('shinobi-ready'); 
+                    ninBtn.classList.remove('shinobi-flash');
+                }
+                if (!isNinjutsuMax) ninjutsuFullTriggered = false;
+            }
+        }
+        window.uiCache.isNinjutsuMax = isNinjutsuMax;
+        window.uiCache.hasGiantShuriken = hasGiantShuriken;
     }
 
     // ボスHPゲージの更新
-    const bossHpContainer = document.getElementById('boss-hp-container');
-    const bossHpBar = document.getElementById('boss-hp-bar');
-    if (bossHpContainer && bossHpBar) {
-        // bossSpawnTimerが「登場閾値4000 + 5000 = 9000ms」を超えたら表示
-        if (bossActive && boss.visible && bossSpawnTimer >= 10000) {
-            bossHpContainer.style.display = 'flex';
-            const hpPercent = (boss.hp / boss.maxHp) * 100;
-            bossHpBar.style.width = hpPercent + '%';
-        } else {
-            bossHpContainer.style.display = 'none';
+    const showBossHp = bossActive && boss.visible && bossSpawnTimer >= 10000;
+    const hpPercent = showBossHp ? (boss.hp / boss.maxHp) * 100 : 0;
+    
+    if (window.uiCache.showBossHp !== showBossHp || (showBossHp && window.uiCache.bossHpPercent !== hpPercent)) {
+        const bossHpContainer = document.getElementById('boss-hp-container');
+        const bossHpBar = document.getElementById('boss-hp-bar');
+        if (bossHpContainer && bossHpBar) {
+            if (showBossHp) {
+                if (window.uiCache.showBossHp !== showBossHp) bossHpContainer.style.display = 'flex';
+                if (window.uiCache.bossHpPercent !== hpPercent) bossHpBar.style.width = hpPercent + '%';
+            } else {
+                if (window.uiCache.showBossHp !== showBossHp) bossHpContainer.style.display = 'none';
+            }
         }
+        window.uiCache.showBossHp = showBossHp;
+        window.uiCache.bossHpPercent = hpPercent;
     }
 
     if (displayDistance >= goalDistance) endGame("GOAL!");

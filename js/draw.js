@@ -1,3 +1,17 @@
+const renderQueuePool = [];
+let renderQueueCount = 0;
+function addRenderItem(type, depth, obj) {
+    if (renderQueueCount >= renderQueuePool.length) {
+        renderQueuePool.push({ type: type, depth: depth, obj: obj });
+    } else {
+        const item = renderQueuePool[renderQueueCount];
+        item.type = type;
+        item.depth = depth;
+        item.obj = obj;
+    }
+    renderQueueCount++;
+}
+
 function draw() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -43,10 +57,10 @@ function draw() {
         let bgScrollSpeed = isThirdScene ? 2.0 : (isSecondScene ? 0.05 : 2.0);
         
         let startX = -((bgDistance * bgScrollSpeed) % bgW);
+        if (startX > 0) startX -= bgW; // 安全策：正の値になった場合は1枚分左にズラす
         let drawX = startX;
         
-        while (drawX > -800) drawX -= bgW;
-        while (drawX < CANVAS_WIDTH + 800) {
+        while (drawX < CANVAS_WIDTH + 200) {
             const offsetY = needsBackgroundScale ? -120 - (bgH - (CANVAS_HEIGHT + 100)) / 2 : -50;
             ctx.drawImage(currentBG, drawX, offsetY, bgW, bgH);
             drawX += bgW;
@@ -55,10 +69,10 @@ function draw() {
         if (!isSecondScene && !isThirdScene && lightImg.complete) {
             const lightSpacing = 1950;
             let lightLoopX = -((bgDistance * 2.0) % lightSpacing);
+            if (lightLoopX > 0) lightLoopX -= lightSpacing;
             const lightH = 350;       
             let lx = lightLoopX;
-            while (lx > -800) lx -= lightSpacing;
-            while (lx < CANVAS_WIDTH + 800) {
+            while (lx < CANVAS_WIDTH + 200) {
                 const w = (lightH / lightImg.height) * lightImg.width;
                 ctx.drawImage(lightImg, lx - 100, 550 - lightH, w, lightH);
                 lx += lightSpacing;
@@ -98,23 +112,33 @@ function draw() {
         }
     });
 
-    const renderQueue = [];
-    enemies.forEach(e => renderQueue.push({ type: 'enemy', depth: e.groundY, obj: e }));
-    onibis.forEach(o => renderQueue.push({ type: 'onibi', depth: o.groundY, obj: o })); // 追加
-    if (!mitama.isHolding && mitama.groundY) renderQueue.push({ type: 'mitama', depth: mitama.groundY });
-    renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
-    explosions.forEach(ex => renderQueue.push({ type: 'explosion', depth: ex.groundY, obj: ex }));
-    if (!isThirdScene) platforms.forEach(p => renderQueue.push({ type: 'platform', depth: p.y_back - 1, obj: p }));
-    if (isThirdScene) renderQueue.push({ type: 'boss', depth: boss.groundY });
-    items.forEach(it => renderQueue.push({ type: 'item', depth: it.groundY, obj: it }));
+    renderQueueCount = 0;
+    enemies.forEach(e => addRenderItem('enemy', e.groundY, e));
+    onibis.forEach(o => addRenderItem('onibi', o.groundY, o)); // 追加
+    if (!mitama.isHolding && mitama.groundY) addRenderItem('mitama', mitama.groundY, null);
+    addRenderItem('sakuya', sakuya.groundY, null);
+    explosions.forEach(ex => addRenderItem('explosion', ex.groundY, ex));
+    if (!isThirdScene) platforms.forEach(p => addRenderItem('platform', p.y_back - 1, p));
+    if (isThirdScene) addRenderItem('boss', boss.groundY, boss);
+    items.forEach(it => addRenderItem('item', it.groundY, it));
 
-    renderQueue.sort((a, b) => a.depth - b.depth);
+    // インサーションソートでメモリ割り当てを防ぐ（使用中の要素のみソート）
+    for (let i = 1; i < renderQueueCount; i++) {
+        let key = renderQueuePool[i];
+        let j = i - 1;
+        while (j >= 0 && renderQueuePool[j].depth > key.depth) {
+            renderQueuePool[j + 1] = renderQueuePool[j];
+            j--;
+        }
+        renderQueuePool[j + 1] = key;
+    }
 
-    renderQueue.forEach(item => {
+    for (let i = 0; i < renderQueueCount; i++) {
+        const item = renderQueuePool[i];
         if (item.type === 'enemy') {
             const e = item.obj;
             // ダメージ時の点滅
-            if (e.invincibleTimer > 0 && Math.floor(e.invincibleTimer / 4) % 2 === 0) return;
+            if (e.invincibleTimer > 0 && Math.floor(e.invincibleTimer / 4) % 2 === 0) continue;
 
             const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (e.isOnPlat) {
@@ -381,7 +405,7 @@ function draw() {
                 ctx.restore();
             }
         }
-    });
+    }
 
     if (!isSecondScene && !isThirdScene) {
         const lightSpacing = 1950; 

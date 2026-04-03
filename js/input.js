@@ -107,8 +107,8 @@ function setupControls() {
                 btnMap.forEach(b => {
                     // 要素が非表示(display:none)の場合は判定をスキップ
                     if (!b.el || b.el.offsetParent === null) return;
-                    
-                    const rect = b.el.getBoundingClientRect();
+                    const rect = b.rect;
+                    if (!rect) return;
                     const margin = 20; // 判定に余裕を持たせる
                     if (t.clientX >= rect.left - margin && t.clientX <= rect.right + margin &&
                         t.clientY >= rect.top - margin && t.clientY <= rect.bottom + margin) {
