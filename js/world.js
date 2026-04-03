@@ -11,6 +11,11 @@ function checkOnPlat(obj) {
 }
 
 function updateWorld() {
+    // 背景のスクロールはゲーム実行中なら常に回す（導入やトランジションも含む）
+    if (!isPaused) {
+        bgDistance += 5;
+    }
+
     let targetZoom = (isSecondScene && !isHalfwayTransitioning) ? 0.75 : 1.0;
     currentZoom += (targetZoom - currentZoom) * 0.05;
 
@@ -32,8 +37,6 @@ function updateWorld() {
     // トランジション（暗転）中やイントロ中でなければ進行させる
     if (!isIntro && !isHalfwayTransitioning) {
         let speed = 5;
-        // 背景は常に一定速度（または基本速度）で動かし続ける
-        bgDistance += 5;
 
         // エリア3かつボス撃破演出中の制御（進捗距離 distance のみ制限）
         if (isThirdScene) {
@@ -78,8 +81,11 @@ function updateWorld() {
         if (halfwayTransitionTimer === 120) {
             if (goalThresholdReached) {
                 isSecondScene = false; isThirdScene = true; platforms = [];
-                sakuya.x = 400; sakuya.groundY = GROUND_Y_POS;
-                sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.isOnPlat = true;
+                // エリア3開始：より高い位置から、中央(X=400付近)に着地するように調整
+                sakuya.x = -400; sakuya.groundY = GROUND_Y_POS;
+                sakuya.jumpOffset = -1000; sakuya.vy = 4; sakuya.isOnPlat = false;
+                sakuya.invincibleTimer = 120; // 移行時のダメージバグ防止
+                playSE('jump1');
                 // BGM切り替え (bgm -> bgm2)
                 if (bgmFadeInterval) {
                     clearInterval(bgmFadeInterval);
@@ -111,8 +117,11 @@ function updateWorld() {
             } else if (halfwayReached) {
                 isSecondScene = true;
                 platforms = [{ x: -500, w: 2000, h: 400, y_back: 280, y_front: 440, shift: 80 }];
-                sakuya.x = 400; sakuya.groundY = 360;
-                sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.isOnPlat = true;
+                // エリア2開始：さらに低い位置（左下）から勢いよく飛び出す
+                sakuya.x = -500; sakuya.groundY = 360;
+                sakuya.jumpOffset = 300; sakuya.vy = -32; sakuya.isOnPlat = false;
+                sakuya.invincibleTimer = 120; // 移行時のダメージバグ防止
+                playSE('jump1');
             }
             if (mitama.isHolding) {
                 mitama.x = sakuya.x + 10; mitama.y = sakuya.y + 30; mitama.groundY = sakuya.groundY;

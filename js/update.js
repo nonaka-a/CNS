@@ -31,17 +31,37 @@ function update() {
         }
     } else {
         if (isHalfwayTransitioning) {
-            if (sakuya.jumpOffset === 0) sakuya.vx = 0;
+            // エリア移行アニメーション
+            if (halfwayTransitionTimer < 60) {
+                if (halfwayTransitionTimer === 1) {
+                    sakuya.vy = -26;
+                    sakuya.jumpOffset = -1;
+                    playSE('jump1');
+                }
+                // エリア2→3ならより大胆に、エリア1→2もさらに速度アップ
+                sakuya.vx = (goalThresholdReached && isSecondScene) ? 22 : 24;
+            } else if (halfwayTransitionTimer >= 120) {
+                // 暗転明けは目標地点(中央付近)に向けて一定速度で移動(放物線へ)
+                if (halfwayTransitionTimer === 120) {
+                    sakuya.vx = isThirdScene ? 18.2 : 15;
+                }
+            } else {
+                sakuya.vx = 0;
+            }
         } else {
             if (keys.ArrowLeft) sakuya.vx = -PLAYER_SPEED;
             else if (keys.ArrowRight) sakuya.vx = PLAYER_SPEED;
             else if (sakuya.jumpOffset === 0) sakuya.vx = 0;
         }
         sakuya.x += sakuya.vx;
-        const zoomOffset = (CANVAS_WIDTH / currentZoom - CANVAS_WIDTH) / 2;
-        const minX = -zoomOffset;
-        const maxX = CANVAS_WIDTH + zoomOffset - sakuya.w;
-        sakuya.x = Math.max(minX, Math.min(sakuya.x, maxX));
+
+        // トランジション中、またはイントロ中はクランプを無効化
+        if (!isHalfwayTransitioning && !isIntro) {
+            const zoomOffset = (CANVAS_WIDTH / currentZoom - CANVAS_WIDTH) / 2;
+            const minX = -zoomOffset;
+            const maxX = CANVAS_WIDTH + zoomOffset - sakuya.w;
+            sakuya.x = Math.max(minX, Math.min(sakuya.x, maxX));
+        }
 
         let vy_depth = 0;
         if (!isHalfwayTransitioning) {
@@ -57,7 +77,7 @@ function update() {
     
     sakuya.vy += GRAVITY;
     sakuya.jumpOffset += sakuya.vy;
-    if (sakuya.jumpOffset > 0) {
+    if (sakuya.jumpOffset > 0 && sakuya.vy >= 0) {
         if (sakuya.isOnPlat) {
             sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.isJumping = false; sakuya.jumpCount = 0;
         } else {
