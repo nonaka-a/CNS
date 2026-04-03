@@ -1,4 +1,20 @@
 function updateEntities() {
+    if (cutInTimer > 0) {
+        cutInTimer--;
+        if (cutInTimer === 1) {
+            giantShuriken = {
+                x: CANVAS_WIDTH + 400,
+                y: -100,
+                w: 520, h: 520,
+                vx: -45, // 元の高速設定(-45)
+                angle: 0
+            };
+            sakuya.hissatsuSlideX = CANVAS_WIDTH + 500;
+            sakuya.attackTimer = 30;
+            ninjutsuGauge = 0;
+            playSE('shuriken', 1.0);
+        }
+    }
     // 弾の更新と衝突判定
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];

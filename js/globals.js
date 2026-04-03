@@ -143,6 +143,9 @@ sausageImg.src = 'images/Sprite/Sausage.png';
 
 let particles = []; // パーティクル（賑やかし用）
 let screenShake = 0; // 画面揺れの強度
+let cutInTimer = 0; // カットイン演出用タイマー
+const cutInImg = new Image();
+cutInImg.src = 'images/Sprite/cut_in.png';
 let audioCtx = null;
 const seBuffers = {};
 let opAudioSources = {};

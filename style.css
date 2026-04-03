@@ -375,3 +375,20 @@ body {
     text-shadow: 2px 2px 4px #000;
     letter-spacing: 4px;
 }
+
+/* 必殺技カットイン：全てのDOM UIより上に表示 */
+#cutin-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 10000; 
+    pointer-events: none;
+    overflow: hidden;
+    background: black; /* 暗転用の黒背景 */
+    opacity: 0;
+    transition: opacity 0.05s; /* 素早い演出用 */
+}
+#cutin-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+}

@@ -583,6 +583,37 @@ function draw() {
         mitama.lastHP = mitama.hp; 
         mitama.lastFlashTimer = mitama.healFlashTimer;
     }
+
+    // 必殺技カットインのDOM制御（全UIの上に表示するため）
+    const cutInOverlay = document.getElementById('cutin-overlay');
+    const cutInImgEl = document.getElementById('cutin-img');
+    if (cutInOverlay && cutInImgEl) {
+        if (cutInTimer > 0) {
+            cutInOverlay.style.display = 'block';
+            
+            if (cutInTimer > 30) {
+                // フェーズ1：0.2秒(12f)で暗転 (42-31フレーム)
+                let blackoutProgress = (42 - cutInTimer) / 12; // 0.0 -> 1.0 (12f)
+                cutInOverlay.style.opacity = blackoutProgress;
+                cutInImgEl.style.display = 'none'; // 画像はまだ出さない
+            } else {
+                // フェーズ2：0.5秒(30f)カットイン (30-1フレーム)
+                cutInOverlay.style.opacity = '1';
+                cutInImgEl.style.display = 'block';
+                
+                // 最初の5フレームで白から本来の色味へ（閃光エフェクト）
+                let flashDuration = 5;
+                let progress = Math.min(1.0, (30 - cutInTimer) / flashDuration);
+                let brightness = 100 + (1000 * (1 - progress)); // 1100%から100%へ
+                cutInImgEl.style.filter = `brightness(${brightness}%)`;
+            }
+        } else {
+            cutInOverlay.style.opacity = '0';
+            if (cutInOverlay.style.display !== 'none') {
+                setTimeout(() => { if (cutInTimer === 0) cutInOverlay.style.display = 'none'; }, 50);
+            }
+        }
+    }
 }
 
 function updateHPCircles(containerId, hp, count, type) {
