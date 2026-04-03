@@ -1,6 +1,16 @@
 function update() {
     if (gameOver || isPaused) return;
 
+    // --- タイマーのカウントダウン（最優先で確実に実行） ---
+    if (sakuya.healFlashTimer > 0) {
+        sakuya.healFlashTimer--;
+        if (sakuya.healFlashTimer <= 0) sakuya.healFlashTimer = 0;
+    }
+    if (mitama.healFlashTimer > 0) {
+        mitama.healFlashTimer--;
+        if (mitama.healFlashTimer <= 0) mitama.healFlashTimer = 0;
+    }
+
     if (isOpRunning) {
         if (opConfig) {
             if (opTime === 0) {
@@ -140,10 +150,13 @@ function update() {
         }
     }
 
+    if (sakuya.attackTimer > 0) sakuya.attackTimer--;
+    if (sakuya.invincibleTimer > 0) sakuya.invincibleTimer--;
+    
+    if (mitama.invincibleTimer > 0) mitama.invincibleTimer--;
+
     if (sakuya.invincibleTimer === undefined) sakuya.invincibleTimer = 0;
     if (mitama.invincibleTimer === undefined) mitama.invincibleTimer = 0;
-    if (sakuya.invincibleTimer > 0) sakuya.invincibleTimer--;
-    if (mitama.invincibleTimer > 0) mitama.invincibleTimer--;
 
     updateEntities(); // entities.js
 

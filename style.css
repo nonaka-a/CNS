@@ -34,6 +34,7 @@ body {
         }
         .circle.active { background: #ff1493; box-shadow: 0 0 10px #ff1493, inset 0 0 5px #fff; }
         .circle.mitama.active { background: #00ffcc; box-shadow: 0 0 10px #00ffcc, inset 0 0 5px #fff; }
+        .circle.flash { background: #fff !important; box-shadow: 0 0 20px #fff, inset 0 0 10px #fff !important; transition: none !important; }
 
         #progress-container {
             position: absolute; top: 15px; left: 2%;

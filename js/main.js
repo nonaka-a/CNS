@@ -107,6 +107,7 @@ async function init() {
         await loadSE('charge_dash', 'sound/B_Charge.mp3');         // ドローンB：突進
         await loadSE('soft_flame', 'sound/C_Soft_flame.mp3');
         await loadSE('damage', 'sound/damage.mp3'); // ダメージSE
+        await loadSE('sausage_get', 'sound/Sausage.mp3'); // ソーセージ取得SE
     } catch (e) {
         console.error("Failed to load configs:", e);
     }
@@ -327,6 +328,11 @@ function resetGameState() {
     
     bullets = [];
     enemies = [];
+    onibis = [];
+    items = [];
+    itemSpawnTimer = 0;
+    sakuya.healFlashTimer = 0;
+    mitama.healFlashTimer = 0;
     enemyLasers = [];
     onibis = []; // 追加：鬼火の初期化
     explosions = [];

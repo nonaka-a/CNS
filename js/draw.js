@@ -105,7 +105,8 @@ function draw() {
     renderQueue.push({ type: 'sakuya', depth: sakuya.groundY });
     explosions.forEach(ex => renderQueue.push({ type: 'explosion', depth: ex.groundY, obj: ex }));
     if (!isThirdScene) platforms.forEach(p => renderQueue.push({ type: 'platform', depth: p.y_back - 1, obj: p }));
-    if (boss.visible) renderQueue.push({ type: 'boss', depth: boss.groundY });
+    if (isThirdScene) renderQueue.push({ type: 'boss', depth: boss.groundY });
+    items.forEach(it => renderQueue.push({ type: 'item', depth: it.groundY, obj: it }));
 
     renderQueue.sort((a, b) => a.depth - b.depth);
 
@@ -203,6 +204,11 @@ function draw() {
                 ctx.drawImage(onibiImg, frame.x, frame.y, frame.w, frame.h, -o.w / 2, -o.h / 2, o.w, o.h);
             }
             ctx.restore();
+        } else if (item.type === 'item') {
+            const it = item.obj;
+            if (sausageImg.complete) {
+                ctx.drawImage(sausageImg, it.x, it.y, it.w, it.h);
+            }
         } else if (item.type === 'mitama') {
             const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (mitama.isOnPlat) {
@@ -223,6 +229,22 @@ function draw() {
                 } else {
                     let yOff = !mitama.isHolding ? -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset : -mitama.h - 100 + sakuya.jumpOffset;
                     ctx.drawImage(mitama.img, -mitama.w / 2, yOff, mitama.w, mitama.h);
+                }
+                
+                // 回復時の白発光
+                if (mitama.healFlashTimer > 0) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.globalAlpha = mitama.healFlashTimer / 30;
+                    let yOff = !mitama.isHolding ? -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset : -mitama.h - 100 + sakuya.jumpOffset;
+                    if (mitamaConfig) {
+                        const anim = mitamaConfig.data[mitama.currentAnim];
+                        const frame = anim.frames[mitama.currentFrame];
+                        for(let k=0; k<3; k++) ctx.drawImage(mitama.img, frame.x, frame.y, frame.w, frame.h, -mitama.w / 2, yOff, mitama.w, mitama.h);
+                    } else {
+                        for(let k=0; k<3; k++) ctx.drawImage(mitama.img, -mitama.w / 2, yOff, mitama.w, mitama.h);
+                    }
+                    ctx.restore();
                 }
                 ctx.restore();
             }
@@ -257,6 +279,21 @@ function draw() {
                     ctx.drawImage(sakuya.img, frame.x, frame.y, frame.w, frame.h, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
                 } else {
                     ctx.drawImage(sakuya.img, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
+                }
+
+                // 回復時の白発光
+                if (sakuya.healFlashTimer > 0) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.globalAlpha = sakuya.healFlashTimer / 30;
+                    if (sakuyaConfig) {
+                        const anim = sakuyaConfig.data[sakuya.currentAnim];
+                        const frame = anim.frames[sakuya.currentFrame];
+                        for(let k=0; k<3; k++) ctx.drawImage(sakuya.img, frame.x, frame.y, frame.w, frame.h, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
+                    } else {
+                        for(let k=0; k<3; k++) ctx.drawImage(sakuya.img, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
+                    }
+                    ctx.restore();
                 }
             }
             ctx.restore();
@@ -487,13 +524,24 @@ function draw() {
         ctx.restore();
     }
 
-    if (sakuya.lastHP !== sakuya.hp) { updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya'); sakuya.lastHP = sakuya.hp; }
-    if (mitama.lastHP !== mitama.hp) { updateHPCircles('mitama-circles', mitama.hp, 5, 'mitama'); mitama.lastHP = mitama.hp; }
+    if (sakuya.lastHP !== sakuya.hp || sakuya.lastFlashTimer !== sakuya.healFlashTimer) { 
+        updateHPCircles('sakuya-circles', sakuya.hp, 10, 'sakuya'); 
+        sakuya.lastHP = sakuya.hp; 
+        sakuya.lastFlashTimer = sakuya.healFlashTimer;
+    }
+    if (mitama.lastHP !== mitama.hp || mitama.lastFlashTimer !== mitama.healFlashTimer) { 
+        updateHPCircles('mitama-circles', mitama.hp, 5, 'mitama'); 
+        mitama.lastHP = mitama.hp; 
+        mitama.lastFlashTimer = mitama.healFlashTimer;
+    }
 }
 
 function updateHPCircles(containerId, hp, count, type) {
     const container = document.getElementById(containerId);
     if (!container) return;
+    
+    const flashTimer = (type === 'mitama') ? mitama.healFlashTimer : sakuya.healFlashTimer;
+
     if (container.children.length === 0) {
         for (let i = 0; i < count; i++) {
             const div = document.createElement('div');
@@ -504,11 +552,23 @@ function updateHPCircles(containerId, hp, count, type) {
     const activeCount = Math.ceil(hp / 10);
     const children = container.children;
     for (let i = 0; i < children.length; i++) {
+        const circle = children[i];
+        
+        // --- 状態の完全初期化（絶対に残さない） ---
+        circle.classList.remove('flash');
+        
+        // --- active状態の設定 ---
         if (i < activeCount) {
-            children[i].classList.add('active');
-            if (type === 'mitama') children[i].classList.add('mitama');
+            circle.classList.add('active');
+            if (type === 'mitama') circle.classList.add('mitama');
+            else circle.classList.remove('mitama');
+
+            // --- 発光状態の設定（タイマーがあるときだけ再付与） ---
+            if (flashTimer > 0) {
+                circle.classList.add('flash');
+            }
         } else {
-            children[i].classList.remove('active');
+            circle.classList.remove('active');
         }
     }
 }

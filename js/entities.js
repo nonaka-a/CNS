@@ -53,8 +53,22 @@ function updateEntities() {
                 explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
                 playSE('explosion');
                 
-                // 通常弾ではチャージをキャンセルしないように変更（巨大手裏剣のみ有効とする）
-                playSE('damage', 0.8);
+                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
+                    boss.state = 'intro';
+                    boss.stateTimer = 0;
+                    boss.patternIndex = 1;
+                    boss.telegraphDuration = 0;
+                    playSE('damage', 1.2);
+                    // 陣形ドローンの退避指示
+                    enemies.forEach(e => {
+                        if (e.isBossShield) {
+                            e.retreating = true;
+                            e.vx = -12;
+                        }
+                    });
+                } else {
+                    playSE('damage', 0.8);
+                }
             }
             
             if (boss.hp <= 0) {
@@ -87,6 +101,57 @@ function updateEntities() {
                 if (ex.frame >= anim.frames.length) explosions.splice(i, 1);
             }
         }
+    }
+
+    // --- アイテムの更新 ---
+    // 出現管理 (15秒に1回)
+    if (!isHalfwayTransitioning && !isIntro) {
+        itemSpawnTimer += FRAME_INTERVAL;
+        if (itemSpawnTimer >= 15000) {
+            itemSpawnTimer = 0;
+            items.push({
+                x: CANVAS_WIDTH + 100,
+                y: 180 + Math.random() * 150, // より上（奥）に出現
+                w: 60, h: 60,
+                vx: -4,
+                groundY: 300, // 奥行き基準を奥側へ
+                offsetSeed: Math.random() * 100
+            });
+        }
+    }
+
+    // アイテムの移動と衝突判定
+    for (let i = items.length - 1; i >= 0; i--) {
+        let it = items[i];
+        it.x += it.vx;
+        // ふわふわ浮かせる
+        it.y += Math.sin(Date.now() / 400 + it.offsetSeed) * 0.5;
+
+        let hitItem = false;
+        // 咲耶との判定
+        if (sakuya.x < it.x + it.w && sakuya.x + sakuya.w > it.x &&
+            sakuya.y < it.y + it.h && sakuya.y + sakuya.h > it.y) {
+            hitItem = true;
+        }
+        // ミタマ単体との判定（持っていない場合）
+        if (!hitItem && !mitama.isHolding) {
+            if (mitama.x < it.x + it.w && mitama.x + mitama.w > it.x &&
+                mitama.y < it.y + it.h && mitama.y + mitama.h > it.y) {
+                hitItem = true;
+            }
+        }
+
+        if (hitItem) {
+            sakuya.hp = Math.min(100, sakuya.hp + 10); // 1から10（1マス分）に変更
+            mitama.hp = Math.min(50, mitama.hp + 10);
+            sakuya.healFlashTimer = 30; // 0.5秒間発光
+            mitama.healFlashTimer = 30;
+            playSE('sausage_get'); // 専用SEに変更
+            items.splice(i, 1);
+            continue;
+        }
+
+        if (it.x + it.w < -100) items.splice(i, 1);
     }
 
     // --- エリア1 出現テーブル定義 (エリア1終了は dist: 20000) ---

@@ -58,7 +58,8 @@ const sakuya = {
     jumpPower: -18, isJumping: false, hp: 100,
     img: new Image(),
     currentAnim: 'idle', currentFrame: 0, frameTimer: 0, jumpCount: 0,
-    attackTimer: 0, invincibleTimer: 0, cameraOffsetY: 0
+    attackTimer: 0, invincibleTimer: 0, cameraOffsetY: 0,
+    healFlashTimer: 0 // 追加：回復時の発光
 };
 sakuya.img.src = 'images/sakuya.png';
 
@@ -67,7 +68,8 @@ const mitama = {
     isHolding: true,
     img: new Image(),
     currentAnim: 'idle', currentFrame: 0, frameTimer: 0,
-    jumpOffset: 0, vy: 0, invincibleTimer: 0
+    jumpOffset: 0, vy: 0, invincibleTimer: 0,
+    healFlashTimer: 0 // 追加：回復時の発光
 };
 mitama.img.src = 'images/mitama.png';
 
@@ -75,6 +77,8 @@ let bullets = [];
 let enemies = [];
 let enemyLasers = [];
 let onibis = []; // 追加：鬼火の配列
+let items = []; // 追加：アイテムの配列
+let itemSpawnTimer = 0; // 追加：アイテム出現タイマー
 let platforms = [];
 const syurikenImg = new Image();
 syurikenImg.src = 'images/syuriken_2.png';
@@ -130,6 +134,8 @@ const explosionImg = new Image();
 explosionImg.src = 'images/Explosion_A.png';
 const droneEnergyImg = new Image();
 droneEnergyImg.src = 'images/drone_Energy.png';
+const sausageImg = new Image(); // 追加：ソーセージ画像
+sausageImg.src = 'images/Sausage.png';
 
 let audioCtx = null;
 const seBuffers = {};
