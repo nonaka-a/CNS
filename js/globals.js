@@ -61,7 +61,7 @@ const sakuya = {
     attackTimer: 0, invincibleTimer: 0, cameraOffsetY: 0,
     healFlashTimer: 0 // 追加：回復時の発光
 };
-sakuya.img.src = 'images/sakuya.png';
+sakuya.img.src = 'images/Sprite/sakuya.png';
 
 const mitama = {
     x: 0, y: 0, w: 72, h: 72, hp: 50,
@@ -71,7 +71,7 @@ const mitama = {
     jumpOffset: 0, vy: 0, invincibleTimer: 0,
     healFlashTimer: 0 // 追加：回復時の発光
 };
-mitama.img.src = 'images/mitama.png';
+mitama.img.src = 'images/Sprite/mitama.png';
 
 let bullets = [];
 let enemies = [];
@@ -81,38 +81,38 @@ let items = []; // 追加：アイテムの配列
 let itemSpawnTimer = 0; // 追加：アイテム出現タイマー
 let platforms = [];
 const syurikenImg = new Image();
-syurikenImg.src = 'images/syuriken_2.png';
+syurikenImg.src = 'images/Sprite/syuriken_2.png';
 const bgImg = new Image();
-bgImg.src = 'images/BG1.jpg';
+bgImg.src = 'images/BG/BG1.jpg';
 const bgImg2 = new Image();
-bgImg2.src = 'images/BG2.jpg';
+bgImg2.src = 'images/BG/BG2.jpg';
 const bgImg3 = new Image();
-bgImg3.src = 'images/BG3.jpg';
+bgImg3.src = 'images/BG/BG3.jpg';
 const bgImg3_front = new Image(); 
-bgImg3_front.src = 'images/BG3_front.png'; 
+bgImg3_front.src = 'images/BG/BG3_front.png'; 
 const droneImg = new Image();
-droneImg.src = 'images/droneA.png';
+droneImg.src = 'images/Sprite/droneA.png';
 const onibiImg = new Image(); // 追加：鬼火の画像
-onibiImg.src = 'images/onibi.png';
+onibiImg.src = 'images/Sprite/onibi.png';
 const guardrailImg = new Image();
-guardrailImg.src = 'images/Guardrail.png';
+guardrailImg.src = 'images/BG/Guardrail.png';
 const vignetteImg = new Image();
-vignetteImg.src = 'images/vignette.png';
+vignetteImg.src = 'images/BG/vignette.png';
 const vignette2Img = new Image();
-vignette2Img.src = 'images/vignette2.png';
+vignette2Img.src = 'images/BG/vignette2.png';
 const lightImg = new Image();
-lightImg.src = 'images/light.png';
+lightImg.src = 'images/Sprite/light.png';
 const streetlightImg = new Image();
-streetlightImg.src = 'images/Streetlight.png';
+streetlightImg.src = 'images/BG/Streetlight.png';
 const streetlightFrontImg = new Image();
-streetlightFrontImg.src = 'images/Streetlight_front.png';
+streetlightFrontImg.src = 'images/BG/Streetlight_front.png';
 const buildingTopImg = new Image();
-buildingTopImg.src = 'images/Building_top.png';
+buildingTopImg.src = 'images/BG/Building_top.png';
 const buildingWallImg = new Image();
-buildingWallImg.src = 'images/Building_Wall.png';
+buildingWallImg.src = 'images/BG/Building_Wall.png';
 
 const bossImg = new Image();
-bossImg.src = 'images/iina.png';
+bossImg.src = 'images/Sprite/iina.png';
 
 const boss = {
     x: -500, y: 0, w: 180, h: 220, hp: 450, maxHp: 450, 
@@ -131,11 +131,11 @@ let giantShuriken = null;
 let explosions = [];
 let explosionConfig = null;
 const explosionImg = new Image();
-explosionImg.src = 'images/Explosion_A.png';
+explosionImg.src = 'images/Sprite/Explosion_A.png';
 const droneEnergyImg = new Image();
-droneEnergyImg.src = 'images/drone_Energy.png';
+droneEnergyImg.src = 'images/Sprite/drone_Energy.png';
 const sausageImg = new Image(); // 追加：ソーセージ画像
-sausageImg.src = 'images/Sausage.png';
+sausageImg.src = 'images/Sprite/Sausage.png';
 
 let audioCtx = null;
 const seBuffers = {};

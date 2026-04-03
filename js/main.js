@@ -42,7 +42,16 @@ async function init() {
                     let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
                                   normalized.includes('image/') ? normalized.split('image/')[1] : 
                                   normalized.split('/').pop();
-                    return `images/${subPath}`;
+                    
+                    // ディレクトリ構造がすでに含まれている（/がある）場合はそのまま
+                    if (subPath.includes('/')) return `images/${subPath}`;
+
+                    // ディレクトリ整理に伴うパス解決（BG系かSprite系かをファイル名から簡易的に判別）
+                    const bgPatterns = ['BG', 'Building', 'Gradation', 'Guardrail', 'Streetlight', 'vignette'];
+                    const isBG = bgPatterns.some(pattern => subPath.startsWith(pattern));
+                    
+                    if (isBG) return `images/BG/${subPath}`;
+                    else return `images/Sprite/${subPath}`;
                 }
             };
 
