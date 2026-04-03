@@ -60,6 +60,7 @@ function updateWorld() {
             halfwayReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
+            sakuya.invincibleTimer = 240; // 移行開始から完了までをカバーする無敵時間を付与
             enemies = []; enemyLasers = []; bullets = []; explosions = []; onibis = [];
             const progressMarker = document.getElementById('progress-halfway-marker');
             if (progressMarker) progressMarker.classList.add('reached');
@@ -70,6 +71,7 @@ function updateWorld() {
             goalThresholdReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
+            sakuya.invincibleTimer = 240; // 移行開始から完了までをカバー
             enemies = []; enemyLasers = []; bullets = []; explosions = []; onibis = [];
             const goalMarker = document.getElementById('progress-goal-marker');
             if (goalMarker) goalMarker.classList.add('reached');
@@ -81,10 +83,9 @@ function updateWorld() {
         if (halfwayTransitionTimer === 120) {
             if (goalThresholdReached) {
                 isSecondScene = false; isThirdScene = true; platforms = [];
-                // エリア3開始：より高い位置から、中央(X=400付近)に着地するように調整
+                // エリア3開始：左上から大きく飛び込んでくる
                 sakuya.x = -400; sakuya.groundY = GROUND_Y_POS;
                 sakuya.jumpOffset = -1000; sakuya.vy = 4; sakuya.isOnPlat = false;
-                sakuya.invincibleTimer = 120; // 移行時のダメージバグ防止
                 playSE('jump1');
                 // BGM切り替え (bgm -> bgm2)
                 if (bgmFadeInterval) {
@@ -117,10 +118,9 @@ function updateWorld() {
             } else if (halfwayReached) {
                 isSecondScene = true;
                 platforms = [{ x: -500, w: 2000, h: 400, y_back: 280, y_front: 440, shift: 80 }];
-                // エリア2開始：さらに低い位置（左下）から勢いよく飛び出す
-                sakuya.x = -500; sakuya.groundY = 360;
+                // エリア2開始：さらに遠く（左下奥）から勢いよく飛び出す
+                sakuya.x = -900; sakuya.groundY = 360;
                 sakuya.jumpOffset = 300; sakuya.vy = -32; sakuya.isOnPlat = false;
-                sakuya.invincibleTimer = 120; // 移行時のダメージバグ防止
                 playSE('jump1');
             }
             if (mitama.isHolding) {

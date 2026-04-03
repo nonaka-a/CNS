@@ -41,8 +41,7 @@ function updateEntities() {
             }
         }
 
-        // 敵に当たらなかった場合のみボスとの当たり判定
-        if (!hit && bossActive && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
+                if (!hit && bossActive && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
             b.y < boss.y + boss.h && b.y + b.h > boss.y &&
             Math.abs(b.groundY - boss.groundY) < 80) {
             
@@ -54,22 +53,8 @@ function updateEntities() {
                 explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
                 playSE('explosion');
                 
-                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
-                    boss.state = 'intro';
-                    boss.stateTimer = 0;
-                    boss.patternIndex = 1;
-                    boss.telegraphDuration = 0;
-                    playSE('damage', 1.2); // キャンセル時の音を少し強調
-                    // 陣形ドローンの退避指示
-                    enemies.forEach(e => {
-                        if (e.isBossShield) {
-                            e.retreating = true;
-                            e.vx = -12;
-                        }
-                    });
-                } else {
-                    playSE('damage', 0.8); // 通常ダメージ音
-                }
+                // 通常弾ではチャージをキャンセルしないように変更（巨大手裏剣のみ有効とする）
+                playSE('damage', 0.8);
             }
             
             if (boss.hp <= 0) {
@@ -434,9 +419,10 @@ function updateEntities() {
                     // 盾ドローンがすべて配置についたかチェック
                     if (boss.telegraphDuration === -1) {
                         const shieldDrones = enemies.filter(e => e.isBossShield);
-                        const allArrived = shieldDrones.every(e => Math.abs(e.x - e.targetX) < 5);
-                        if (allArrived) {
-                            boss.telegraphDuration = 420; // 7秒チャージ開始
+                        // ドローンがいないか、全てのドローンが概ね配置についたら、または一定時間経過で開始
+                        const allArrived = shieldDrones.every(e => Math.abs(e.x - e.targetX) < 10);
+                        if (allArrived || boss.stateTimer > 300) { 
+                            boss.telegraphDuration = 240; // 4秒チャージ開始（短縮してテンポ向上）
                             playSE('gather_energy', 1.0);
                         }
                     }

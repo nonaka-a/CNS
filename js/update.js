@@ -81,7 +81,7 @@ function update() {
         if (sakuya.isOnPlat) {
             sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.isJumping = false; sakuya.jumpCount = 0;
         } else {
-            if (isSecondScene && sakuya.jumpOffset > 500) {
+            if (isSecondScene && !isHalfwayTransitioning && sakuya.jumpOffset > 500) {
                 sakuya.hp -= 10;
                 if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("落下..."); } 
                 else {
