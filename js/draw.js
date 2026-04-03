@@ -308,7 +308,7 @@ function draw() {
             }
 
             // 巨大ビームの充填エフェクト
-            if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+            if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
                 let chargeProgress = 1.0 - (boss.telegraphDuration / 420);
                 let pulse = Math.sin(Date.now() / (50 - 40 * chargeProgress)) * 0.5 + 0.5;
                 ctx.save();

@@ -54,7 +54,7 @@ function updateEntities() {
                 explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
                 playSE('explosion');
                 
-                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
                     boss.patternIndex = 1;
@@ -283,7 +283,8 @@ function updateEntities() {
 
     // ドローン本体との接触ダメージ（咲耶・ミタマ）
     enemies.forEach(e => {
-        if (e.type === 'B' && e.state !== 'dash') return;
+        // 突進攻撃中(Bのdash)以外は接触ダメージを発生させない
+        if (!(e.type === 'B' && e.state === 'dash')) return;
 
         if (sakuya.invincibleTimer <= 0) {
             if (e.x < sakuya.x + sakuya.w && e.x + e.w > sakuya.x &&
@@ -433,7 +434,7 @@ function updateEntities() {
                     // 盾ドローンがすべて配置についたかチェック
                     if (boss.telegraphDuration === -1) {
                         const shieldDrones = enemies.filter(e => e.isBossShield);
-                        const allArrived = shieldDrones.length > 0 && shieldDrones.every(e => Math.abs(e.x - e.targetX) < 5);
+                        const allArrived = shieldDrones.every(e => Math.abs(e.x - e.targetX) < 5);
                         if (allArrived) {
                             boss.telegraphDuration = 420; // 7秒チャージ開始
                             playSE('gather_energy', 1.0);
@@ -466,7 +467,8 @@ function updateEntities() {
                 
                 // ボス本体およびバリアとの接触判定（咲耶）
                 if (sakuya.invincibleTimer <= 0) {
-                    if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
+                    // 突進攻撃(dash)中以外は接触ダメージを発生させない
+                    if (boss.state === 'dash') {
                         let bx = boss.x + boss.w / 2;
                         let by = boss.y + boss.h / 2;
                         let sx = sakuya.x + sakuya.w / 2;
@@ -550,7 +552,7 @@ function updateEntities() {
                 // Giant shuriken deals no damage during barrier, but passes through
             } else {
                 boss.hp -= 2;
-                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
                     boss.patternIndex = 1;
@@ -613,8 +615,8 @@ function spawnBossDrones() {
         enemies.push({
             id: enemyIdCounter++, 
             type: 'A',
-            hp: 2,
-            maxHp: 2,
+            hp: 1,
+            maxHp: 1,
             x: -200, 
             w: 80, h: 80,
             groundY: ys[i], 
