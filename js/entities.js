@@ -1,6 +1,12 @@
 function updateEntities() {
     if (cutInTimer > 0) {
         cutInTimer--;
+        
+        // 追加: カットイン画像が表示される瞬間に画面を揺らす
+        if (cutInTimer === 30) {
+            screenShake = 35; // 激しく揺らす
+        }
+
         if (cutInTimer === 1) {
             giantShuriken = {
                 x: CANVAS_WIDTH + 400,

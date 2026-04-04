@@ -606,9 +606,19 @@ function draw() {
                 let progress = Math.min(1.0, (30 - cutInTimer) / flashDuration);
                 let brightness = 100 + (1000 * (1 - progress)); // 1100%から100%へ
                 cutInImgEl.style.filter = `brightness(${brightness}%)`;
+
+                // 一瞬だけ激しく震える（スクリーンシェイク）をDOMにも適用
+                if (screenShake > 0) {
+                    const sx = (Math.random() - 0.5) * screenShake * 1.5;
+                    const sy = (Math.random() - 0.5) * screenShake * 1.5;
+                    cutInImgEl.style.transform = `translate(${sx}px, ${sy}px) scale(1.05)`;
+                } else {
+                    cutInImgEl.style.transform = 'none';
+                }
             }
         } else {
             cutInOverlay.style.opacity = '0';
+            cutInImgEl.style.transform = 'none'; // リセット
             if (cutInOverlay.style.display !== 'none') {
                 setTimeout(() => { if (cutInTimer === 0) cutInOverlay.style.display = 'none'; }, 50);
             }
