@@ -78,7 +78,7 @@ function updateEntities() {
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
-                    boss.patternIndex = 1;
+                    boss.patternIndex = 3; // 中断しても次のパターン（急降下）へ進めるように修正
                     boss.telegraphDuration = 0;
                     playSE('damage', 1.2);
                     // 陣形ドローンの退避指示
@@ -216,8 +216,8 @@ function updateEntities() {
             }
         } else {
             // --- エリア2・3: 従来の確率ベース ---
-            const spawnRate = isThirdScene ? 0.002 : (isSecondScene ? 0.0025 : 0.005);
-            const maxRandomEnemies = isThirdScene ? 3 : (isSecondScene ? 3 : 5);
+            const spawnRate = isThirdScene ? 0.0014 : (isSecondScene ? 0.0025 : 0.005);
+            const maxRandomEnemies = isThirdScene ? 2 : (isSecondScene ? 3 : 5);
             if (Math.random() < spawnRate && enemies.filter(e => !e.isBossShield).length < maxRandomEnemies) {
                 let availableTypes = isSecondScene ? ['A', 'A', 'C'] : ['A', 'A', 'B', 'C'];
                 let type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
@@ -455,16 +455,22 @@ function updateEntities() {
                 let hoverX = boss.originalX + Math.sin(boss.animCounter * 0.03) * 20;
 
                 if (boss.state === 'intro') {
-                    if (boss.stateTimer > 120) {
+                    if (boss.currentAnim !== 'idle') {
+                        boss.currentAnim = 'idle';
+                        boss.currentFrame = 0;
+                        boss.frameTimer = 0;
+                    }
+                    if (boss.stateTimer > 180) { // 3秒間に延長（攻撃チャンス）
                         boss.stateTimer = 0;
                         if (boss.patternIndex === 1) boss.state = 'barrier';
-                        else boss.state = 'charge';
+                        else if (boss.patternIndex === 2) boss.state = 'charge';
+                        else boss.state = 'smash_intro';
                     }
                     boss.x = hoverX;
                     boss.jumpOffset = hoverY;
                 }
                 else if (boss.state === 'barrier') {
-                    if (boss.stateTimer === 180) {
+                    if (boss.stateTimer === 120) {
                         boss.state = 'dash';
                         boss.dashTargetX = sakuya.x + 50; 
                         playSE('charge_dash', 1.0); 
@@ -472,8 +478,10 @@ function updateEntities() {
                     if (boss.state === 'barrier') {
                         boss.x = hoverX;
                         boss.jumpOffset = hoverY;
+                        // プレイヤーの高さ（地面/足場）に軸を合わせる
+                        boss.groundY += (sakuya.groundY - boss.groundY) * 0.1;
                     }
-                    if (boss.stateTimer >= 480) {
+                    if (boss.stateTimer >= 300) { // 300F(5秒)に短縮
                         boss.state = 'intro';
                         boss.stateTimer = 0;
                         boss.patternIndex = 2; // 次はビーム
@@ -509,7 +517,7 @@ function updateEntities() {
                         // ドローンがいないか、全てのドローンが概ね配置についたら、または一定時間経過で開始
                         const allArrived = shieldDrones.every(e => Math.abs(e.x - e.targetX) < 10);
                         if (allArrived || boss.stateTimer > 300) { 
-                            boss.telegraphDuration = 240; // 4秒チャージ開始（短縮してテンポ向上）
+                            boss.telegraphDuration = 180; // 3秒に短縮
                             playSE('gather_energy', 1.0);
                         }
                     }
@@ -533,7 +541,91 @@ function updateEntities() {
                             });
                             boss.state = 'intro';
                             boss.stateTimer = 0;
-                            boss.patternIndex = 1; // 次はバリア
+                            boss.patternIndex = 3; // 次は急降下攻撃(smash)
+                        }
+                    }
+                }
+                else if (boss.state === 'smash_intro') {
+                    if (boss.currentAnim !== 'idle') {
+                        boss.currentAnim = 'idle';
+                        boss.currentFrame = 0;
+                        boss.frameTimer = 0;
+                    }
+                    boss.jumpOffset -= 15; // 上空にふわっとフレームアウト
+                    if (boss.jumpOffset < -800) {
+                        boss.state = 'smash_wait';
+                        boss.stateTimer = 0;
+                        boss.smashCount = 0;
+                    }
+                }
+                else if (boss.state === 'smash_wait') {
+                    let waitTime = (boss.smashCount === 0) ? 120 : 60; // 初回は2秒、以降は1秒
+                    
+                    if (boss.stateTimer === 1 || (waitTime > 60 && boss.stateTimer === waitTime - 60)) {
+                        // 降下位置を決定 (プレイヤー周辺に寄せる)
+                        let playerX = sakuya.x + sakuya.w / 2;
+                        boss.targetX = playerX + (Math.random() - 0.5) * 300; 
+                        boss.targetX = Math.max(100, Math.min(CANVAS_WIDTH - 100, boss.targetX));
+                        boss.x = boss.targetX - boss.w / 2; 
+                        playSE('soft_flame'); // 予兆音
+                    }
+                    
+                    if (boss.stateTimer >= waitTime) {
+                        boss.state = 'smash_drop';
+                        boss.stateTimer = 0;
+                        if (boss.currentAnim !== 'attack') {
+                            boss.currentAnim = 'attack';
+                            boss.currentFrame = 0;
+                            boss.frameTimer = 0;
+                        }
+                    }
+                }
+                else if (boss.state === 'smash_drop') {
+                    boss.jumpOffset += 60; // 急降下
+                    if (boss.jumpOffset >= 0) { // 着地
+                        boss.jumpOffset = 0;
+                        boss.state = 'smash_shake';
+                        boss.stateTimer = 0;
+                        screenShake = 30; // 着地で揺れる
+                        playSE('explosion');
+                    }
+                }
+                else if (boss.state === 'smash_shake') {
+                    if (boss.stateTimer % 5 === 0) screenShake = 10; // 継続的に揺れる
+                    
+                    if (boss.stateTimer >= 60) { // 1秒間
+                        boss.smashCount++;
+                        if (boss.smashCount >= 4) {
+                            boss.state = 'smash_return'; // 4回終わったら戻る
+                        } else {
+                            boss.state = 'smash_fly_up_fast'; // もう一回
+                        }
+                        boss.stateTimer = 0;
+                        if (boss.currentAnim !== 'idle') {
+                            boss.currentAnim = 'idle';
+                            boss.currentFrame = 0;
+                            boss.frameTimer = 0;
+                        }
+                    }
+                }
+                else if (boss.state === 'smash_fly_up_fast') {
+                    boss.jumpOffset -= 40; // 素早く上空へ
+                    if (boss.jumpOffset < -800) {
+                        boss.state = 'smash_wait';
+                        boss.stateTimer = 0;
+                    }
+                }
+                else if (boss.state === 'smash_return') {
+                    if (boss.jumpOffset > -800 && boss.x !== boss.originalX) {
+                        boss.jumpOffset -= 20; // まずは高く上がる
+                    } else {
+                        boss.x = boss.originalX;
+                        boss.jumpOffset += 15; // 元の位置に降りてくる
+                        if (boss.jumpOffset >= -40) {
+                            boss.jumpOffset = -40;
+                            boss.state = 'intro';
+                            boss.stateTimer = 0;
+                            boss.patternIndex = 1; // バリアに戻る
                         }
                     }
                 }
@@ -553,6 +645,51 @@ function updateEntities() {
                             sakuya.hp -= 10; // ライフ1個分
                             sakuya.invincibleTimer = 40; 
                             if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
+                        }
+                    }
+                    if (boss.state === 'smash_shake') {
+                        let bx = boss.x + boss.w / 2;
+                        let by = boss.groundY;
+                        let sx = sakuya.x + sakuya.w / 2;
+                        let sy = sakuya.y + sakuya.h; 
+                        
+                        // 衝撃波の楕円形判定 (幅: boss.w * 2.2, 高さ: 85)
+                        let dx = Math.abs(bx - sx) / (boss.w * 2.2);
+                        let dy = Math.abs(by - sy) / 85;
+                        if (dx * dx + dy * dy <= 1) { 
+                            sakuya.hp -= 10;
+                            sakuya.invincibleTimer = 40;
+                            if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
+                        }
+                    }
+                }
+
+                // ボス本体およびバリアとの接触判定（ミタマ：担がれていない時）
+                if (mitama.invincibleTimer <= 0 && !mitama.isHolding) {
+                    if (boss.state === 'dash') {
+                        let bx = boss.x + boss.w / 2;
+                        let by = boss.y + boss.h / 2;
+                        let mx = mitama.x + mitama.w / 2;
+                        let my = mitama.y + mitama.h / 2;
+                        let dist = Math.hypot(bx - mx, by - my);
+                        let hitRadius = (boss.state === 'barrier') ? 140 : 80;
+                        if (dist < hitRadius && Math.abs(boss.groundY - mitama.groundY) < 100) {
+                            mitama.hp -= 10;
+                            mitama.invincibleTimer = 40;
+                            if (mitama.hp <= 0) { mitama.hp = 0; endGame("MITAMA DESTROYED"); }
+                        }
+                    }
+                    if (boss.state === 'smash_shake') {
+                        let bx = boss.x + boss.w / 2;
+                        let by = boss.groundY;
+                        let mx = mitama.x + mitama.w / 2;
+                        let my = mitama.y + mitama.h;
+                        let dx = Math.abs(bx - mx) / (boss.w * 2.2);
+                        let dy = Math.abs(by - my) / 85;
+                        if (dx * dx + dy * dy <= 1) { 
+                            mitama.hp -= 10;
+                            mitama.invincibleTimer = 40; 
+                            if (mitama.hp <= 0) { mitama.hp = 0; endGame("MITAMA DESTROYED"); }
                         }
                     }
                 }
@@ -671,7 +808,7 @@ function updateEntities() {
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
                     boss.state = 'intro';
                     boss.stateTimer = 0;
-                    boss.patternIndex = 1;
+                    boss.patternIndex = 3; // 中断しても次のパターン（急降下）へ進めるように修正
                     boss.telegraphDuration = 0;
                     playSE('damage', 1.2);
                     // 陣形ドローンの退避指示

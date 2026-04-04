@@ -340,11 +340,13 @@ function draw() {
             const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 0.9;
             
             const shadowAlpha = 0.3 - (Math.abs(boss.jumpOffset) / 500);
-            ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.1, shadowAlpha)})`;
-            ctx.beginPath();
             const shadowShrink = 1.0 - (Math.abs(boss.jumpOffset) / 300);
-            ctx.ellipse(boss.x + boss.w / 2, boss.groundY, boss.w * 0.6 * bScale * shadowShrink, 12 * bScale * shadowShrink, 0, 0, Math.PI * 2);
-            ctx.fill();
+            if (shadowShrink > 0) {
+                ctx.fillStyle = `rgba(0, 0, 0, ${Math.max(0.1, shadowAlpha)})`;
+                ctx.beginPath();
+                ctx.ellipse(boss.x + boss.w / 2, boss.groundY, boss.w * 0.6 * bScale * shadowShrink, 12 * bScale * shadowShrink, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
 
             ctx.save();
             if (boss.img.complete) {
@@ -353,8 +355,12 @@ function draw() {
 
                 if (bossConfig) {
                     const anim = bossConfig.data[boss.currentAnim];
-                    const frame = anim.frames[boss.currentFrame];
-                    ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
+                    if (anim) {
+                        const frame = anim.frames[boss.currentFrame];
+                        if (frame) {
+                            ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
+                        }
+                    }
                 } else {
                     const nw = boss.img.naturalWidth * 1.1; 
                     const nh = boss.img.naturalHeight * 1.1;
@@ -419,6 +425,50 @@ function draw() {
                     ctx.stroke();
                     ctx.setLineDash([]);
                 }
+                ctx.restore();
+            }
+
+            // 急降下攻撃の予兆 (床の赤い照り返し)
+            let waitTime = (boss.smashCount === 0) ? 120 : 60;
+            if (boss.state === 'smash_wait' && boss.stateTimer >= waitTime - 60) {
+                let progress = (boss.stateTimer - (waitTime - 60)) / 60; 
+                let rPulse = 0.5 + Math.sin(Date.now() / 50) * 0.5 * progress;
+                ctx.save();
+                ctx.translate(boss.targetX, boss.groundY);
+                ctx.scale(bScale, bScale);
+                let shadowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.w * 2.0);
+                shadowGrad.addColorStop(0, `rgba(255, 0, 0, ${rPulse})`);
+                shadowGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                ctx.globalCompositeOperation = 'lighter';
+                ctx.fillStyle = shadowGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, boss.w * 2.0, boss.w * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+
+            // 着地時の衝撃波
+            if (boss.state === 'smash_shake') {
+                let progress = boss.stateTimer / 60; 
+                ctx.save();
+                ctx.translate(boss.x + boss.w / 2, boss.groundY);
+                ctx.scale(bScale, bScale);
+                ctx.globalCompositeOperation = 'lighter';
+                
+                let waveScale = 1.0 + Math.sin(Date.now() / 50) * 0.1;
+                let waveAlpha = 1.0 - progress; 
+                
+                let radW = boss.w * 2.2 * waveScale;
+                let radH = 85 * waveScale;
+                
+                let waveGrad = ctx.createRadialGradient(0, 0, radW * 0.2, 0, 0, radW);
+                waveGrad.addColorStop(0, `rgba(255, 50, 0, ${waveAlpha * 0.8})`);
+                waveGrad.addColorStop(0.5, `rgba(255, 100, 0, ${waveAlpha * 0.4})`);
+                waveGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                ctx.fillStyle = waveGrad;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, radW, radH, 0, 0, Math.PI * 2);
+                ctx.fill();
                 ctx.restore();
             }
         }

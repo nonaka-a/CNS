@@ -122,6 +122,7 @@ const boss = {
     animCounter: 0,
     isArrived: false,
     state: 'intro', stateTimer: 0, patternIndex: 1, originalX: 50, laserDuration: 0, telegraphDuration: 0,
+    smashCount: 0, targetX: 50, // 追加：急降下攻撃用の管理変数
     img: new Image(),
     currentAnim: 'idle', currentFrame: 0, frameTimer: 0
 };
