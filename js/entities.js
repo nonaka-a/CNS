@@ -51,7 +51,7 @@ function updateEntities() {
                     explosions.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY, frame: 0, timer: 0 });
                     playSE('explosion');
                     for (let k = enemyLasers.length - 1; k >= 0; k--) {
-                        if (enemyLasers[k].ownerId === e.id && enemyLasers[k].telegraphDuration > 0) enemyLasers.splice(k, 1);
+                        if (enemyLasers[k].ownerId === e.id) enemyLasers.splice(k, 1);
                     }
                     enemies.splice(j, 1);
                     ninjutsuGauge = Math.min(NINJUTSU_MAX, ninjutsuGauge + 1);
@@ -640,6 +640,14 @@ function updateEntities() {
             if (giantShuriken.x + giantShuriken.w > e.x && giantShuriken.x < e.x + e.w) {
                 explosions.push({ x: e.x + e.w / 2, y: e.y + e.h / 2, groundY: e.groundY, frame: 0, timer: 0 });
                 playSE('explosion');
+                
+                // --- 修正: 敵を削除する前に、その敵が持っていたレーザーを削除 ---
+                for (let k = enemyLasers.length - 1; k >= 0; k--) {
+                    if (enemyLasers[k].ownerId === e.id) {
+                        enemyLasers.splice(k, 1);
+                    }
+                }
+                
                 enemies.splice(j, 1);
             }
         }
