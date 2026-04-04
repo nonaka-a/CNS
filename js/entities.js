@@ -567,6 +567,18 @@ function updateEntities() {
                 }
             }
             boss.y = boss.groundY - boss.h + boss.jumpOffset;
+
+            // アニメーション更新
+            if (bossConfig) {
+                const anim = bossConfig.data[boss.currentAnim];
+                if (anim) {
+                    boss.frameTimer += FRAME_INTERVAL;
+                    if (boss.frameTimer >= 1000 / anim.fps) {
+                        boss.frameTimer -= 1000 / anim.fps;
+                        boss.currentFrame = (boss.currentFrame + 1) % anim.frames.length;
+                    }
+                }
+            }
         }
     }
 

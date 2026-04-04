@@ -347,13 +347,19 @@ function draw() {
             ctx.fill();
 
             ctx.save();
-            if (bossImg.complete) {
-                const nw = bossImg.naturalWidth * 1.1; 
-                const nh = bossImg.naturalHeight * 1.1;
-
+            if (boss.img.complete) {
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
-                ctx.drawImage(bossImg, -nw / 2, -nh + boss.jumpOffset, nw, nh);
+
+                if (bossConfig) {
+                    const anim = bossConfig.data[boss.currentAnim];
+                    const frame = anim.frames[boss.currentFrame];
+                    ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
+                } else {
+                    const nw = boss.img.naturalWidth * 1.1; 
+                    const nh = boss.img.naturalHeight * 1.1;
+                    ctx.drawImage(boss.img, -nw / 2, -nh + boss.jumpOffset, nw, nh);
+                }
             }
             ctx.restore();
 

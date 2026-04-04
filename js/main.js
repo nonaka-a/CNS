@@ -25,6 +25,9 @@ async function init() {
         const resOP = await fetch('json/OP.json');
         opConfig = await resOP.json();
 
+        const resBoss = await fetch('json/iina.json');
+        bossConfig = await resBoss.json();
+
         // OPアセットのプリロード
         if (opConfig && opConfig.assets) {
             const fixPath = (p, type) => {
