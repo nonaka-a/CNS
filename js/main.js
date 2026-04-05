@@ -125,6 +125,7 @@ async function init() {
         await loadSE('barrier', 'sound/Barrier.mp3'); // ボスバリアSE
         await loadSE('roar', 'sound/roar.mp3'); // 巨大手裏剣SE
         await loadSE('impact', 'sound/impact.mp3'); // ボス衝撃波SE
+        await loadSE('siren', 'sound/Siren.mp3'); // ミタマアラートSE
     } catch (e) {
         console.error("Failed to load configs:", e);
     }

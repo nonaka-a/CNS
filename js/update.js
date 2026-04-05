@@ -133,6 +133,7 @@ function update() {
     if (mitama.groundY !== undefined) mitama.isOnPlat = checkOnPlat(mitama);
     if (mitama.isHolding) {
         mitama.x = sakuya.x + 10; mitama.y = sakuya.y + 30; mitama.jumpOffset = 0; mitama.vy = 0;
+        mitamaAlertTimer = 0; // 持っている間はリセット
     } else {
         mitama.x -= 0.4;
         if (mitama.jumpOffset !== 0 || mitama.vy !== 0) {
@@ -142,7 +143,20 @@ function update() {
         const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
         mitama.y = mitama.groundY - (mitama.h + 65 - Math.sin(Date.now() / 400) * 15) * mScale + mitama.jumpOffset;
         const lostThreshold = isSecondScene ? -200 : -mitama.w;
-        if (mitama.x + mitama.w < lostThreshold) endGame("MITAMA LOST...");
+        const currentX = mitama.x + mitama.w;
+        const alertRange = 200; 
+        
+        if (currentX < lostThreshold + alertRange) {
+             mitamaAlertTimer++;
+             // サイレン (約3秒 = 180フレームおきに再生)
+             if (mitamaAlertTimer % 180 === 1) { 
+                 playSE('siren', 1.0);
+             }
+        } else {
+             mitamaAlertTimer = 0;
+        }
+
+        if (currentX < lostThreshold) endGame("ミタマ脱落..."); // 日本語表記に
     }
 
     if (mitamaConfig) {

@@ -596,6 +596,18 @@ function draw() {
     }
     ctx.restore();
 
+    // ミタマ脱落アラート演出 (画面左隅を赤くハイライト)
+    if (mitamaAlertTimer > 0) {
+        ctx.save();
+        let alpha = 0.4 * (0.5 + 0.5 * Math.sin(Date.now() / 150));
+        let grad = ctx.createLinearGradient(0, 0, 180, 0);
+        grad.addColorStop(0, `rgba(255, 0, 0, ${alpha})`);
+        grad.addColorStop(1, 'rgba(255, 0, 0, 0)');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, 180, CANVAS_HEIGHT); 
+        ctx.restore();
+    }
+
     if (isHalfwayTransitioning) {
         let alpha = halfwayTransitionTimer < 60 ? halfwayTransitionTimer / 60 : (halfwayTransitionTimer < 120 ? 1 : 1 - ((halfwayTransitionTimer - 120) / 60));
         ctx.save();

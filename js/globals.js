@@ -154,6 +154,7 @@ let particles = []; // パーティクル（賑やかし用）
 let screenShake = 0; // 画面揺れの強度
 let cutInTimer = 0; // カットイン演出用タイマー
 let bossCutInTimer = 0; // ボス用カットイン演出用タイマー
+let mitamaAlertTimer = 0; // ミタマが画面外に行きそうな時のアラートタイマー
 const cutInImg = new Image();
 cutInImg.src = 'images/Sprite/cut_in.png';
 let audioCtx = null;
