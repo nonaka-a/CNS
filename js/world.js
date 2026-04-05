@@ -1,5 +1,10 @@
 function checkOnPlat(obj) {
     if (!isSecondScene) return true;
+    
+    // 足場より下にいる（落ちている最中）場合は乗れないようにする
+    // jumpOffset が正の値（groundY より下）なら、足場には乗れない
+    if (obj.jumpOffset > 10) return false; 
+
     return platforms.some(p => {
          const footX = obj.x + obj.w / 2;
          const footY = obj.groundY;
@@ -9,7 +14,6 @@ function checkOnPlat(obj) {
          return footX >= p.x + currentShift && footX <= p.x + p.w + currentShift;
     });
 }
-
 function updateWorld() {
     // 背景のスクロールはゲーム実行中なら常に回す（導入やトランジションも含む）
     if (!isPaused) {

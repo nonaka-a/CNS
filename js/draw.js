@@ -95,40 +95,25 @@ function draw() {
         }
     }
 
-    bullets.forEach(b => {
-        const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-        if (syurikenImg.complete) {
-            b.history.forEach((h, idx) => {
-                if (idx % 2 === 0) return; 
-                const trailAlpha = (idx / b.history.length) * 0.6;
-                ctx.save();
-                ctx.globalAlpha = trailAlpha;
-                ctx.translate(h.x + b.w / 2, h.y + b.h / 2);
-                ctx.scale(bScale * (0.3 + (idx / b.history.length) * 0.7), bScale * (0.3 + (idx / b.history.length) * 0.7));
-                ctx.rotate(h.angle);
-                ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
-                ctx.restore();
-            });
-            ctx.save();
-            ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
-            ctx.scale(bScale, bScale);
-            ctx.rotate(b.angle);
-            ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
-            ctx.restore();
-        }
-    });
+    // ここで行っていた bullets.forEach(b => { ... }) を削除し、下のレンダリングキューに追加します
 
     renderQueueCount = 0;
+    // 手裏剣をレンダリングキューに追加
+    bullets.forEach(b => addRenderItem('bullet', b.groundY, b));
     enemies.forEach(e => addRenderItem('enemy', e.groundY, e));
-    onibis.forEach(o => addRenderItem('onibi', o.groundY, o)); // 追加
+    onibis.forEach(o => addRenderItem('onibi', o.groundY, o)); 
     if (!mitama.isHolding && mitama.groundY) addRenderItem('mitama', mitama.groundY, null);
     addRenderItem('sakuya', sakuya.groundY, null);
     explosions.forEach(ex => addRenderItem('explosion', ex.groundY, ex));
-    if (!isThirdScene) platforms.forEach(p => addRenderItem('platform', p.y_back - 1, p));
+    
+    // 足場のソート基準を p.y_back（奥の端）に戻す。
+    // これにより、足場の上にいる（y_back <= groundY）キャラが足場より後に描画される。
+    if (!isThirdScene) platforms.forEach(p => addRenderItem('platform', p.y_back, p));
+    
     if (isThirdScene) addRenderItem('boss', boss.groundY, boss);
     items.forEach(it => addRenderItem('item', it.groundY, it));
 
-    // インサーションソートでメモリ割り当てを防ぐ（使用中の要素のみソート）
+    // インサーションソート
     for (let i = 1; i < renderQueueCount; i++) {
         let key = renderQueuePool[i];
         let j = i - 1;
@@ -141,11 +126,32 @@ function draw() {
 
     for (let i = 0; i < renderQueueCount; i++) {
         const item = renderQueuePool[i];
-        if (item.type === 'enemy') {
-            const e = item.obj;
-            // ダメージ時の点滅
-            if (e.invincibleTimer > 0 && Math.floor(e.invincibleTimer / 4) % 2 === 0) continue;
 
+        if (item.type === 'bullet') {
+            const b = item.obj;
+            const bScale = 1.0 + (b.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            if (syurikenImg.complete) {
+                b.history.forEach((h, idx) => {
+                    if (idx % 2 === 0) return; 
+                    const trailAlpha = (idx / b.history.length) * 0.6;
+                    ctx.save();
+                    ctx.globalAlpha = trailAlpha;
+                    ctx.translate(h.x + b.w / 2, h.y + b.h / 2);
+                    ctx.scale(bScale * (0.3 + (idx / b.history.length) * 0.7), bScale * (0.3 + (idx / b.history.length) * 0.7));
+                    ctx.rotate(h.angle);
+                    ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
+                    ctx.restore();
+                });
+                ctx.save();
+                ctx.translate(b.x + b.w / 2, b.y + b.h / 2);
+                ctx.scale(bScale, bScale);
+                ctx.rotate(b.angle);
+                ctx.drawImage(syurikenImg, -b.w / 2, -b.h / 2, b.w, b.h);
+                ctx.restore();
+            }
+        } else if (item.type === 'enemy') {
+            const e = item.obj;
+            if (e.invincibleTimer > 0 && Math.floor(e.invincibleTimer / 4) % 2 === 0) continue;
             const eScale = 1.0 + (e.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (e.isOnPlat) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
@@ -156,31 +162,23 @@ function draw() {
             ctx.save();
             ctx.translate(e.x + e.w / 2, e.groundY);
             ctx.scale(eScale, eScale);
-
-           // ドローンBのチャージおよび体当たり中の発光表現（画像の外まで光らせる）
             if (e.type === 'B' && (e.state === 'charge' || e.state === 'dash')) {
                 ctx.save();
-                // 本体の描画中心（画像の中央付近）に合わせて光の座標を調整
                 const centerX = 0;
                 const centerY = -e.h / 2 + e.jumpOffset;
                 const pulse = e.state === 'dash' ? 1.2 : (0.5 + 0.7 * (e.stateTimer / 60));
-                
                 const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, e.w * pulse);
-                gradient.addColorStop(0, 'rgba(255, 255, 150, 0.9)'); // 中心は明るく
-                gradient.addColorStop(0.4, 'rgba(255, 255, 0, 0.4)'); // 外側へ向かって黄色く
-                gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');    // 縁は透明に
-                
+                gradient.addColorStop(0, 'rgba(255, 255, 150, 0.9)');
+                gradient.addColorStop(0.4, 'rgba(255, 255, 0, 0.4)');
+                gradient.addColorStop(1, 'rgba(255, 255, 0, 0)');
                 ctx.globalCompositeOperation = 'lighter';
                 ctx.fillStyle = gradient;
                 ctx.beginPath();
                 ctx.arc(centerX, centerY, e.w * pulse, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
-
-                // 本体自体も加算合成で少し明るくする
                 ctx.globalCompositeOperation = 'lighter';
             }
-
             if (droneImg.complete) {
                 if (droneConfig) {
                     const anim = droneConfig.data[e.currentAnim];
@@ -194,21 +192,15 @@ function draw() {
        } else if (item.type === 'onibi') {
             const o = item.obj;
             const oScale = 1.0 + (o.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-            
-            // 足場がある場合のみ、地面への紫色の照り返し（影）を描画
             if (checkOnPlat(o)) {
                 ctx.save();
                 const shadowAlpha = (o.timer > 420) ? (1.0 - ((o.timer - 420) / 60)) * 0.4 : 0.4;
                 const shadowSize = o.w * 0.6 * oScale;
-                
-                // 地面の中心座標を計算
                 const centerX = o.x + o.w / 2;
                 const centerY = o.groundY;
-                
                 const shadowGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, shadowSize);
                 shadowGrad.addColorStop(0, `rgba(180, 0, 255, ${shadowAlpha})`); 
                 shadowGrad.addColorStop(1, 'rgba(180, 0, 255, 0)');              
-                
                 ctx.globalCompositeOperation = 'lighter'; 
                 ctx.fillStyle = shadowGrad;
                 ctx.beginPath();
@@ -216,18 +208,10 @@ function draw() {
                 ctx.fill();
                 ctx.restore();
             }
-
-            // 鬼火本体の描画（本体は足場に関係なく空中に表示される）
-
-            // 鬼火本体の描画
             ctx.save();
             ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
             ctx.scale(oScale, oScale);
-            
-            if (o.timer > 420) {
-                ctx.globalAlpha = 1.0 - ((o.timer - 420) / 60);
-            }
-
+            if (o.timer > 420) ctx.globalAlpha = 1.0 - ((o.timer - 420) / 60);
             if (onibiImg.complete && onibiConfig) {
                 const anim = onibiConfig.data.idle;
                 const frame = anim.frames[o.frame];
@@ -236,9 +220,7 @@ function draw() {
             ctx.restore();
         } else if (item.type === 'item') {
             const it = item.obj;
-            if (sausageImg.complete) {
-                ctx.drawImage(sausageImg, it.x, it.y, it.w, it.h);
-            }
+            if (sausageImg.complete) ctx.drawImage(sausageImg, it.x, it.y, it.w, it.h);
         } else if (item.type === 'mitama') {
             const mScale = 1.0 + (mitama.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
             if (mitama.isOnPlat) {
@@ -260,8 +242,6 @@ function draw() {
                     let yOff = !mitama.isHolding ? -mitama.h - 65 + Math.sin(Date.now() / 400) * 15 + mitama.jumpOffset : -mitama.h - 100 + sakuya.jumpOffset;
                     ctx.drawImage(mitama.img, -mitama.w / 2, yOff, mitama.w, mitama.h);
                 }
-                
-                // 回復時の白発光
                 if (mitama.healFlashTimer > 0) {
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
@@ -313,8 +293,6 @@ function draw() {
                 } else {
                     ctx.drawImage(sakuya.img, -sakuya.w / 2, -sakuya.h + sakuya.jumpOffset, sakuya.w, sakuya.h);
                 }
-
-                // 回復時の白発光
                 if (sakuya.healFlashTimer > 0) {
                     ctx.save();
                     ctx.globalCompositeOperation = 'lighter';
@@ -334,11 +312,11 @@ function draw() {
             ctx.restore();
         } else if (item.type === 'platform') {
             const p = item.obj;
+            // 画像自体は y_back（一番奥）から手前に向かって描画される
             if (buildingWallImg.complete) ctx.drawImage(buildingWallImg, p.x - 10, p.y_back - 20);
             if (buildingTopImg.complete) ctx.drawImage(buildingTopImg, p.x - 10, p.y_back - 20);
         } else if (item.type === 'boss') {
             const bScale = (1.0 + (boss.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR) * 0.9;
-            
             const shadowAlpha = 0.3 - (Math.abs(boss.jumpOffset) / 500);
             const shadowShrink = 1.0 - (Math.abs(boss.jumpOffset) / 300);
             if (shadowShrink > 0) {
@@ -347,19 +325,15 @@ function draw() {
                 ctx.ellipse(boss.x + boss.w / 2, boss.groundY, boss.w * 0.6 * bScale * shadowShrink, 12 * bScale * shadowShrink, 0, 0, Math.PI * 2);
                 ctx.fill();
             }
-
             ctx.save();
             if (boss.img.complete) {
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
-
                 if (bossConfig) {
                     const anim = bossConfig.data[boss.currentAnim];
                     if (anim) {
                         const frame = anim.frames[boss.currentFrame];
-                        if (frame) {
-                            ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
-                        }
+                        if (frame) ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
                     }
                 } else {
                     const nw = boss.img.naturalWidth * 1.1; 
@@ -368,8 +342,6 @@ function draw() {
                 }
             }
             ctx.restore();
-
-            // バリアの描画 (ボス画像の上に被せる)
             if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
                 let barrierAlpha = 0.6 + Math.sin(Date.now() / 150) * 0.2;
                 if (boss.state === 'barrier') {
@@ -390,8 +362,6 @@ function draw() {
                 ctx.fill();
                 ctx.restore();
             }
-
-            // 巨大ビームの充填エフェクト
             if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
                 let chargeProgress = 1.0 - (boss.telegraphDuration / 240);
                 let pulse = Math.sin(Date.now() / (50 - 40 * chargeProgress)) * 0.5 + 0.5;
@@ -399,15 +369,12 @@ function draw() {
                 ctx.translate(boss.x + boss.w / 2 + 60, boss.groundY - boss.h / 2 + boss.jumpOffset);
                 ctx.scale(bScale, bScale);
                 ctx.globalCompositeOperation = 'lighter';
-                
                 let ringRadius = 50 + 100 * (1 - chargeProgress);
                 if (droneEnergyImg.complete) {
                     ctx.rotate(Date.now() / 200);
                     ctx.globalAlpha = pulse * chargeProgress;
                     ctx.drawImage(droneEnergyImg, -ringRadius, -ringRadius, ringRadius * 2, ringRadius * 2);
                 }
-                
-                // 照準線
                 if (Math.floor(boss.telegraphDuration / 4) % 2 === 0) {
                     ctx.setTransform(1, 0, 0, 1, 0, sakuya.cameraOffsetY);
                     if (currentZoom !== 1.0) {
@@ -427,8 +394,6 @@ function draw() {
                 }
                 ctx.restore();
             }
-
-            // 急降下攻撃の予兆 (床の赤い照り返し)
             let waitTime = (boss.smashCount === 0) ? 120 : 60;
             if (boss.state === 'smash_wait' && boss.stateTimer >= waitTime - 60) {
                 let progress = (boss.stateTimer - (waitTime - 60)) / 60; 
@@ -446,21 +411,16 @@ function draw() {
                 ctx.fill();
                 ctx.restore();
             }
-
-            // 着地時の衝撃波
             if (boss.state === 'smash_shake') {
                 let progress = boss.stateTimer / 60; 
                 ctx.save();
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
                 ctx.globalCompositeOperation = 'lighter';
-                
                 let waveScale = 1.0 + Math.sin(Date.now() / 50) * 0.1;
                 let waveAlpha = 1.0 - progress; 
-                
                 let radW = boss.w * 2.2 * waveScale;
                 let radH = 85 * waveScale;
-                
                 let waveGrad = ctx.createRadialGradient(0, 0, radW * 0.2, 0, 0, radW);
                 waveGrad.addColorStop(0, `rgba(255, 50, 0, ${waveAlpha * 0.8})`);
                 waveGrad.addColorStop(0.5, `rgba(255, 100, 0, ${waveAlpha * 0.4})`);

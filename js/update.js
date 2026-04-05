@@ -70,6 +70,7 @@ function update() {
 
         // トランジション中、またはイントロ中はクランプを無効化
         if (!isHalfwayTransitioning && !isIntro) {
+            // ズームアウト時の視界拡張に合わせて移動範囲を正しく広げる（元の正しい計算式）
             const zoomOffset = (CANVAS_WIDTH / currentZoom - CANVAS_WIDTH) / 2;
             const minX = -zoomOffset;
             const maxX = CANVAS_WIDTH + zoomOffset - sakuya.w;
