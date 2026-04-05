@@ -12,6 +12,8 @@ async function init() {
         
         const resExp = await fetch('json/Explosion_A.json');
         explosionConfig = await resExp.json();
+        const resExpB = await fetch('json/Explosion_B.json');
+        explosionConfigB = await resExpB.json();
 
         const resMitama = await fetch('json/mitama.json');
         mitamaConfig = await resMitama.json();

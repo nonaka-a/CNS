@@ -68,11 +68,10 @@ function updateEntities() {
             Math.abs(b.groundY - boss.groundY) < 80) {
             
             if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
-                explosions.push({ x: b.x, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
-                playSE('explosion');
+                // バリア中などはエフェクトを表示しない
             } else {
                 boss.hp -= 10;
-                explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0 });
+                explosions.push({ x: b.x + b.w/2, y: b.y + b.h/2, groundY: boss.groundY, frame: 0, timer: 0, type: 'B' });
                 playSE('explosion');
                 
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
@@ -115,17 +114,18 @@ function updateEntities() {
     }
 
     // 爆発の更新
-    if (explosionConfig) {
-        for (let i = explosions.length - 1; i >= 0; i--) {
-            const ex = explosions[i];
-            const anim = explosionConfig.data.idle;
-            ex.timer += FRAME_INTERVAL;
-            const duration = 1000 / anim.fps;
-            if (ex.timer >= duration) {
-                ex.timer -= duration;
-                ex.frame++;
-                if (ex.frame >= anim.frames.length) explosions.splice(i, 1);
-            }
+    for (let i = explosions.length - 1; i >= 0; i--) {
+        const ex = explosions[i];
+        const config = ex.type === 'B' ? explosionConfigB : explosionConfig;
+        if (!config) continue;
+        
+        const anim = config.data.idle;
+        ex.timer += FRAME_INTERVAL;
+        const duration = 1000 / anim.fps;
+        if (ex.timer >= duration) {
+            ex.timer -= duration;
+            ex.frame++;
+            if (ex.frame >= anim.frames.length) explosions.splice(i, 1);
         }
     }
 
@@ -732,8 +732,8 @@ function updateEntities() {
                         let sx = sakuya.x + sakuya.w / 2;
                         let sy = sakuya.y + sakuya.h; 
                         
-                        // 衝撃波の楕円形判定 (幅: boss.w * 2.2, 高さ: 85)
-                        let dx = Math.abs(bx - sx) / (boss.w * 2.2);
+                        // 衝撃波の楕円形判定 (元の180幅基準: boss.w * 2.2 = 396)
+                        let dx = Math.abs(bx - sx) / 396;
                         let dy = Math.abs(by - sy) / 85;
                         if (dx * dx + dy * dy <= 1) { 
                             sakuya.hp -= 10;
@@ -763,7 +763,7 @@ function updateEntities() {
                         let by = boss.groundY;
                         let mx = mitama.x + mitama.w / 2;
                         let my = mitama.y + mitama.h;
-                        let dx = Math.abs(bx - mx) / (boss.w * 2.2);
+                        let dx = Math.abs(bx - mx) / 396;
                         let dy = Math.abs(by - my) / 85;
                         if (dx * dx + dy * dy <= 1) { 
                             mitama.hp -= 10;
@@ -884,6 +884,8 @@ function updateEntities() {
                 // Giant shuriken deals no damage during barrier, but passes through
             } else {
                 boss.hp -= 2;
+                // 巨大手裏剣でも爆発Bを表示
+                explosions.push({ x: giantShuriken.x + giantShuriken.w/2, y: giantShuriken.y + giantShuriken.h/2, groundY: boss.groundY, frame: 0, timer: 0, type: 'B' });
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
                     boss.state = 'panic';
                     boss.stateTimer = 0;

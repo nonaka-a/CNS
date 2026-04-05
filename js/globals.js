@@ -117,7 +117,7 @@ const buildingWallImg = new Image();
 buildingWallImg.src = 'images/BG/Building_Wall.png';
 
 const boss = {
-    x: -500, y: 0, w: 180, h: 220, hp: 450, maxHp: 450, 
+    x: -500, y: 0, w: 80, h: 220, hp: 450, maxHp: 450, 
     groundY: 400, jumpOffset: 0, vx: 2, visible: false,
     animCounter: 0,
     isArrived: false,
@@ -136,8 +136,11 @@ let enemyIdCounter = 0;
 let giantShuriken = null;
 let explosions = [];
 let explosionConfig = null;
+let explosionConfigB = null; // ボス用爆発
 const explosionImg = new Image();
 explosionImg.src = 'images/Sprite/Explosion_A.png';
+const explosionImgB = new Image(); // ボス用爆発画像
+explosionImgB.src = 'images/Sprite/Explosion_B.png';
 const droneEnergyImg = new Image();
 droneEnergyImg.src = 'images/Sprite/drone_Energy.png';
 const sausageImg = new Image(); // 追加：ソーセージ画像

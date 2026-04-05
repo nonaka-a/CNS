@@ -104,7 +104,6 @@ function draw() {
     onibis.forEach(o => addRenderItem('onibi', o.groundY, o)); 
     if (!mitama.isHolding && mitama.groundY) addRenderItem('mitama', mitama.groundY, null);
     addRenderItem('sakuya', sakuya.groundY, null);
-    explosions.forEach(ex => addRenderItem('explosion', ex.groundY, ex));
     
     // 足場のソート基準を p.y_back（奥の端）に戻す。
     // これにより、足場の上にいる（y_back <= groundY）キャラが足場より後に描画される。
@@ -113,6 +112,7 @@ function draw() {
     if (isThirdScene) addRenderItem('boss', boss.groundY, boss);
     if (bossSumaho) addRenderItem('sumaho', bossSumaho.groundY, bossSumaho);
     items.forEach(it => addRenderItem('item', it.groundY, it));
+    explosions.forEach(ex => addRenderItem('explosion', ex.groundY, ex)); // 最後に配置して手前に描画
 
     // インサーションソート
     for (let i = 1; i < renderQueueCount; i++) {
@@ -262,14 +262,17 @@ function draw() {
         } else if (item.type === 'explosion') {
             const ex = item.obj;
             const eScale = 1.0 + (ex.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
-            if (explosionConfig && explosionImg.complete) {
-                const anim = explosionConfig.data.idle;
+            const config = ex.type === 'B' ? explosionConfigB : explosionConfig;
+            const img = ex.type === 'B' ? explosionImgB : explosionImg;
+            
+            if (config && img.complete) {
+                const anim = config.data.idle;
                 const frame = anim.frames[ex.frame];
-                const size = explosionConfig.tileSize;
+                const size = config.tileSize;
                 ctx.save();
                 ctx.translate(ex.x, ex.y);
                 ctx.scale(eScale, eScale);
-                ctx.drawImage(explosionImg, frame.x, frame.y, frame.w, frame.h, -size / 2, -size / 2, size, size);
+                ctx.drawImage(img, frame.x, frame.y, frame.w, frame.h, -size / 2, -size / 2, size, size);
                 ctx.restore();
             }
         } else if (item.type === 'sakuya') {
@@ -402,13 +405,13 @@ function draw() {
                 ctx.save();
                 ctx.translate(boss.targetX, boss.groundY);
                 ctx.scale(bScale, bScale);
-                let shadowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, boss.w * 2.0);
+                let shadowGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, 360); // 元のサイズ(180*2)に固定
                 shadowGrad.addColorStop(0, `rgba(255, 0, 0, ${rPulse})`);
                 shadowGrad.addColorStop(1, 'rgba(255, 0, 0, 0)');
                 ctx.globalCompositeOperation = 'lighter';
                 ctx.fillStyle = shadowGrad;
                 ctx.beginPath();
-                ctx.ellipse(0, 0, boss.w * 2.0, boss.w * 0.5, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, 0, 360, 90, 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.restore();
             }
@@ -420,7 +423,7 @@ function draw() {
                 ctx.globalCompositeOperation = 'lighter';
                 let waveScale = 1.0 + Math.sin(Date.now() / 50) * 0.1;
                 let waveAlpha = 1.0 - progress; 
-                let radW = boss.w * 2.2 * waveScale;
+                let radW = 396 * waveScale; // 180 * 2.2 = 396 (元のスケールを維持)
                 let radH = 85 * waveScale;
                 let waveGrad = ctx.createRadialGradient(0, 0, radW * 0.2, 0, 0, radW);
                 waveGrad.addColorStop(0, `rgba(255, 50, 0, ${waveAlpha * 0.8})`);
