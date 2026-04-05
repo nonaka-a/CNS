@@ -641,6 +641,11 @@ function updateEntities() {
                         boss.targetX = playerX + (Math.random() - 0.5) * 300; 
                         boss.targetX = Math.max(100, Math.min(CANVAS_WIDTH - 100, boss.targetX));
                         boss.x = boss.targetX - boss.w / 2; 
+
+                        // 追加: プレイヤーの奥行き（接地位置）にも合わせるように修正
+                        boss.groundY = sakuya.groundY + (Math.random() - 0.5) * 40; 
+                        boss.groundY = Math.max(280, Math.min(440, boss.groundY));
+
                         playSE('soft_flame'); // 予兆音
                     }
                     
