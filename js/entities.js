@@ -193,6 +193,18 @@ function updateEntities() {
         { dist: 17000, types: ['A', 'A', 'B', 'B'] }
     ];
 
+    // --- エリア2 出現テーブル定義 (エリア2: 20000 〜 40000) ---
+    const area2Waves = [
+        { dist: 20500, types: ['C'] },
+        { dist: 22500, types: ['C', 'A'] },
+        { dist: 24000, types: ['A', 'A', 'A'] },
+        { dist: 28000, types: ['A', 'A','C'] },
+        { dist: 32500, types: ['A', 'A', 'A', 'A'] },
+        { dist: 34500, types: ['C', 'C'] },
+        { dist: 35500, types: ['C'] },
+        { dist: 36000, types: ['A', 'A', 'C', 'C'] }
+    ];
+
     // スポーン処理
     let canSpawnMob = true;
     if (isThirdScene && (!bossActive || bossSpawnTimer < (5500 + 10000))) canSpawnMob = false;
@@ -201,10 +213,12 @@ function updateEntities() {
     if (canSpawnMob) {
         const maxEnemies = 6; // 最大6体
 
-        if (!isSecondScene && !isThirdScene) {
-            // --- エリア1: 固定ウェーブ管理 ---
-            if (spawnWaveIndex < area1Waves.length) {
-                const currentWave = area1Waves[spawnWaveIndex];
+        if (!isThirdScene) {
+            // エリア1またはエリア2の固定ウェーブ管理
+            const currentTable = isSecondScene ? area2Waves : area1Waves;
+            
+            if (spawnWaveIndex < currentTable.length) {
+                const currentWave = currentTable[spawnWaveIndex];
                 if (distance >= currentWave.dist) {
                     currentWave.types.forEach(type => {
                         if (enemies.length < maxEnemies) {
@@ -212,20 +226,20 @@ function updateEntities() {
                         }
                     });
                     spawnWaveIndex++;
+                    // エリア2に切り替わった直後、インデックスをリセットする処理は world.js 側で行う
                 }
             }
         } else {
-            // --- エリア2・3: 従来の確率ベース ---
-            const spawnRate = isThirdScene ? 0.0014 : (isSecondScene ? 0.0025 : 0.005);
-            const maxRandomEnemies = isThirdScene ? 2 : (isSecondScene ? 3 : 5);
+            // --- エリア3: 従来の確率ベース ---
+            const spawnRate = 0.0014;
+            const maxRandomEnemies = 2;
             if (Math.random() < spawnRate && enemies.filter(e => !e.isBossShield).length < maxRandomEnemies) {
-                let availableTypes = isSecondScene ? ['A', 'A', 'C'] : ['A', 'A', 'B', 'C'];
+                let availableTypes = ['A', 'A', 'B', 'C'];
                 let type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
                 spawnEnemy(type);
             }
         }
     }
-
     // 敵の更新
     enemies.forEach((e, i) => {
         if (e.invincibleTimer > 0) e.invincibleTimer--;

@@ -60,6 +60,7 @@ function updateWorld() {
             halfwayReached = true;
             isHalfwayTransitioning = true;
             halfwayTransitionTimer = 0;
+            spawnWaveIndex = 0; // Waveインデックスをリセット
             sakuya.invincibleTimer = 240; // 移行開始から完了までをカバーする無敵時間を付与
             enemies = []; enemyLasers = []; bullets = []; explosions = []; onibis = [];
             const progressMarker = document.getElementById('progress-halfway-marker');
