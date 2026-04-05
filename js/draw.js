@@ -111,6 +111,7 @@ function draw() {
     if (!isThirdScene) platforms.forEach(p => addRenderItem('platform', p.y_back, p));
     
     if (isThirdScene) addRenderItem('boss', boss.groundY, boss);
+    if (bossSumaho) addRenderItem('sumaho', bossSumaho.groundY, bossSumaho);
     items.forEach(it => addRenderItem('item', it.groundY, it));
 
     // インサーションソート
@@ -429,6 +430,17 @@ function draw() {
                 ctx.beginPath();
                 ctx.ellipse(0, 0, radW, radH, 0, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
+            }
+        } else if (item.type === 'sumaho') {
+            const sm = item.obj;
+            const smScale = 1.0 + (sm.groundY - PERSPECTIVE_BASE_Y) * PERSPECTIVE_SCALE_FACTOR;
+            if (sumahoImg.complete) {
+                ctx.save();
+                ctx.translate(sm.x + sm.w / 2, sm.groundY + sm.jumpOffset);
+                ctx.scale(smScale, smScale);
+                ctx.rotate(sm.angle);
+                ctx.drawImage(sumahoImg, -sm.w / 2, -sm.h / 2, sm.w, sm.h);
                 ctx.restore();
             }
         }

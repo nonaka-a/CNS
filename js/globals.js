@@ -142,6 +142,10 @@ const droneEnergyImg = new Image();
 droneEnergyImg.src = 'images/Sprite/drone_Energy.png';
 const sausageImg = new Image(); // 追加：ソーセージ画像
 sausageImg.src = 'images/Sprite/Sausage.png';
+const sumahoImg = new Image(); // 追加：スマホ画像
+sumahoImg.src = 'images/Sprite/iia_sumaho.png';
+
+let bossSumaho = null; // ボスが落とすスマホの情報を保持
 
 let particles = []; // パーティクル（賑やかし用）
 let screenShake = 0; // 画面揺れの強度

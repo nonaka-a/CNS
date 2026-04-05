@@ -49,7 +49,7 @@ function updateWorld() {
                 if (bossDefeatTimer < 5000) {
                     speed = 0;
                 } else {
-                    speed = 2;
+                    speed = 5;
                 }
             } else if (distance >= goalDistance * 0.95) {
                 speed = 0;

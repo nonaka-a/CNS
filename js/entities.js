@@ -63,7 +63,7 @@ function updateEntities() {
             }
         }
 
-                if (!hit && bossActive && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
+                if (!hit && bossActive && !bossDefeated && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
             b.y < boss.y + boss.h && b.y + b.h > boss.y &&
             Math.abs(b.groundY - boss.groundY) < 80) {
             
@@ -76,8 +76,11 @@ function updateEntities() {
                 playSE('explosion');
                 
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
-                    boss.state = 'intro';
+                    boss.state = 'panic';
                     boss.stateTimer = 0;
+                    boss.currentAnim = 'panic';
+                    boss.currentFrame = 0;
+                    boss.frameTimer = 0;
                     boss.patternIndex = 3; // 中断しても次のパターン（急降下）へ進めるように修正
                     boss.telegraphDuration = 0;
                     playSE('damage', 1.2);
@@ -95,14 +98,15 @@ function updateEntities() {
             
             if (boss.hp <= 0) {
                 boss.hp = 0;
-                bossActive = false;
                 bossDefeated = true;
-                boss.visible = false;
+                boss.state = 'panic';
+                boss.currentAnim = 'panic';
+                boss.currentFrame = 0;
+                boss.frameTimer = 0;
                 bossDefeatTimer = 0; 
-                for(let k=0; k<5; k++) {
-                    explosions.push({ x: boss.x + Math.random()*boss.w, y: boss.y + Math.random()*boss.h, groundY: boss.groundY, frame: 0, timer: 0 });
-                }
-                playSE('explosion');
+                enemies = []; // ザコ敵を消去
+                enemyLasers = []; // レーザーを消去
+                // 撃破時の爆発とSEを削除
             }
             hit = true;
         }
@@ -208,6 +212,7 @@ function updateEntities() {
     // スポーン処理
     let canSpawnMob = true;
     if (isThirdScene && (!bossActive || bossSpawnTimer < (5500 + 10000))) canSpawnMob = false;
+    if (bossDefeated) canSpawnMob = false; // ボス撃破後はザコを出さない
     if (isHalfwayTransitioning) canSpawnMob = false;
 
     if (canSpawnMob) {
@@ -444,9 +449,9 @@ function updateEntities() {
     }
 
     // ボス「イイナ」の更新
-    if (isThirdScene && !bossDefeated && !isHalfwayTransitioning) {
+    if (isThirdScene && !isHalfwayTransitioning) {
         bossSpawnTimer += FRAME_INTERVAL;
-        if (!bossActive) {
+        if (!bossActive && !bossDefeated) { // 撃破後は復活させない
             if (bossSpawnTimer >= 5500) { 
                 bossActive = true;
                 boss.visible = true;
@@ -468,7 +473,55 @@ function updateEntities() {
                 let hoverY = -40 + Math.sin(boss.animCounter * 0.05) * 25;
                 let hoverX = boss.originalX + Math.sin(boss.animCounter * 0.03) * 20;
 
-                if (boss.state === 'intro') {
+                if (bossDefeated) {
+                    // 撃破後のシーケンス
+                    if (bossDefeatTimer < 4000) {
+                        // 1. 4秒間 panic
+                        boss.x = hoverX;
+                        boss.jumpOffset = hoverY;
+                        if (boss.currentAnim !== 'panic') {
+                            boss.currentAnim = 'panic';
+                            boss.currentFrame = 0;
+                            boss.frameTimer = 0;
+                        }
+                    } else if (bossDefeatTimer < 7000) {
+                        // 2. 3秒間 endポーズで静止
+                        boss.x = hoverX; 
+                        boss.jumpOffset = hoverY;
+                        if (boss.currentAnim !== 'end') {
+                            boss.currentAnim = 'end';
+                            boss.currentFrame = 0;
+                            boss.frameTimer = 0;
+                            
+                            // スマホを落とす
+                            bossSumaho = {
+                                x: boss.x + boss.w * 0.65,
+                                y: boss.y + boss.h * 0.6,
+                                vx: -6, vy: -5,
+                                groundY: boss.groundY,
+                                jumpOffset: boss.jumpOffset,
+                                angle: 0, vangle: 0.2,
+                                w: 32, h: 32,
+                                bounceCount: 0
+                            };
+                            playSE('soft_flame', 0.5); // 落下開始音（代替）
+                        }
+                    } else {
+                        // 3. ゆっくり左にフレームアウト
+                        boss.x -= 2.5; 
+                        boss.jumpOffset = hoverY;
+                        if (boss.currentAnim !== 'end') {
+                            boss.currentAnim = 'end';
+                            boss.currentFrame = 0;
+                            boss.frameTimer = 0;
+                        }
+                        if (boss.x + boss.w < -100) {
+                            boss.visible = false;
+                            bossActive = false;
+                        }
+                    }
+                }
+                else if (boss.state === 'intro') {
                     if (boss.currentAnim !== 'idle') {
                         boss.currentAnim = 'idle';
                         boss.currentFrame = 0;
@@ -514,6 +567,14 @@ function updateEntities() {
                     if (boss.x <= boss.originalX) {
                         boss.x = boss.originalX;
                         boss.state = 'barrier'; 
+                    }
+                }
+                else if (boss.state === 'panic') {
+                    boss.x = hoverX;
+                    boss.jumpOffset = hoverY;
+                    if (boss.stateTimer > 90) {
+                        boss.state = 'intro';
+                        boss.stateTimer = 0;
                     }
                 }
                 else if (boss.state === 'charge') {
@@ -814,14 +875,17 @@ function updateEntities() {
                 enemies.splice(j, 1);
             }
         }
-        if (bossActive && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
+        if (bossActive && !bossDefeated && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
             if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
                 // Giant shuriken deals no damage during barrier, but passes through
             } else {
                 boss.hp -= 2;
                 if (boss.state === 'charge' && boss.telegraphDuration > 0) {
-                    boss.state = 'intro';
+                    boss.state = 'panic';
                     boss.stateTimer = 0;
+                    boss.currentAnim = 'panic';
+                    boss.currentFrame = 0;
+                    boss.frameTimer = 0;
                     boss.patternIndex = 3; // 中断しても次のパターン（急降下）へ進めるように修正
                     boss.telegraphDuration = 0;
                     playSE('damage', 1.2);
@@ -837,11 +901,42 @@ function updateEntities() {
                 }
             }
             if (boss.hp <= 0) {
-                 boss.hp = 0; bossActive = false; bossDefeated = true; boss.visible = false;
-                 bossDefeatTimer = 0;
+                boss.hp = 0; 
+                bossDefeated = true;
+                boss.state = 'panic';
+                boss.currentAnim = 'panic';
+                boss.currentFrame = 0;
+                boss.frameTimer = 0;
+                bossDefeatTimer = 0;
+                enemies = []; // ザコ敵を消去
+                enemyLasers = []; // レーザーを消去
+                // 撃破時の爆発とSEを削除
             }
         }
         if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; 
+    }
+
+    // ボスが落としたスマホの更新
+    if (bossSumaho) {
+        bossSumaho.x += bossSumaho.vx;
+        bossSumaho.vy += 0.4; // 重力
+        bossSumaho.jumpOffset += bossSumaho.vy;
+        bossSumaho.angle += bossSumaho.vangle;
+        
+        if (bossSumaho.jumpOffset >= 0) {
+            bossSumaho.jumpOffset = 0;
+            bossSumaho.vy *= -0.6; // 跳ね返り
+            bossSumaho.vx *= 0.8; // 摩擦
+            bossSumaho.vangle *= 0.8;
+            if (Math.abs(bossSumaho.vy) < 1.0) bossSumaho.vy = 0;
+            
+            bossSumaho.bounceCount++;
+            if (bossSumaho.bounceCount < 4) playSE('damage', 0.4); // 跳ねる音
+        }
+        
+        if (bossSumaho.x + bossSumaho.w < -200) {
+            bossSumaho = null;
+        }
     }
 
     // パーティクルの更新
