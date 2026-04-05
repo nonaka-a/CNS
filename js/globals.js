@@ -153,6 +153,7 @@ let bossSumaho = null; // ボスが落とすスマホの情報を保持
 let particles = []; // パーティクル（賑やかし用）
 let screenShake = 0; // 画面揺れの強度
 let cutInTimer = 0; // カットイン演出用タイマー
+let bossCutInTimer = 0; // ボス用カットイン演出用タイマー
 const cutInImg = new Image();
 cutInImg.src = 'images/Sprite/cut_in.png';
 let audioCtx = null;

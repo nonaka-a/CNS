@@ -618,13 +618,21 @@ function draw() {
     // 必殺技カットインのDOM制御（全UIの上に表示するため）
     const cutInOverlay = document.getElementById('cutin-overlay');
     const cutInImgEl = document.getElementById('cutin-img');
+    const activeTimer = cutInTimer > 0 ? cutInTimer : (bossCutInTimer > 0 ? bossCutInTimer : 0);
+    const activeImgSrc = cutInTimer > 0 ? 'images/Sprite/cut_in.png' : 'images/Sprite/cut_in_iina.png';
+
     if (cutInOverlay && cutInImgEl) {
-        if (cutInTimer > 0) {
+        if (activeTimer > 0) {
             cutInOverlay.style.display = 'block';
             
-            if (cutInTimer > 30) {
+            // 画像の切り替え（一度だけ行う）
+            if (cutInImgEl.src.indexOf(activeImgSrc) === -1) {
+                cutInImgEl.src = activeImgSrc;
+            }
+
+            if (activeTimer > 30) {
                 // フェーズ1：0.2秒(12f)で暗転 (42-31フレーム)
-                let blackoutProgress = (42 - cutInTimer) / 12; // 0.0 -> 1.0 (12f)
+                let blackoutProgress = (42 - activeTimer) / 12; // 0.0 -> 1.0 (12f)
                 cutInOverlay.style.opacity = blackoutProgress;
                 cutInImgEl.style.display = 'none'; // 画像はまだ出さない
             } else {
@@ -634,7 +642,7 @@ function draw() {
                 
                 // 最初の5フレームで白から本来の色味へ（閃光エフェクト）
                 let flashDuration = 5;
-                let progress = Math.min(1.0, (30 - cutInTimer) / flashDuration);
+                let progress = Math.min(1.0, (30 - activeTimer) / flashDuration);
                 let brightness = 100 + (1000 * (1 - progress)); // 1100%から100%へ
                 cutInImgEl.style.filter = `brightness(${brightness}%)`;
 
@@ -651,7 +659,7 @@ function draw() {
             cutInOverlay.style.opacity = '0';
             cutInImgEl.style.transform = 'none'; // リセット
             if (cutInOverlay.style.display !== 'none') {
-                setTimeout(() => { if (cutInTimer === 0) cutInOverlay.style.display = 'none'; }, 50);
+                setTimeout(() => { if (cutInTimer === 0 && bossCutInTimer === 0) cutInOverlay.style.display = 'none'; }, 50);
             }
         }
     }

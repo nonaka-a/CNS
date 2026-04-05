@@ -21,6 +21,13 @@ function updateEntities() {
             playSE('shuriken', 1.0);
         }
     }
+
+    if (bossCutInTimer > 0) {
+        bossCutInTimer--;
+        if (bossCutInTimer === 30) {
+            screenShake = 35;
+        }
+    }
     // 弾の更新と衝突判定
     for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
@@ -598,7 +605,11 @@ function updateEntities() {
 
                     if (boss.telegraphDuration > 0) {
                         boss.telegraphDuration--;
-                    } else if (boss.telegraphDuration === 0 && boss.laserDuration === 0) {
+                        // 発射0.7秒前にカットイン開始
+                        if (boss.telegraphDuration === 42) {
+                            bossCutInTimer = 42;
+                        }
+                    } else if (boss.telegraphDuration === 0 && boss.laserDuration === 0 && bossCutInTimer <= 0) {
                         boss.laserDuration = 60; 
                         playSE('laser', 1.0); 
                     }
