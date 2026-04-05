@@ -122,6 +122,9 @@ async function init() {
         await loadSE('soft_flame', 'sound/C_Soft_flame.mp3');
         await loadSE('damage', 'sound/damage.mp3'); // ダメージSE
         await loadSE('sausage_get', 'sound/Sausage.mp3'); // ソーセージ取得SE
+        await loadSE('barrier', 'sound/Barrier.mp3'); // ボスバリアSE
+        await loadSE('roar', 'sound/roar.mp3'); // 巨大手裏剣SE
+        await loadSE('impact', 'sound/impact.mp3'); // ボス衝撃波SE
     } catch (e) {
         console.error("Failed to load configs:", e);
     }

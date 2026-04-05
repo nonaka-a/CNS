@@ -18,7 +18,7 @@ function updateEntities() {
             sakuya.hissatsuSlideX = CANVAS_WIDTH + 500;
             sakuya.attackTimer = 30;
             ninjutsuGauge = 0;
-            playSE('shuriken', 1.0);
+            playSE('roar', 1.0);
         }
     }
 
@@ -491,6 +491,10 @@ function updateEntities() {
                             boss.currentFrame = 0;
                             boss.frameTimer = 0;
                         }
+                        // パニック中のコミカルなSE (puni と puni2 を交互)
+                        if (boss.stateTimer % 15 === 0) {
+                            playSE((Math.floor(boss.stateTimer / 15) % 2 === 0) ? 'puni' : 'puni2', 0.8);
+                        }
                     } else if (bossDefeatTimer < 7000) {
                         // 2. 3秒間 endポーズで静止
                         boss.x = hoverX; 
@@ -535,7 +539,10 @@ function updateEntities() {
                     }
                     if (boss.stateTimer > 180) { // 3秒間に延長（攻撃チャンス）
                         boss.stateTimer = 0;
-                        if (boss.patternIndex === 1) boss.state = 'barrier';
+                        if (boss.patternIndex === 1) {
+                            boss.state = 'barrier';
+                            playSE('barrier', 1.0);
+                        }
                         else if (boss.patternIndex === 2) boss.state = 'charge';
                         else boss.state = 'smash_intro';
                     }
@@ -573,11 +580,16 @@ function updateEntities() {
                     if (boss.x <= boss.originalX) {
                         boss.x = boss.originalX;
                         boss.state = 'barrier'; 
+                        playSE('barrier', 1.0);
                     }
                 }
                 else if (boss.state === 'panic') {
                     boss.x = hoverX;
                     boss.jumpOffset = hoverY;
+                    // パニック中のコミカルなSE (puni と puni2 を交互)
+                    if (boss.stateTimer % 15 === 0) {
+                        playSE((Math.floor(boss.stateTimer / 15) % 2 === 0) ? 'puni' : 'puni2', 0.8);
+                    }
                     if (boss.stateTimer > 90) {
                         boss.state = 'intro';
                         boss.stateTimer = 0;
@@ -677,7 +689,7 @@ function updateEntities() {
                         boss.state = 'smash_shake';
                         boss.stateTimer = 0;
                         screenShake = 30; // 着地で揺れる
-                        playSE('explosion');
+                        playSE('impact', 1.0);
                     }
                 }
                 else if (boss.state === 'smash_shake') {
