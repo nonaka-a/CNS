@@ -496,11 +496,10 @@ function updateEntities() {
                             // スマホを落とす
                             bossSumaho = {
                                 x: boss.x + boss.w * 0.65,
-                                y: boss.y + boss.h * 0.6,
-                                vx: -6, vy: -5,
+                                vx: -1.2, vy: 0, // 最初はほぼ垂直に落下させる
                                 groundY: boss.groundY,
-                                jumpOffset: boss.jumpOffset,
-                                angle: 0, vangle: 0.2,
+                                jumpOffset: boss.jumpOffset - 100, // 手の位置から落とす
+                                angle: 0, vangle: 0.1,
                                 w: 32, h: 32,
                                 bounceCount: 0
                             };
@@ -926,8 +925,16 @@ function updateEntities() {
         if (bossSumaho.jumpOffset >= 0) {
             bossSumaho.jumpOffset = 0;
             bossSumaho.vy *= -0.6; // 跳ね返り
-            bossSumaho.vx *= 0.8; // 摩擦
-            bossSumaho.vangle *= 0.8;
+            
+            // 初回のバウンドで左への推進力を強めて「転がっていく」感を出す
+            if (bossSumaho.bounceCount === 0) {
+                bossSumaho.vx = -5;
+                bossSumaho.vangle = 0.3;
+            } else {
+                bossSumaho.vx *= 0.8; // 以降は摩擦
+                bossSumaho.vangle *= 0.8;
+            }
+            
             if (Math.abs(bossSumaho.vy) < 1.0) bossSumaho.vy = 0;
             
             bossSumaho.bounceCount++;
