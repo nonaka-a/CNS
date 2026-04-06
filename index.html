@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -7,159 +8,180 @@
     <link href="https://fonts.googleapis.com/css2?family=Sawarabi+Mincho&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-XE2BKG5S67"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XE2BKG5S67"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
 
-  gtag('config', 'G-XE2BKG5S67');
-</script>
+        gtag('config', 'G-XE2BKG5S67');
+    </script>
 </head>
+
 <body>
 
-<div id="main-wrapper">
-    <canvas id="gameCanvas"></canvas>
-    
-    <div id="ui-layer">
-        <div id="skip-op-btn" onclick="skipOP()" ontouchend="skipOP()" style="display: none;">SKIP >></div>
-        <div id="progress-container" style="display: none;">
-            <div class="corner tp-l"></div><div class="corner tp-r"></div>
-            <div class="corner bt-l"></div><div class="corner bt-r"></div>
-            <div id="progress-bar-track">
-                <div id="progress-halfway-marker"></div>
-                <div id="progress-goal-marker"></div>
-                <div id="progress-bar"></div>
+    <div id="main-wrapper">
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="ui-layer">
+            <div id="skip-op-btn" onclick="skipOP()" ontouchend="skipOP()" style="display: none;">SKIP >></div>
+            <div id="progress-container" style="display: none;">
+                <div class="corner tp-l"></div>
+                <div class="corner tp-r"></div>
+                <div class="corner bt-l"></div>
+                <div class="corner bt-r"></div>
+                <div id="progress-bar-track">
+                    <div id="progress-halfway-marker"></div>
+                    <div id="progress-goal-marker"></div>
+                    <div id="progress-bar"></div>
+                </div>
+            </div>
+
+            <div id="ninjutsu-container" style="display: none;">
+                <div class="corner tp-l"></div>
+                <div class="corner tp-r"></div>
+                <div class="corner bt-l"></div>
+                <div class="corner bt-r"></div>
+                <div id="ninjutsu-bar-track">
+                    <div id="ninjutsu-bar"></div>
+                </div>
+                <div id="ninjutsu-label">忍</div>
+            </div>
+
+            <!-- ボスHPゲージの追加 -->
+            <div id="boss-hp-container">
+                <div class="corner tp-l"></div>
+                <div class="corner tp-r"></div>
+                <div class="corner bt-l"></div>
+                <div class="corner bt-r"></div>
+                <div id="boss-hp-track">
+                    <div id="boss-hp-bar"></div>
+                </div>
+                <div id="boss-hp-label">イイナ</div>
+            </div>
+
+            <!-- デバッグ用ボタン (タブレット用) -->
+            <div id="debug-skip-btn" style="display: none;">2</div>
+            <div id="debug-skip-btn-3" style="display: none;">3</div>
+
+            <div id="title-screen">
+                <div id="title-window">
+                    <div class="modal-corner m-tp-l"></div>
+                    <div class="modal-corner m-tp-r"></div>
+                    <div class="modal-corner m-bt-l"></div>
+                    <div class="modal-corner m-bt-r"></div>
+                    <div id="title-text">RunGunGuard</div>
+                    <div class="modal-btn-wrap">
+                        <button id="start-btn" class="modal-btn" onclick="startGame()" ontouchend="startGame()"
+                            style="opacity: 0.5;">
+                            <span class="modal-btn-inner">Loading...</span>
+                        </button>
+                    </div>
+                    <div class="modal-btn-wrap" style="margin-top: 20px;">
+                        <button id="roulette-btn" class="modal-btn" onclick="void(0)" ontouchend="void(0)"
+                            style="width: 380px;">
+                            <span class="modal-btn-inner"
+                                style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">心変わりの術スロット</span>
+                        </button>
+                    </div>
+                    <div class="modal-btn-wrap" style="margin-top: 20px;">
+                        <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()"
+                            ontouchend="toggleSettings()" style="width: 250px;">
+                            <span class="modal-btn-inner"
+                                style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">⚙️設定</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hud" style="display: none;">
+                <div class="hp-row">
+                    <span class="hp-label">咲耶</span>
+                    <div id="sakuya-circles" class="circles"></div>
+                </div>
+                <div class="hp-row">
+                    <span class="hp-label">ミタマ</span>
+                    <div id="mitama-circles" class="circles"></div>
+                </div>
+            </div>
+
+            <div id="modal-overlay">
+                <div id="modal-window">
+                    <div class="modal-corner m-tp-l"></div>
+                    <div class="modal-corner m-tp-r"></div>
+                    <div class="modal-corner m-bt-l"></div>
+                    <div class="modal-corner m-bt-r"></div>
+                    <div id="modal-text">GAME OVER</div>
+                    <div class="modal-btn-wrap">
+                        <button class="modal-btn" onclick="location.reload()" ontouchend="location.reload()">
+                            <span class="modal-btn-inner">再挑戦</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-overlay">
+                <div id="settings-window">
+                    <div class="modal-corner m-tp-l"></div>
+                    <div class="modal-corner m-tp-r"></div>
+                    <div class="modal-corner m-bt-l"></div>
+                    <div class="modal-corner m-bt-r"></div>
+                    <div id="settings-title">設定</div>
+                    <div class="modal-btn-wrap">
+                        <button class="modal-btn" onclick="toggleSound()" ontouchend="toggleSound()">
+                            <span id="sound-btn-text" class="modal-btn-inner" style="font-size: 20px;">音: ON</span>
+                        </button>
+                    </div>
+                    <div class="modal-btn-wrap" style="margin-top: 15px;">
+                        <button class="modal-btn" onclick="toggleFullscreen()" ontouchend="toggleFullscreen()">
+                            <span class="modal-btn-inner" style="font-size: 20px;">フルスクリーン</span>
+                        </button>
+                    </div>
+                    <div class="modal-btn-wrap" style="margin-top: 15px;">
+                        <button class="modal-btn" onclick="backToTitle()" ontouchend="backToTitle()">
+                            <span class="modal-btn-inner" style="font-size: 20px;">タイトルに戻る</span>
+                        </button>
+                    </div>
+                    <div class="modal-btn-wrap" style="margin-top: 30px;">
+                        <button class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()">
+                            <span class="modal-btn-inner" style="font-size: 20px;">閉じる</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="control-panel" style="display: none;">
+                <div class="dir-pad">
+                    <div id="btn-left" class="v-btn dir-btn">◀</div>
+                    <div id="btn-right" class="v-btn dir-btn">▶</div>
+                    <div id="btn-down" class="v-btn dir-btn">▼</div>
+                    <div id="btn-up" class="v-btn dir-btn">▲</div>
+                </div>
+                <div id="btn-settings" class="v-btn settings-btn" onclick="toggleSettings()">⚙️</div>
+                <div class="action-pad">
+                    <div id="btn-jump" class="v-btn action-btn"><img src="images/Sprite/syuriken_2.png"
+                            style="width: 50px; height: 50px; opacity: 0.8;"></div>
+                    <div id="btn-attack" class="v-btn action-btn"><img src="images/Sprite/mitama_face.png"
+                            style="width: 60px; height: 60px; opacity: 0.9;"></div>
+                    <div id="btn-mode" class="v-btn action-btn">跳</div>
+                    <div id="btn-sub" class="v-btn action-btn">忍</div>
+                </div>
             </div>
         </div>
-
-        <div id="ninjutsu-container" style="display: none;">
-            <div class="corner tp-l"></div><div class="corner tp-r"></div>
-            <div class="corner bt-l"></div><div class="corner bt-r"></div>
-            <div id="ninjutsu-bar-track">
-                <div id="ninjutsu-bar"></div>
-            </div>
-            <div id="ninjutsu-label">忍</div>
-        </div>
-
-        <!-- ボスHPゲージの追加 -->
-        <div id="boss-hp-container">
-            <div class="corner tp-l"></div><div class="corner tp-r"></div>
-            <div class="corner bt-l"></div><div class="corner bt-r"></div>
-            <div id="boss-hp-track">
-                <div id="boss-hp-bar"></div>
-            </div>
-            <div id="boss-hp-label">イイナ</div>
-        </div>
-        
-        <!-- デバッグ用ボタン (タブレット用) -->
-        <div id="debug-skip-btn" style="display: none;">2</div>
-        <div id="debug-skip-btn-3" style="display: none;">3</div>
-
-        <div id="title-screen">
-            <div id="title-window">
-                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
-                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
-                <div id="title-text">RunGunGuard</div>
-                <div class="modal-btn-wrap">
-                    <button id="start-btn" class="modal-btn" onclick="startGame()" ontouchend="startGame()" style="opacity: 0.5;">
-                        <span class="modal-btn-inner">Loading...</span>
-                    </button>
-                </div>
-                <div class="modal-btn-wrap" style="margin-top: 20px;">
-                    <button id="roulette-btn" class="modal-btn" onclick="void(0)" ontouchend="void(0)" style="width: 380px;">
-                        <span class="modal-btn-inner" style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">心変わりの術ルーレット</span>
-                    </button>
-                </div>
-                <div class="modal-btn-wrap" style="margin-top: 20px;">
-                    <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()" style="width: 250px;">
-                        <span class="modal-btn-inner" style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">⚙️設定</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="hud" style="display: none;">
-            <div class="hp-row">
-                <span class="hp-label">咲耶</span>
-                <div id="sakuya-circles" class="circles"></div>
-            </div>
-            <div class="hp-row">
-                <span class="hp-label">ミタマ</span>
-                <div id="mitama-circles" class="circles"></div>
-            </div>
-        </div>
-
-        <div id="modal-overlay">
-            <div id="modal-window">
-                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
-                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
-                <div id="modal-text">GAME OVER</div>
-                <div class="modal-btn-wrap">
-                    <button class="modal-btn" onclick="location.reload()" ontouchend="location.reload()">
-                        <span class="modal-btn-inner">再挑戦</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Settings Modal -->
-        <div id="settings-overlay">
-            <div id="settings-window">
-                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
-                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
-                <div id="settings-title">設定</div>
-                <div class="modal-btn-wrap">
-                    <button class="modal-btn" onclick="toggleSound()" ontouchend="toggleSound()">
-                        <span id="sound-btn-text" class="modal-btn-inner" style="font-size: 20px;">音: ON</span>
-                    </button>
-                </div>
-                <div class="modal-btn-wrap" style="margin-top: 15px;">
-                    <button class="modal-btn" onclick="toggleFullscreen()" ontouchend="toggleFullscreen()">
-                        <span class="modal-btn-inner" style="font-size: 20px;">フルスクリーン</span>
-                    </button>
-                </div>
-                <div class="modal-btn-wrap" style="margin-top: 15px;">
-                    <button class="modal-btn" onclick="backToTitle()" ontouchend="backToTitle()">
-                        <span class="modal-btn-inner" style="font-size: 20px;">タイトルに戻る</span>
-                    </button>
-                </div>
-                <div class="modal-btn-wrap" style="margin-top: 30px;">
-                    <button class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()">
-                        <span class="modal-btn-inner" style="font-size: 20px;">閉じる</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div id="control-panel" style="display: none;">
-            <div class="dir-pad">
-                <div id="btn-left" class="v-btn dir-btn">◀</div>
-                <div id="btn-right" class="v-btn dir-btn">▶</div>
-                <div id="btn-down" class="v-btn dir-btn">▼</div>
-                <div id="btn-up" class="v-btn dir-btn">▲</div>
-            </div>
-            <div id="btn-settings" class="v-btn settings-btn" onclick="toggleSettings()">⚙️</div>
-            <div class="action-pad">
-                <div id="btn-jump" class="v-btn action-btn"><img src="images/Sprite/syuriken_2.png" style="width: 50px; height: 50px; opacity: 0.8;"></div>
-                <div id="btn-attack" class="v-btn action-btn"><img src="images/Sprite/mitama_face.png" style="width: 60px; height: 60px; opacity: 0.9;"></div>
-                <div id="btn-mode" class="v-btn action-btn">跳</div>
-                <div id="btn-sub" class="v-btn action-btn">忍</div>
-            </div>
+        <div id="cutin-overlay" style="display:none; pointer-events:none;">
+            <img id="cutin-img" src="images/Sprite/cut_in.png" alt="Cut-in">
         </div>
     </div>
-    <div id="cutin-overlay" style="display:none; pointer-events:none;">
-        <img id="cutin-img" src="images/Sprite/cut_in.png" alt="Cut-in">
-    </div>
-</div>
 
-<script src="js/globals.js"></script>
-<script src="js/audio.js"></script>
-<script src="js/input.js"></script>
-<script src="js/entities.js"></script>
-<script src="js/world.js"></script>
-<script src="js/update.js"></script>
-<script src="js/draw.js"></script>
-<script src="js/main.js"></script>
+    <script src="js/globals.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/world.js"></script>
+    <script src="js/update.js"></script>
+    <script src="js/draw.js"></script>
+    <script src="js/main.js"></script>
 </body>
+
 </html>
