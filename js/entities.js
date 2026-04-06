@@ -70,7 +70,7 @@ function updateEntities() {
             }
         }
 
-                if (!hit && bossActive && !bossDefeated && boss.visible && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
+                if (!hit && bossActive && !bossDefeated && boss.visible && bossSpawnTimer >= 10000 && b.x < boss.x + boss.w && b.x + b.w > boss.x &&
             b.y < boss.y + boss.h && b.y + b.h > boss.y &&
             Math.abs(b.groundY - boss.groundY) < 80) {
             
@@ -908,7 +908,7 @@ function updateEntities() {
                 enemies.splice(j, 1);
             }
         }
-        if (bossActive && !bossDefeated && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
+        if (bossActive && !bossDefeated && bossSpawnTimer >= 10000 && giantShuriken.x < boss.x + boss.w && giantShuriken.x + giantShuriken.w > boss.x) {
             if (boss.state === 'barrier' || boss.state === 'dash' || boss.state === 'retreat') {
                 // Giant shuriken deals no damage during barrier, but passes through
             } else {
