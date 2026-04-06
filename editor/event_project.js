@@ -177,11 +177,30 @@ window.event_refreshProjectList = function () {
             let iconEl = document.createElement('span');
             iconEl.style.marginRight = '5px';
 
+            // リンク切れ判定
+            let isBroken = false;
+            if (item.type === 'image' || item.type === 'animation') {
+                if (!item.imgObj || (item.imgObj.complete && item.imgObj.naturalWidth === 0)) {
+                    isBroken = true;
+                }
+            } else if (item.type === 'audio') {
+                if (!item.audioBuffer) {
+                    isBroken = true;
+                }
+            }
+
             if (item.type === 'image' && item.src) {
                 const imgIcon = document.createElement('div');
                 imgIcon.style.width = '24px';
                 imgIcon.style.height = '24px';
-                imgIcon.style.backgroundImage = `url(${item.src})`;
+                if (!isBroken) {
+                    imgIcon.style.backgroundImage = `url(${item.src})`;
+                } else {
+                    imgIcon.textContent = '⚠️';
+                    imgIcon.style.lineHeight = '24px';
+                    imgIcon.style.textAlign = 'center';
+                    imgIcon.style.color = '#f44';
+                }
                 imgIcon.style.backgroundSize = 'contain';
                 imgIcon.style.backgroundPosition = 'center';
                 imgIcon.style.backgroundRepeat = 'no-repeat';
@@ -189,13 +208,14 @@ window.event_refreshProjectList = function () {
                 iconEl = imgIcon;
             } else if (item.type === 'animation') {
                 iconEl.textContent = (item._collapsed ? '📁' : '📽️') + ' ';
+                if (isBroken) iconEl.textContent = '⚠️ ' + iconEl.textContent;
                 div.onclick = (e) => {
                     item._collapsed = !item._collapsed;
                     event_refreshProjectList();
                     e.stopPropagation();
                 };
             } else if (item.type === 'audio') {
-                iconEl.textContent = '🔊 ';
+                iconEl.textContent = isBroken ? '⚠️ 🔊 ' : '🔊 ';
             } else if (item.type === 'folder') {
                 iconEl.textContent = (item._collapsed ? '📁' : '📂') + ' ';
                 div.onclick = (e) => {
@@ -216,7 +236,25 @@ window.event_refreshProjectList = function () {
 
             const nameSpan = document.createElement('span');
             nameSpan.textContent = item.name;
+            if (isBroken) {
+                nameSpan.style.color = '#f88';
+                nameSpan.textContent += ' (Link Broken)';
+            }
             div.appendChild(nameSpan);
+
+            // リリンク機能の付加 (image, audio, animation)
+            if (item.type === 'image' || item.type === 'audio' || item.type === 'animation') {
+                div.ondblclick = (e) => {
+                    e.stopPropagation();
+                    if (isBroken) {
+                        event_relinkAsset(item);
+                    } else {
+                        if (confirm('このアセットの参照先を変更しますか？')) {
+                            event_relinkAsset(item);
+                        }
+                    }
+                };
+            }
 
             div.draggable = true;
             div.addEventListener('dragstart', (e) => {
@@ -292,34 +330,34 @@ window.event_refreshProjectList = function () {
                 // アニメーションの各モーションを描画
                 if (item.data) {
                     Object.keys(item.data).forEach(animKey => {
-                    const subDiv = document.createElement('div');
-                    subDiv.style.paddingLeft = `${(depth + 1) * 15 + 10}px`;
-                    subDiv.style.paddingTop = '2px';
-                    subDiv.style.paddingBottom = '2px';
-                    subDiv.style.cursor = 'pointer';
-                    subDiv.style.display = 'flex';
-                    subDiv.style.alignItems = 'center';
-                    subDiv.className = 'project-item sub-anim';
-                    subDiv.innerHTML = `<span style="margin-right:5px;">🏃</span> <span>${animKey}</span>`;
+                        const subDiv = document.createElement('div');
+                        subDiv.style.paddingLeft = `${(depth + 1) * 15 + 10}px`;
+                        subDiv.style.paddingTop = '2px';
+                        subDiv.style.paddingBottom = '2px';
+                        subDiv.style.cursor = 'pointer';
+                        subDiv.style.display = 'flex';
+                        subDiv.style.alignItems = 'center';
+                        subDiv.className = 'project-item sub-anim';
+                        subDiv.innerHTML = `<span style="margin-right:5px;">🏃</span> <span>${animKey}</span>`;
 
-                    subDiv.draggable = true;
-                    subDiv.addEventListener('dragstart', (e) => {
-                        window.event_draggedAsset = {
-                            type: 'sub_animation',
-                            parentAssetId: item.id,
-                            animId: animKey,
-                            name: item.name.split('_')[0] + " (" + animKey + ")"
-                        };
-                        e.dataTransfer.effectAllowed = 'copy';
-                        e.stopPropagation();
+                        subDiv.draggable = true;
+                        subDiv.addEventListener('dragstart', (e) => {
+                            window.event_draggedAsset = {
+                                type: 'sub_animation',
+                                parentAssetId: item.id,
+                                animId: animKey,
+                                name: item.name.split('_')[0] + " (" + animKey + ")"
+                            };
+                            e.dataTransfer.effectAllowed = 'copy';
+                            e.stopPropagation();
+                        });
+
+                        subDiv.onmouseover = () => subDiv.style.backgroundColor = '#444';
+                        subDiv.onmouseout = () => subDiv.style.backgroundColor = '';
+                        container.appendChild(subDiv);
                     });
-
-                    subDiv.onmouseover = () => subDiv.style.backgroundColor = '#444';
-                    subDiv.onmouseout = () => subDiv.style.backgroundColor = '';
-                    container.appendChild(subDiv);
-                });
+                }
             }
-        }
         });
     }
 
@@ -647,5 +685,146 @@ window.event_restoreAssetObjects = async function (list) {
                 }
             });
         }
+    }
+};
+
+window.event_relinkAsset = async function(clickedItem) {
+    if (!window.electronAPI) {
+        alert("Electron環境でのみ使用可能です");
+        return;
+    }
+    
+    alert("新しいファイルを選択してください。\n複数ファイルを選択すると、他のリンク切れアセットも同名ファイルで一括復旧します。");
+
+    const filePaths = await window.electronAPI.openFileDialog();
+    if (!filePaths || filePaths.length === 0) return;
+    
+    if (typeof event_pushHistory === 'function') event_pushHistory();
+
+    // 選択されたファイルリストをファイル名ベースでマップ化
+    const fileMap = {};
+    filePaths.forEach(fp => {
+        const name = fp.split(/[/\\]/).pop(); // フォルダ区切り文字で分割してファイル名取得
+        fileMap[name] = fp;
+    });
+
+    // 1ファイルのみ選択された場合は、名前が違っても強制的にリリンクする
+    const forceSingleRelink = (filePaths.length === 1);
+    const singlePath = filePaths[0];
+
+    // 非同期でアセットを再読み込みするヘルパー
+    const loadAssetMedia = async (item, fullPath) => {
+        const savedPath = event_toRelativePath(fullPath);
+        if (item.type === 'audio') {
+            item.src = savedPath;
+            try {
+                const rawBuffer = await window.electronAPI.readFile(fullPath, 'binary');
+                if (event_audioCtx) {
+                    const buffer = (rawBuffer instanceof Uint8Array) ? rawBuffer.buffer : rawBuffer;
+                    const audioBuffer = await event_audioCtx.decodeAudioData(buffer);
+                    item.audioBuffer = audioBuffer;
+                    item.duration = audioBuffer.duration;
+                    item.waveform = event_generateWaveform(audioBuffer);
+                }
+            } catch (err) {
+                console.error("Relink Audio Error:", err);
+            }
+        } else if (item.type === 'image' || item.type === 'animation') {
+            if (item.type === 'image') item.src = savedPath;
+            if (item.type === 'animation') item.source = savedPath;
+            
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => {
+                    item.imgObj = img;
+                    resolve();
+                };
+                img.onerror = () => {
+                    resolve(); // エラーでも後続の処理を止めない
+                };
+                img.src = fullPath;
+                item.imgObj = img; // 読み込み待ち状態でも仮セット
+            });
+        }
+    };
+
+    // 再帰的に全アセットを走査し、更新対象のリストを作成
+    const promises = [];
+    
+    const scanAndRelink = (assets) => {
+        assets.forEach(asset => {
+            if (asset.type === 'folder' && asset.children) {
+                scanAndRelink(asset.children);
+            } else if (asset.type === 'image' || asset.type === 'audio' || asset.type === 'animation') {
+                const oldSrc = asset.src || asset.source || "";
+                let targetPath = null;
+
+                if (forceSingleRelink && asset === clickedItem) {
+                    targetPath = singlePath;
+                } else {
+                    // リンク切れ判定
+                    const isBroken = (asset.type === 'audio' && !asset.audioBuffer) ||
+                                     ((asset.type === 'image' || asset.type === 'animation') && (!asset.imgObj || asset.imgObj.naturalWidth === 0));
+                    
+                    // クリックされたアイテム、またはリンク切れアイテムの場合、同名ファイルを探す
+                    if (isBroken || asset === clickedItem) {
+                        const assetFileName = oldSrc.split(/[/\\]/).pop();
+                        if (fileMap[assetFileName]) {
+                            targetPath = fileMap[assetFileName];
+                        }
+                    }
+                }
+
+                if (targetPath) {
+                    promises.push({ asset, oldSrc, targetPath });
+                }
+            }
+        });
+    };
+
+    scanAndRelink(event_data.assets);
+
+    // 見つかった対象アセットのメディアを読み込み
+    for (const p of promises) {
+        await loadAssetMedia(p.asset, p.targetPath);
+    }
+
+    // 全コンポジションのレイヤーを走査して参照パスとオブジェクトを更新
+    const updateLayers = (layers) => {
+        layers.forEach(layer => {
+            if (layer.type === 'audio') return; // 音声レイヤーは assetId 参照なので処理不要
+            
+            promises.forEach(p => {
+                const updatedAsset = p.asset;
+                if (layer.source === p.oldSrc || (layer.animAssetId && layer.animAssetId === updatedAsset.id)) {
+                    layer.source = updatedAsset.src || updatedAsset.source;
+                    if (updatedAsset.type === 'image' || updatedAsset.type === 'animation') {
+                        layer.imgObj = updatedAsset.imgObj;
+                    }
+                }
+            });
+        });
+    };
+
+    // プロジェクト内の全コンポジションを更新
+    const scanAssetsForUpdate = (assets) => {
+        assets.forEach(asset => {
+            if (asset.type === 'comp' && asset.layers) {
+                updateLayers(asset.layers);
+            } else if (asset.type === 'folder' && asset.children) {
+                scanAssetsForUpdate(asset.children);
+            }
+        });
+    };
+    scanAssetsForUpdate(event_data.assets);
+    
+    // 現在編集中(アクティブ)なコンポジションのレイヤーリストも更新
+    updateLayers(event_data.layers);
+    
+    event_refreshProjectList();
+    event_draw();
+
+    if (promises.length > 1) {
+        alert(`${promises.length} 個のアセットを一括で再リンクしました。`);
     }
 };

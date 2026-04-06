@@ -1626,7 +1626,7 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": true,
+          "expanded": false,
           "inPoint": 26.666666666666668,
           "outPoint": 28.3,
           "tracks": {
@@ -1705,7 +1705,7 @@
         {
           "id": "layer_1774781264859_260",
           "name": "cut_in_test.png",
-          "source": "../images/cut_in_test.png",
+          "source": "../images/Sprite/cut_in_test.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -1758,7 +1758,7 @@
         {
           "id": "layer_1774612600529_164",
           "name": "Gradation.png",
-          "source": "../images/Gradation.png",
+          "source": "../images/BG/Gradation.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -1817,7 +1817,7 @@
           "startTime": 7.966666666666666,
           "loop": true,
           "imgObj": {},
-          "source": "../images/sakuya.png",
+          "source": "../images/Sprite/sakuya.png",
           "blendMode": "source-over",
           "parent": null,
           "expanded": false,
@@ -1952,7 +1952,7 @@
         {
           "id": "layer_1774612681826_952",
           "name": "drone_Energy.png",
-          "source": "../images/drone_Energy.png",
+          "source": "../images/Sprite/drone_Energy.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": "layer_anim_1774607874331",
@@ -2216,7 +2216,7 @@
         {
           "id": "layer_1774614316181_536",
           "name": "Laser.png",
-          "source": "../images/Laser.png",
+          "source": "../images/Sprite/Laser.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": "layer_anim_1774607874331",
@@ -2294,7 +2294,7 @@
         {
           "id": "layer_1774613392066_746",
           "name": "s_obake.png",
-          "source": "../images/s_obake.png",
+          "source": "../images/Sprite/s_obake.png",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -2392,7 +2392,7 @@
           "startTime": 3.7333333333333334,
           "loop": true,
           "imgObj": {},
-          "source": "../images/droneA.png",
+          "source": "../images/Sprite/droneA.png",
           "blendMode": "source-over",
           "parent": null,
           "expanded": false,
@@ -2765,7 +2765,7 @@
           "startTime": 0,
           "loop": true,
           "imgObj": {},
-          "source": "../images/mitama.png",
+          "source": "../images/Sprite/mitama.png",
           "blendMode": "source-over",
           "parent": "layer_solid_1774614469310",
           "expanded": false,
@@ -2880,7 +2880,7 @@
         {
           "id": "layer_1774767466040_595",
           "name": "BG1.jpg",
-          "source": "../images/BG1.jpg",
+          "source": "../images/BG/BG1.jpg",
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
@@ -3003,28 +3003,28 @@
       "type": "image",
       "name": "Gradation.png",
       "id": "img_17746125983530.7107841478393127",
-      "src": "../images/Gradation.png",
+      "src": "../images/BG/Gradation.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "drone_Energy.png",
       "id": "img_17746126789460.9065094422174522",
-      "src": "../images/drone_Energy.png",
+      "src": "../images/Sprite/drone_Energy.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "s_obake.png",
       "id": "img_17746133861800.1284327561373546",
-      "src": "../images/s_obake.png",
+      "src": "../images/Sprite/s_obake.png",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "Laser.png",
       "id": "img_17746142812770.24859271920795867",
-      "src": "../images/Laser.png",
+      "src": "../images/Sprite/Laser.png",
       "imgObj": {}
     },
     {
@@ -3318,7 +3318,7 @@
           "loop": true
         }
       },
-      "source": "../images/sakuya.png",
+      "source": "../images/Sprite/sakuya.png",
       "_collapsed": true,
       "imgObj": {}
     },
@@ -3352,7 +3352,7 @@
           "loop": true
         }
       },
-      "source": "../images/droneA.png",
+      "source": "../images/Sprite/droneA.png",
       "_collapsed": false,
       "imgObj": {}
     },
@@ -3392,22 +3392,22 @@
           "loop": true
         }
       },
-      "source": "../images/mitama.png",
-      "_collapsed": true,
+      "source": "../images/Sprite/mitama.png",
+      "_collapsed": false,
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "BG1.jpg",
       "id": "img_17747674644040.9903758866060668",
-      "src": "../images/BG1.jpg",
+      "src": "../images/BG/BG1.jpg",
       "imgObj": {}
     },
     {
       "type": "image",
       "name": "cut_in_test.png",
       "id": "img_17747812636440.6439635713246632",
-      "src": "../images/cut_in_test.png",
+      "src": "../images/Sprite/cut_in_test.png",
       "imgObj": {}
     },
     {
