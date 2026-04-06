@@ -333,6 +333,34 @@ function draw() {
             if (boss.img.complete) {
                 ctx.translate(boss.x + boss.w / 2, boss.groundY);
                 ctx.scale(bScale, bScale);
+                // ビームチャージ中の本体発光エフェクト
+                if (boss.state === 'charge' && (boss.telegraphDuration > 0 || boss.telegraphDuration === -1)) {
+                    // ゆっくり光らせる（-1の待機時は0、180からカウントダウンで1.0へ）
+                    const chargeProgress = (boss.telegraphDuration > 0) ? Math.max(0, 1.0 - (boss.telegraphDuration / 180)) : 0;
+                    const pulse = (0.6 + 0.4 * Math.sin(Date.now() / 100)) * chargeProgress;
+                    
+                    ctx.save();
+                    const centerX = 0;
+                    const centerY = -boss.h / 2 + boss.jumpOffset;
+                    const glowRadius = boss.w * (1.2 + 0.5 * pulse);
+                    
+                    const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, glowRadius);
+                    // 中心をより白く（芯を作る）、外側への色の変化を激しくして強烈な光を表現
+                    gradient.addColorStop(0, `rgba(255, 255, 255, ${1.0 * pulse})`);
+                    gradient.addColorStop(0.2, `rgba(255, 100, 100, ${0.9 * pulse})`);
+                    gradient.addColorStop(0.5, `rgba(255, 0, 0, ${0.4 * pulse})`);
+                    gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                    
+                    ctx.globalCompositeOperation = 'lighter';
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(centerX, centerY, glowRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+
+                }
+
+                // 本体を通常描画
                 if (bossConfig) {
                     const anim = bossConfig.data[boss.currentAnim];
                     if (anim) {
@@ -343,6 +371,36 @@ function draw() {
                     const nw = boss.img.naturalWidth * 1.1; 
                     const nh = boss.img.naturalHeight * 1.1;
                     ctx.drawImage(boss.img, -nw / 2, -nh + boss.jumpOffset, nw, nh);
+                }
+
+                // ビームチャージ中の画像加算発光（通常描画の上に重ねることで「半透明」に見えるのを防ぐ）
+                if (boss.state === 'charge' && boss.telegraphDuration > 0) {
+                    const chargeProgress = Math.max(0, 1.0 - (boss.telegraphDuration / 180));
+                    if (chargeProgress > 0.1) {
+                        ctx.save();
+                        ctx.globalCompositeOperation = 'lighter';
+                        // 発光強度を大幅に強化し、シャドウによる外光（グロー）を追加
+                        const glowPulse = 0.7 + 0.3 * Math.sin(Date.now() / 80);
+                        ctx.globalAlpha = Math.min(1.0, chargeProgress * 1.5) * glowPulse;
+                        ctx.shadowBlur = 60 * chargeProgress * glowPulse;
+                        ctx.shadowColor = "red";
+                        
+                        // 強度を増すために2回重ねて描画
+                        for(let k = 0; k < 2; k++) {
+                            if (bossConfig) {
+                                const anim = bossConfig.data[boss.currentAnim];
+                                if (anim) {
+                                    const frame = anim.frames[boss.currentFrame];
+                                    if (frame) ctx.drawImage(boss.img, frame.x, frame.y, frame.w, frame.h, -frame.w / 2, -frame.h + boss.jumpOffset, frame.w, frame.h);
+                                }
+                            } else {
+                                const nw = boss.img.naturalWidth * 1.1; 
+                                const nh = boss.img.naturalHeight * 1.1;
+                                ctx.drawImage(boss.img, -nw / 2, -nh + boss.jumpOffset, nw, nh);
+                            }
+                        }
+                        ctx.restore();
+                    }
                 }
             }
             ctx.restore();
