@@ -50,6 +50,13 @@ let gameOver = false;
 let isOpRunning = false;
 let opTime = 0; 
 let opConfig = null;
+let endConfig = null; // 追加：エンディングの設定
+let isEndingRunning = false; // 追加：エンディングイベント実行中か
+let endTime = 0; // 追加：エンディングイベントの経過時間
+let isWhiteFading = false; // 追加：ホワイトアウト中か
+let whiteFadeAlpha = 0; // 追加：ホワイトアウトのアルファ値
+let whiteHoldTimer = 0; // 追加：真っ白な状態の維持時間
+let isBgmFading = false; // 追加：BGMがフェードアウト中か
 let isIntro = true;
 const INTRO_TARGET_X = 410;
 

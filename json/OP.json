@@ -1344,9 +1344,9 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": false,
+          "expanded": true,
           "inPoint": 25.3,
-          "outPoint": 28.3,
+          "outPoint": 28,
           "tracks": {
             "position": {
               "label": "Position",
@@ -1363,7 +1363,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 28.066666666666666,
+                  "time": 27.733333333333334,
                   "value": {
                     "x": 799,
                     "y": 300
@@ -1373,7 +1373,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 28.3,
+                  "time": 27.966666666666665,
                   "value": {
                     "x": 1211,
                     "y": 300
@@ -1626,9 +1626,9 @@
           "imgObj": {},
           "blendMode": "source-over",
           "parent": null,
-          "expanded": false,
+          "expanded": true,
           "inPoint": 26.666666666666668,
-          "outPoint": 28.3,
+          "outPoint": 28,
           "tracks": {
             "position": {
               "label": "Position",
@@ -1645,7 +1645,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 28.066666666666666,
+                  "time": 27.733333333333334,
                   "value": {
                     "x": 203,
                     "y": 300
@@ -1655,7 +1655,7 @@
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 28.3,
+                  "time": 27.966666666666665,
                   "value": {
                     "x": -207,
                     "y": 300

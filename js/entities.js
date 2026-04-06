@@ -528,6 +528,12 @@ function updateEntities() {
                         if (boss.x + boss.w < -100) {
                             boss.visible = false;
                             bossActive = false;
+                            
+                            // ボスが去った後にBGMをゆっくりフェードアウトさせる
+                            if (!isBgmFading) {
+                                isBgmFading = true;
+                                fadeOutBGM(isThirdScene ? bgm2 : bgm, 3000); // 3秒かけてフェードアウト
+                            }
                         }
                     }
                 }

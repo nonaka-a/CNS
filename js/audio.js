@@ -41,12 +41,12 @@ function fadeOutBGM(targetBgm, duration = 1000) {
     }, 50);
 }
 
-function updateOPAudio() {
-    if (!opConfig || !isOpRunning) {
-        stopAllOPAudio();
+function updateEventAudio(config, time, isRunning) {
+    if (!config || !isRunning) {
+        stopAllEventAudio();
         return;
     }
-    const comp = opConfig.assets.find(a => a.id === "comp_1");
+    const comp = config.assets.find(a => a.id === "comp_1");
     if (!comp) return;
 
     comp.layers.forEach(layer => {
@@ -60,10 +60,10 @@ function updateOPAudio() {
                  }
              }
              return null;
-        })(layer.assetId, opConfig.assets);
+        })(layer.assetId, config.assets);
         if (!asset || !asset.audioBuffer) return;
-        const offset = opTime - layer.startTime;
-        const isWithinRange = (opTime >= layer.inPoint && opTime < layer.outPoint);
+        const offset = time - layer.startTime;
+        const isWithinRange = (time >= layer.inPoint && time < layer.outPoint);
         const isWithinBuffer = (offset >= 0 && offset < asset.audioBuffer.duration);
         if (isWithinRange && isWithinBuffer && isSoundOn) {
             if (!opAudioSources[layer.id]) {
@@ -72,7 +72,7 @@ function updateOPAudio() {
                 const gainNode = audioCtx.createGain();
                 source.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
+                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, time, 0) : 0;
                 gainNode.gain.value = Math.pow(10, volDb / 20);
                 source.start(0, Math.max(0, offset));
                 opAudioSources[layer.id] = { source, gain: gainNode };
@@ -80,7 +80,7 @@ function updateOPAudio() {
                     if (opAudioSources[layer.id] && opAudioSources[layer.id].source === source) delete opAudioSources[layer.id];
                 };
             } else {
-                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, opTime, 0) : 0;
+                const volDb = (layer.tracks && layer.tracks.volume) ? getOpTrackValue(layer.tracks.volume, time, 0) : 0;
                 opAudioSources[layer.id].gain.gain.setTargetAtTime(Math.pow(10, volDb / 20), audioCtx.currentTime, 0.05);
             }
         } else {
@@ -92,7 +92,7 @@ function updateOPAudio() {
     });
 }
 
-function stopAllOPAudio() {
+function stopAllEventAudio() {
     Object.keys(opAudioSources).forEach(id => {
         try { opAudioSources[id].source.stop(); } catch(e){}
         delete opAudioSources[id];

@@ -16,7 +16,12 @@ function draw() {
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     if (isOpRunning) {
-        drawOP();
+        drawEvent(opConfig, opTime);
+        return;
+    }
+
+    if (isEndingRunning) {
+        drawEvent(endConfig, endTime);
         return;
     }
 
@@ -733,6 +738,15 @@ function draw() {
             }
         }
     }
+
+    // ホワイトアウト演出
+    if (whiteFadeAlpha > 0) {
+        ctx.save();
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.fillStyle = `rgba(255, 255, 255, ${whiteFadeAlpha})`;
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.restore();
+    }
 }
 
 function updateHPCircles(containerId, hp, count, type) {
@@ -772,44 +786,73 @@ function updateHPCircles(containerId, hp, count, type) {
     }
 }
 
-function drawOP() {
-    if (!opConfig) return;
-    const comp = opConfig.assets.find(a => a.id === "comp_1");
+function drawEvent(config, time) {
+    if (!config) return;
+    const comp = config.assets.find(a => a.id === "comp_1");
     if (!comp) return;
+
+    ctx.save();
+    // コンポジションサイズとキャンバスサイズの比率に合わせてスケーリング
+    const compScaleX = CANVAS_WIDTH / comp.width;
+    const compScaleY = CANVAS_HEIGHT / comp.height;
+    ctx.scale(compScaleX, compScaleY);
+
     if (bgImg.complete) {
-        const opBgH = CANVAS_HEIGHT + 100;
+        // 背景はコンポジションサイズ基準で描画
+        const opBgH = comp.height + (100 / compScaleY);
         const opBgW = (opBgH / bgImg.height) * bgImg.width; 
-        const loopX = -((opTime * 800) % opBgW);
-        ctx.drawImage(bgImg, loopX, -50, opBgW, opBgH);
-        ctx.drawImage(bgImg, loopX + opBgW, -50, opBgW, opBgH);
+        const loopX = -((time * 800) % opBgW);
+        ctx.drawImage(bgImg, loopX, -50 / compScaleY, opBgW, opBgH);
+        ctx.drawImage(bgImg, loopX + opBgW, -50 / compScaleY, opBgW, opBgH);
     } else {
-        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, comp.width, comp.height);
     }
     const layers = [...comp.layers].reverse();
     layers.forEach(layer => {
-        if (layer.visible === false || opTime < layer.inPoint || opTime > layer.outPoint) return;
+        if (layer.visible === false || time < layer.inPoint || time > layer.outPoint) return;
         ctx.save();
-        applyHierarchyTransforms(layer, comp, opTime);
-        const opacity = getOpTrackValue(layer.tracks.opacity, opTime, 100) / 100;
+        applyHierarchyTransforms(layer, comp, time);
+        const opacity = getOpTrackValue(layer.tracks.opacity, time, 100) / 100;
         ctx.globalAlpha *= opacity; 
         if (layer.blendMode && layer.blendMode !== 'source-over') ctx.globalCompositeOperation = layer.blendMode;
         if (layer.type === 'text') {
-            const typewriter = getOpTrackValue(layer.tracks.typewriter, opTime, 100);
+            const typewriter = getOpTrackValue(layer.tracks.typewriter, time, 100);
             const textToShow = layer.text.substring(0, Math.floor(layer.text.length * (typewriter / 100)));
-            ctx.font = `bold ${layer.fontSize}px ${layer.fontFamily}`;
+            
+            const isBold = (layer.fontWeight === 'bold' || layer.bold !== false);
+            // 引用符の重複を防ぐために正規化
+            const cleanFontFamily = (layer.fontFamily || 'Arial').replace(/"/g, '');
+            ctx.font = `${isBold ? 'bold ' : ''}${layer.fontSize}px "${cleanFontFamily}", sans-serif`;
             ctx.fillStyle = layer.color; ctx.textAlign = "left"; ctx.textBaseline = "middle";
+            
             const metrics = ctx.measureText(layer.text);
             const xOffset = -metrics.width / 2; 
+
+            // ドロップシャドウの設定 (shadowOpacityプロパティを確認)
+            if (layer.dropShadow || (layer.shadowOpacity !== undefined && layer.shadowOpacity > 0)) {
+                const opacity = (layer.shadowOpacity !== undefined) ? layer.shadowOpacity / 100 : 0.7;
+                ctx.shadowColor = layer.shadowColor || `rgba(0,0,0,${opacity})`;
+                ctx.shadowBlur = (layer.shadowBlur !== undefined) ? layer.shadowBlur : 4;
+                ctx.shadowOffsetX = (layer.shadowOffsetX !== undefined) ? layer.shadowOffsetX : 2;
+                ctx.shadowOffsetY = (layer.shadowOffsetY !== undefined) ? layer.shadowOffsetY : 2;
+            }
+
             if (layer.strokeWidth > 0) {
                 ctx.strokeStyle = layer.strokeColor; ctx.lineWidth = layer.strokeWidth;
                 ctx.strokeText(textToShow, xOffset, 0);
             }
             ctx.fillText(textToShow, xOffset, 0);
+
+            // シャドウ設定をリセット
+            ctx.shadowColor = "transparent";
+            ctx.shadowBlur = 0;
+            ctx.shadowOffsetX = 0;
+            ctx.shadowOffsetY = 0;
         } else if (layer.type === 'animated_layer') {
-            const animAsset = opConfig.assets.find(a => a.id === layer.animAssetId);
+            const animAsset = config.assets.find(a => a.id === layer.animAssetId);
             if (animAsset && (layer.imgObj && layer.imgObj.complete)) {
                 const animData = animAsset.data[layer.animId];
-                const frameIdx = Math.floor(Math.max(0, (opTime - layer.startTime) * animData.fps)) % animData.frames.length;
+                const frameIdx = Math.floor(Math.max(0, (time - layer.startTime) * animData.fps)) % animData.frames.length;
                 const frame = animData.frames[frameIdx];
                 ctx.drawImage(layer.imgObj, frame.x, frame.y, frame.w, frame.h, -frame.w/2, -frame.h/2, frame.w, frame.h);
             }
@@ -828,6 +871,7 @@ function drawOP() {
         }
         ctx.restore();
     });
+    ctx.restore();
 }
 function applyHierarchyTransforms(layer, comp, time) {
     if (layer.parent) {

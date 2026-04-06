@@ -30,66 +30,68 @@ async function init() {
         const resBoss = await fetch('json/iina.json');
         bossConfig = await resBoss.json();
 
-        // OPアセットのプリロード
-        if (opConfig && opConfig.assets) {
-            const fixPath = (p, type) => {
-                if (!p) return p;
-                if (p.startsWith('data:')) return p;
-                
-                let normalized = p.replace(/\\/g, '/');
-                if (type === 'audio') {
-                    let subPath = normalized.includes('sound/') ? normalized.split('sound/')[1] : 
-                                  normalized.includes('sounds/') ? normalized.split('sounds/')[1] : 
-                                  normalized.split('/').pop();
-                    subPath = subPath.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
-                    return `sound/${subPath}`;
-                } else {
-                    let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
-                                  normalized.includes('image/') ? normalized.split('image/')[1] : 
-                                  normalized.split('/').pop();
-                    
-                    // ディレクトリ構造がすでに含まれている（/がある）場合はそのまま
-                    if (subPath.includes('/')) return `images/${subPath}`;
+        const resEND = await fetch('json/END.json');
+        if (resEND.ok) endConfig = await resEND.json();
 
-                    // ディレクトリ整理に伴うパス解決（BG系かSprite系かをファイル名から簡易的に判別）
-                    const bgPatterns = ['BG', 'Building', 'Gradation', 'Guardrail', 'Streetlight', 'vignette'];
-                    const isBG = bgPatterns.some(pattern => subPath.startsWith(pattern));
-                    
-                    if (isBG) return `images/BG/${subPath}`;
-                    else return `images/Sprite/${subPath}`;
-                }
-            };
+        const fixAssetPath = (p, type) => {
+            if (!p) return p;
+            if (p.startsWith('data:')) return p;
+            
+            let normalized = p.replace(/\\/g, '/');
+            if (type === 'audio') {
+                let subPath = normalized.includes('sound/') ? normalized.split('sound/')[1] : 
+                              normalized.includes('sounds/') ? normalized.split('sounds/')[1] : 
+                              normalized.split('/').pop();
+                subPath = subPath.replace('.mp3.png', '.mp3').replace('.wav.png', '.wav').replace('.ogg.png', '.ogg');
+                return `sound/${subPath}`;
+            } else {
+                let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
+                              normalized.includes('image/') ? normalized.split('image/')[1] : 
+                              normalized.split('/').pop();
+                
+                if (subPath.includes('/')) return `images/${subPath}`;
+
+                const bgPatterns = ['BG', 'Building', 'Gradation', 'Guardrail', 'Streetlight', 'vignette'];
+                const isBG = bgPatterns.some(pattern => subPath.startsWith(pattern));
+                
+                if (isBG) return `images/BG/${subPath}`;
+                else return `images/Sprite/${subPath}`;
+            }
+        };
+
+        const loadEventAssets = async (config) => {
+            if (!config || !config.assets) return;
 
             const loadAsset = async (asset) => {
                 if (!asset) return;
                 if (asset.type === 'audio') {
                     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                     try {
-                        const url = fixPath(asset.src, 'audio');
+                        const url = fixAssetPath(asset.src, 'audio');
                         const response = await fetch(url);
                         const buffer = await response.arrayBuffer();
                         asset.audioBuffer = await audioCtx.decodeAudioData(buffer);
-                    } catch (err) { console.error("OP Audio Load Error:", asset.name, err); }
+                    } catch (err) { console.error("Event Audio Load Error:", asset.name, err); }
                 } else if (asset.type === 'animation') {
                     asset.imgObj = new Image();
-                    asset.imgObj.src = fixPath(asset.source, 'image');
+                    asset.imgObj.src = fixAssetPath(asset.source, 'image');
                 } else if (asset.type === 'image') {
                     asset.imgObj = new Image();
-                    asset.imgObj.src = fixPath(asset.src, 'image');
+                    asset.imgObj.src = fixAssetPath(asset.src, 'image');
                 } else if (asset.type === 'folder' && asset.children) {
                     await Promise.all(asset.children.map(child => loadAsset(child)));
                 } else if (asset.type === 'comp' && asset.layers) {
                     asset.layers.forEach(layer => {
                         if (layer.source && (!layer.imgObj || !layer.imgObj.src)) {
                             layer.imgObj = new Image();
-                            layer.imgObj.src = fixPath(layer.source, 'image');
+                            layer.imgObj.src = fixAssetPath(layer.source, 'image');
                         }
                     });
                 }
             };
-            await Promise.all(opConfig.assets.map(asset => loadAsset(asset)));
+            await Promise.all(config.assets.map(asset => loadAsset(asset)));
 
-            const comp = opConfig.assets.find(a => a.id === "comp_1");
+            const comp = config.assets.find(a => a.id === "comp_1");
             if (comp) {
                 comp.layers.forEach(layer => {
                     const refId = layer.assetId || layer.animAssetId;
@@ -102,12 +104,16 @@ async function init() {
                             }
                         }
                         return null;
-                    })(refId, opConfig.assets);
+                    })(refId, config.assets);
                     
                     if (asset && asset.imgObj) layer.imgObj = asset.imgObj;
                 });
             }
-        }
+        };
+
+        // OPとEDのアセットをプリロード
+        if (opConfig) await loadEventAssets(opConfig);
+        if (endConfig) await loadEventAssets(endConfig);
 
         await loadSE('shuriken', 'sound/Throw_a_shuriken_1.mp3');
         await loadSE('explosion', 'sound/explosion.mp3');
@@ -203,6 +209,45 @@ function endOP() {
 
     sakuya.x = -100;
     isIntro = true;
+}
+
+function startEndEvent() {
+    if (!endConfig) {
+        showClearScreen();
+        return;
+    }
+    isEndingRunning = true;
+    endTime = 0;
+    
+    // UIを隠す
+    document.getElementById('progress-container').style.display = 'none';
+    document.getElementById('ninjutsu-container').style.display = 'none';
+    document.getElementById('debug-skip-btn').style.display = 'none';
+    document.getElementById('debug-skip-btn-3').style.display = 'none';
+    document.querySelector('.hud').style.display = 'none';
+    document.getElementById('control-panel').style.display = 'none';
+}
+
+function endEndEvent() {
+    if (!isEndingRunning) return;
+    isEndingRunning = false;
+    endTime = 0;
+    if (typeof stopAllOPAudio === 'function') stopAllOPAudio();
+    showClearScreen();
+}
+
+function showClearScreen() {
+    gameOver = true;
+    isGameRunning = false;
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    bgm.pause();
+    bgm2.pause();
+    
+    // クリア用のモーダル表示（既存のモーダルを流用、または新規作成も可能）
+    const modalText = document.getElementById('modal-text');
+    if (modalText) modalText.innerText = "GAME CLEAR!";
+    const overlay = document.getElementById('modal-overlay');
+    if (overlay) overlay.style.display = 'flex';
 }
 
 function gameLoop(timestamp) {
@@ -315,6 +360,11 @@ function resetGameState() {
     gameOver = false;
     isIntro = true;
     isPaused = false;
+    isEndingRunning = false;
+    endTime = 0;
+    isWhiteFading = false;
+    whiteFadeAlpha = 0;
+    isBgmFading = false;
     
     sakuya.x = -150;
     sakuya.y = 0;

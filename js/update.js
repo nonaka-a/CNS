@@ -23,13 +23,40 @@ function update() {
                 document.getElementById('skip-op-btn').style.display = 'block';
             }
             opTime += FRAME_INTERVAL / 1000;
-            updateOPAudio();
+            updateEventAudio(opConfig, opTime, isOpRunning);
             const opComp = opConfig.assets.find(a => a.id === "comp_1");
             if (opComp && opTime >= opComp.duration) endOP();
         } else {
             endOP();
         }
         return;
+    }
+
+    if (isEndingRunning) {
+        if (endConfig) {
+            endTime += FRAME_INTERVAL / 1000;
+            updateEventAudio(endConfig, endTime, isEndingRunning);
+            const endComp = endConfig.assets.find(a => a.id === "comp_1");
+            if (endComp && endTime >= endComp.duration) endEndEvent();
+        } else {
+            endEndEvent();
+        }
+        return;
+    }
+
+    if (isWhiteFading) {
+        if (whiteFadeAlpha < 1.0) {
+            whiteFadeAlpha += 0.012; // 約1.4秒で真っ白に
+        } else {
+            whiteFadeAlpha = 1.0;
+            whiteHoldTimer += FRAME_INTERVAL;
+            if (whiteHoldTimer >= 1000) { // 1秒間維持
+                whiteFadeAlpha = 1.0;
+                isWhiteFading = false;
+                whiteHoldTimer = 0;
+                startEndEvent();
+            }
+        }
     }
 
     updateWorld(); // world.js
@@ -262,5 +289,10 @@ function update() {
         window.uiCache.bossHpPercent = hpPercent;
     }
 
-    if (displayDistance >= goalDistance) endGame("GOAL!");
+    if (displayDistance >= goalDistance && !gameOver) {
+        if (!isWhiteFading && !isEndingRunning) {
+            isWhiteFading = true;
+            whiteFadeAlpha = 0;
+        }
+    }
 }
