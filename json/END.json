@@ -557,7 +557,7 @@
           "type": "text",
           "name": "Text Layer コピー コピー",
           "blendMode": "source-over",
-          "text": "咲耶： これはもうリスペクトする気になったでしょ！",
+          "text": "咲耶： この大活躍はリスペクトする気になったでしょ！",
           "fontSize": 30,
           "fontFamily": "\"M PLUS Rounded 1c\", sans-serif",
           "color": "#ffffff",
@@ -567,7 +567,7 @@
           "parent": null,
           "expanded": false,
           "inPoint": 14.733333333333333,
-          "outPoint": 18.4,
+          "outPoint": 18.733333333333334,
           "tracks": {
             "position": {
               "label": "Position",
@@ -625,7 +625,7 @@
               "keys": [
                 {
                   "time": 15.066666666666666,
-                  "value": 19.33333333333333,
+                  "value": 13.333333333333329,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
@@ -658,7 +658,7 @@
           "type": "text",
           "name": "Text Layer コピー コピー",
           "blendMode": "source-over",
-          "text": "咲耶：やっぱり主人公よね！",
+          "text": "咲耶：さすが 主人公よね！",
           "fontSize": 30,
           "fontFamily": "\"M PLUS Rounded 1c\", sans-serif",
           "color": "#ffffff",
@@ -667,7 +667,7 @@
           "shadowOpacity": 100,
           "parent": null,
           "expanded": false,
-          "inPoint": 18.433333333333334,
+          "inPoint": 18.766666666666666,
           "outPoint": 22.233333333333334,
           "tracks": {
             "position": {
@@ -1090,7 +1090,7 @@
           "type": "text",
           "name": "Text Layer コピー コピー コピー コピー",
           "blendMode": "source-over",
-          "text": "ミタマ： …助けてくれて　ありがとうタマ",
+          "text": "ミタマ： …守ってくれて　ありがとうタマ",
           "fontSize": 30,
           "fontFamily": "\"M PLUS Rounded 1c\", sans-serif",
           "color": "#ffffff",
