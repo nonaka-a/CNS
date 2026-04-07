@@ -23,13 +23,17 @@ const PAYOUT_RATES = {
     [OMEN_TYPE.KAMEN]: 2
 };
 
-// リールの配列（重み付け）
+// 全リール共通の配列（全9種類を各1回ずつ配置した9個サイクル）
 const REEL_STRIP = [
-    OMEN_TYPE.ONI, OMEN_TYPE.OKAME, OMEN_TYPE.TENGU, OMEN_TYPE.HYO,
-    OMEN_TYPE.KITUNE, OMEN_TYPE.KAMEN, OMEN_TYPE.JEI, OMEN_TYPE.OKAME,
-    OMEN_TYPE.DAN, OMEN_TYPE.HYO, OMEN_TYPE.SENTAI, OMEN_TYPE.KAMEN,
-    OMEN_TYPE.OKAME, OMEN_TYPE.TENGU, OMEN_TYPE.HYO, OMEN_TYPE.JEI,
-    OMEN_TYPE.KAMEN, OMEN_TYPE.SENTAI
+    OMEN_TYPE.ONI,
+    OMEN_TYPE.KITUNE,
+    OMEN_TYPE.DAN,
+    OMEN_TYPE.TENGU,
+    OMEN_TYPE.JEI,
+    OMEN_TYPE.SENTAI,
+    OMEN_TYPE.OKAME,
+    OMEN_TYPE.HYO,
+    OMEN_TYPE.KAMEN
 ];
 
 let slotActive = false;
@@ -56,6 +60,16 @@ const STATE = { IDLE: 0, SPINNING: 1, STOPPING: 2, PAYOUT: 3 };
 let slotState = STATE.IDLE;
 let isReach = false;
 
+// タッチ/クリック兼用イベントハンドラ
+function addBtnListener(el, callback) {
+    const handler = (e) => {
+        if (e.cancelable) e.preventDefault();
+        callback(e);
+    };
+    el.addEventListener('touchstart', handler, { passive: false });
+    el.addEventListener('mousedown', handler);
+}
+
 // リール状態管理
 class Reel {
     constructor(x, y) {
@@ -63,7 +77,7 @@ class Reel {
         this.y = y;
         this.pos = Math.random() * REEL_STRIP.length;
         this.speed = 0;
-        this.baseSpeed = 0.4;
+        this.baseSpeed = 0.1; 
         this.isSpinning = false;
         this.isStopping = false;
         this.stopTarget = -1;
@@ -71,19 +85,22 @@ class Reel {
     }
 
     update() {
-        if (this.isSpinning) {
-            this.pos += this.speed;
-            if (this.pos >= REEL_STRIP.length) this.pos -= REEL_STRIP.length;
-        }
+        if (!this.isSpinning) return;
+
+        const prevPos = this.pos;
+        this.pos -= this.speed;
+        if (this.pos < 0) this.pos += REEL_STRIP.length;
 
         if (this.isStopping) {
-            this.pos += this.speed;
-            if (this.pos >= REEL_STRIP.length) this.pos -= REEL_STRIP.length;
+            let crossed = false;
+            if (prevPos >= this.stopTarget && this.pos <= this.stopTarget) {
+                crossed = true;
+            }
+            if (prevPos < 1 && this.pos > REEL_STRIP.length - 1 && this.stopTarget === 0) {
+                crossed = true;
+            }
 
-            let dist = this.stopTarget - this.pos;
-            if (dist < 0) dist += REEL_STRIP.length;
-
-            if (dist <= Math.max(this.speed, 0.01)) {
+            if (crossed || Math.abs(this.pos - this.stopTarget) < this.speed) {
                 this.pos = this.stopTarget;
                 this.isSpinning = false;
                 this.isStopping = false;
@@ -100,8 +117,8 @@ class Reel {
 
         for (let i = -visibleRange; i <= visibleRange; i++) {
             let idx = Math.floor(this.pos) + i;
-            if (idx < 0) idx += REEL_STRIP.length;
-            if (idx >= REEL_STRIP.length) idx -= REEL_STRIP.length;
+            while (idx < 0) idx += REEL_STRIP.length;
+            while (idx >= REEL_STRIP.length) idx -= REEL_STRIP.length;
 
             const symbolType = REEL_STRIP[idx];
             const offset = (this.pos - Math.floor(this.pos));
@@ -120,8 +137,8 @@ class Reel {
     stopSpin() {
         if (!this.isSpinning || this.isStopping) return;
         this.isStopping = true;
-        this.stopTarget = Math.ceil(this.pos);
-        if (this.stopTarget >= REEL_STRIP.length) this.stopTarget = 0;
+        this.stopTarget = Math.floor(this.pos);
+        if (this.stopTarget < 0) this.stopTarget = REEL_STRIP.length - 1;
     }
 }
 
@@ -152,7 +169,6 @@ function openSlot() {
 
     createSlotDOM();
 
-    // BGMの再生
     if (typeof isSoundOn !== 'undefined' && isSoundOn && typeof bgmSlot !== 'undefined') {
         bgmSlot.currentTime = 0;
         bgmSlot.play().catch(e => console.error("Slot BGM playback failed:", e));
@@ -184,12 +200,7 @@ function createModalBtn(text, id, callback, width = '150px') {
     btn.style.height = '50px';
     btn.style.padding = '2px';
     
-    const handleAction = (e) => {
-        if (e && e.cancelable) e.preventDefault();
-        callback();
-    };
-    btn.onclick = handleAction;
-    btn.ontouchend = handleAction;
+    addBtnListener(btn, callback);
     
     const inner = document.createElement('span');
     inner.id = id + '-inner';
@@ -231,7 +242,7 @@ function createSlotDOM() {
     slotCanvas.style.left = '0';
     sCtx = slotCanvas.getContext('2d');
 
-    // 左上のメダル情報
+    // メダル情報
     const medalInfo = document.createElement('div');
     medalInfo.style.position = 'absolute';
     medalInfo.style.top = '20px';
@@ -246,7 +257,21 @@ function createSlotDOM() {
     medalText.style.fontWeight = 'bold';
     medalInfo.appendChild(medalText);
 
-    // 右上のMAX情報
+    // デバッグ用
+    const btnDebug = document.createElement('div');
+    btnDebug.innerText = '+50';
+    btnDebug.style.marginTop = '5px';
+    btnDebug.style.color = '#fff';
+    btnDebug.style.background = 'rgba(255,255,255,0.2)';
+    btnDebug.style.border = '1px solid #fff';
+    btnDebug.style.padding = '2px 8px';
+    btnDebug.style.fontSize = '12px';
+    btnDebug.style.cursor = 'pointer';
+    btnDebug.style.textAlign = 'center';
+    addBtnListener(btnDebug, () => { medals += 50; playSE('sausage_get'); updateSlotUI(); });
+    medalInfo.appendChild(btnDebug);
+
+    // MAX
     const maxText = document.createElement('div');
     maxText.id = 'slot-max-text';
     maxText.style.position = 'absolute';
@@ -257,7 +282,7 @@ function createSlotDOM() {
     maxText.style.fontFamily = "'Sawarabi Mincho', serif";
     maxText.style.textShadow = '2px 2px 4px #000';
 
-    // 画面右のBET変更UI (垂直配置 - 少し左へ)
+    // BET変更UI
     const betContainer = document.createElement('div');
     betContainer.style.position = 'absolute';
     betContainer.style.right = '120px';
@@ -275,9 +300,7 @@ function createSlotDOM() {
     btnBetUp.style.width = '55px';
     btnBetUp.style.height = '55px';
     btnBetUp.style.fontSize = '24px';
-    btnBetUp.style.cursor = 'pointer';
-    const handleBetUp = (e) => { if(e && e.cancelable) e.preventDefault(); changeBet(1); };
-    btnBetUp.onclick = handleBetUp; btnBetUp.ontouchend = handleBetUp;
+    addBtnListener(btnBetUp, () => changeBet(1));
 
     const betDisplay = document.createElement('div');
     betDisplay.id = 'slot-bet-display';
@@ -286,7 +309,6 @@ function createSlotDOM() {
     betDisplay.style.fontFamily = "'Sawarabi Mincho', serif";
     betDisplay.style.fontWeight = 'bold';
     betDisplay.style.textShadow = '2px 2px 4px #000';
-    betDisplay.style.whiteSpace = 'nowrap';
 
     const btnBetDown = document.createElement('div');
     btnBetDown.id = 'btn-bet-down';
@@ -295,9 +317,7 @@ function createSlotDOM() {
     btnBetDown.style.width = '55px';
     btnBetDown.style.height = '55px';
     btnBetDown.style.fontSize = '24px';
-    btnBetDown.style.cursor = 'pointer';
-    const handleBetDown = (e) => { if(e && e.cancelable) e.preventDefault(); changeBet(-1); };
-    btnBetDown.onclick = handleBetDown; btnBetDown.ontouchend = handleBetDown;
+    addBtnListener(btnBetDown, () => changeBet(-1));
 
     betContainer.appendChild(btnBetUp);
     betContainer.appendChild(betDisplay);
@@ -323,13 +343,11 @@ function createSlotDOM() {
         sBtn.style.height = '60px';
         sBtn.style.fontSize = '24px';
         sBtn.style.pointerEvents = 'auto';
-        sBtn.style.cursor = 'pointer';
-        const handleStop = (e) => { if(e && e.cancelable) e.preventDefault(); stopReel(i); };
-        sBtn.onclick = handleStop; sBtn.ontouchend = handleStop;
+        addBtnListener(sBtn, () => stopReel(i));
         stopContainer.appendChild(sBtn);
     }
 
-    // START/次へボタン
+    // STARTボタン
     const startContainer = document.createElement('div');
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
@@ -345,11 +363,8 @@ function createSlotDOM() {
     btnSettings.style.bottom = '20px';
     btnSettings.style.right = '30px';
     btnSettings.style.margin = '0';
-    btnSettings.style.cursor = 'pointer';
-    const handleSettings = (e) => { if(e && e.cancelable) e.preventDefault(); toggleSettings(); };
-    btnSettings.onclick = handleSettings; btnSettings.ontouchend = handleSettings;
+    addBtnListener(btnSettings, () => toggleSettings());
 
-    // 既存のタイトルに戻るボタン等との競合解決
     const originalBackToTitle = window.backToTitle;
     window.backToTitle = function() {
         closeSlot();
@@ -494,13 +509,14 @@ function checkReels() {
         if (stoppedReels.length === 2 && stoppedReels[0].resultSymbol === stoppedReels[1].resultSymbol) {
             if (!isReach) {
                 isReach = true;
-                spinningReels[0].speed = 0.1; 
+                spinningReels[0].speed = 0.03; 
                 playSE('gather_energy', 0.5);
             }
         }
     }
     if (spinningReels.length === 0) {
         slotState = STATE.PAYOUT;
+        isReach = false; // 停止時にリセット
         const s1 = reels[0].resultSymbol;
         const s2 = reels[1].resultSymbol;
         const s3 = reels[2].resultSymbol;
@@ -525,12 +541,9 @@ function closeSlot() {
         slotOverlay.parentNode.removeChild(slotOverlay);
     }
     slotOverlay = null;
-
-    // BGMの停止
     if (typeof bgmSlot !== 'undefined') {
         bgmSlot.pause();
     }
-
     if(typeof window.updateBtnRects === 'function') window.updateBtnRects();
 }
 
