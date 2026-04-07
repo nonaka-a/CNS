@@ -95,7 +95,7 @@
               "keys": [
                 {
                   "time": 54,
-                  "value": -10,
+                  "value": 0,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
