@@ -174,7 +174,7 @@ function openSlot() {
         bgmSlot.play().catch(e => console.error("Slot BGM playback failed:", e));
     }
     
-    const reelY = SLOT_HEIGHT * 0.35; 
+    const reelY = SLOT_HEIGHT * 0.39; 
     reels = [
         new Reel(SLOT_WIDTH * 0.32, reelY),
         new Reel(SLOT_WIDTH * 0.50, reelY),
@@ -231,7 +231,7 @@ function createSlotDOM() {
     container.style.position = 'relative';
     container.style.width = SLOT_WIDTH + 'px';
     container.style.height = SLOT_HEIGHT + 'px';
-    container.style.background = 'radial-gradient(circle, #2c1b54 0%, #111 100%)';
+    container.style.background = 'url("images/slot/BG_slot.jpg") center/cover no-repeat';
     container.style.overflow = 'hidden';
 
     slotCanvas = document.createElement('canvas');
