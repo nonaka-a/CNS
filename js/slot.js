@@ -59,6 +59,7 @@ let currentBet = 1;
 const STATE = { IDLE: 0, SPINNING: 1, STOPPING: 2, PAYOUT: 3 };
 let slotState = STATE.IDLE;
 let isReach = false;
+let payoutTime = 0; // 追加：結果表示開始時刻
 
 // タッチ/クリック兼用イベントハンドラ
 function addBtnListener(el, callback) {
@@ -285,6 +286,7 @@ function createSlotDOM() {
 
     // BET変更UI
     const betContainer = document.createElement('div');
+    betContainer.id = 'slot-bet-container';
     betContainer.style.position = 'absolute';
     betContainer.style.right = '120px';
     betContainer.style.top = '50%';
@@ -326,6 +328,7 @@ function createSlotDOM() {
 
     // 止めるボタン
     const stopContainer = document.createElement('div');
+    stopContainer.id = 'slot-stop-container';
     stopContainer.style.position = 'absolute';
     stopContainer.style.top = '480px'; 
     stopContainer.style.left = '50%';
@@ -439,10 +442,27 @@ function updateSlotUI() {
         if (btnDown) btnDown.style.opacity = '0.5';
         if (btnUp) btnUp.style.opacity = '0.5';
         if (wrapStart) wrapStart.style.opacity = '1';
+        
+        const betCont = document.getElementById('slot-bet-container');
+        if (betCont) betCont.style.display = 'none';
+        const stopCont = document.getElementById('slot-stop-container');
+        if (stopCont) stopCont.style.display = 'none';
     } else {
         if (btnDown) btnDown.style.opacity = '0.5';
         if (btnUp) btnUp.style.opacity = '0.5';
         if (wrapStart) wrapStart.style.opacity = '0.5';
+        
+        const betCont = document.getElementById('slot-bet-container');
+        if (betCont) betCont.style.display = 'flex';
+        const stopCont = document.getElementById('slot-stop-container');
+        if (stopCont) stopCont.style.display = 'flex';
+    }
+
+    if (slotState === STATE.IDLE) {
+        const betCont = document.getElementById('slot-bet-container');
+        if (betCont) betCont.style.display = 'flex';
+        const stopCont = document.getElementById('slot-stop-container');
+        if (stopCont) stopCont.style.display = 'flex';
     }
 
     for (let i = 0; i < 3; i++) {
@@ -517,6 +537,7 @@ function checkReels() {
     }
     if (spinningReels.length === 0) {
         slotState = STATE.PAYOUT;
+        payoutTime = Date.now(); // 追加：時刻をセット
         isReach = false; // 停止時にリセット
         const s1 = reels[0].resultSymbol;
         const s2 = reels[1].resultSymbol;
@@ -568,7 +589,7 @@ function slotLoop() {
         r.draw(sCtx);
     });
     sCtx.restore();
-    if (slotState === STATE.PAYOUT) {
+    if (slotState === STATE.PAYOUT && (Date.now() - payoutTime < 3000)) {
         if (reels[0].resultSymbol === reels[1].resultSymbol && reels[1].resultSymbol === reels[2].resultSymbol) {
             const winAmount = currentBet * PAYOUT_RATES[reels[0].resultSymbol];
             sCtx.save();
