@@ -555,7 +555,7 @@ function slotLoop() {
         if (img.complete && img.naturalWidth > 0) {
             const nw = img.naturalWidth;
             const nh = img.naturalHeight;
-            sCtx.drawImage(img, reels[i].x - nw / 2, reels[i].y - nh / 6.5 - 15, nw, nh);
+            sCtx.drawImage(img, reels[i].x - nw / 2, reels[i].y - nh / 5.0 - 15, nw, nh);
         }
     }
     sCtx.save();
