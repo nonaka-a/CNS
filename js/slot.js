@@ -113,7 +113,8 @@ class Reel {
 
     draw(ctx) {
         const symbolHeight = 128; 
-        const visibleRange = 1;
+        // 全てが止まって結果表示中(PAYOUT)の時は真ん中(0)だけ表示、それ以外は上下(1)も表示
+        const visibleRange = (slotState === STATE.PAYOUT) ? 0 : 1;
 
         for (let i = -visibleRange; i <= visibleRange; i++) {
             let idx = Math.floor(this.pos) + i;
