@@ -176,3 +176,8 @@ const bgm2 = new Audio('sound/BGM2.mp3');
 bgm2.loop = true;
 bgm2.volume = 0.4;
 bgm2.muted = !isSoundOn;
+
+const bgmSlot = new Audio('sound/BGM_slot.mp3');
+bgmSlot.loop = true;
+bgmSlot.volume = 0.4;
+bgmSlot.muted = !isSoundOn;
