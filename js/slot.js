@@ -505,7 +505,14 @@ function startSlot() {
     saveMedalData();
     slotState = STATE.SPINNING;
     isReach = false;
-    reels.forEach(r => r.startSpin());
+    reels.forEach((r, i) => {
+        setTimeout(() => {
+            if (slotState === STATE.SPINNING) {
+                r.startSpin();
+                updateSlotUI(); // 各リールが回り始めたら「止」ボタンをアクティブにするためUIを更新
+            }
+        }, i * 150); // 150msずつ順番に回り始める
+    });
     playSE('shuriken', 0.8);
     updateSlotUI();
 }
