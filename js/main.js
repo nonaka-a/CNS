@@ -288,9 +288,14 @@ function toggleSettings() {
     if (overlay.style.display === 'flex') {
         overlay.style.display = 'none';
         isPaused = false;
-        if (isSoundOn && isGameRunning) {
-            if (isThirdScene) bgm2.play().catch(() => {});
-            else bgm.play().catch(() => {});
+        if (isSoundOn) {
+            if (isGameRunning) {
+                if (isThirdScene) bgm2.play().catch(() => {});
+                else bgm.play().catch(() => {});
+            }
+            if (typeof slotActive !== 'undefined' && slotActive) {
+                bgmSlot.play().catch(() => {});
+            }
         }
     } else {
         overlay.style.display = 'flex';
@@ -298,6 +303,7 @@ function toggleSettings() {
         if (bgmFadeInterval) clearInterval(bgmFadeInterval);
         bgm.pause();
         bgm2.pause();
+        bgmSlot.pause();
     }
 }
 
@@ -316,17 +322,24 @@ function toggleSound() {
     isSoundOn = !isSoundOn;
     bgm.muted = !isSoundOn;
     bgm2.muted = !isSoundOn;
+    bgmSlot.muted = !isSoundOn;
     const btnText = document.getElementById('sound-btn-text');
     if (btnText) btnText.innerText = `音: ${isSoundOn ? 'ON' : 'OFF'}`;
     if (isSoundOn) {
-        if (isGameRunning && !isPaused) {
-            if (isThirdScene) bgm2.play().catch(() => {});
-            else bgm.play().catch(() => {});
+        if (!isPaused) {
+            if (isGameRunning) {
+                if (isThirdScene) bgm2.play().catch(() => {});
+                else bgm.play().catch(() => {});
+            }
+            if (typeof slotActive !== 'undefined' && slotActive) {
+                bgmSlot.play().catch(() => {});
+            }
         }
     } else {
         if (bgmFadeInterval) clearInterval(bgmFadeInterval);
         bgm.pause();
         bgm2.pause();
+        bgmSlot.pause();
     }
 }
 
