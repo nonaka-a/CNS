@@ -443,7 +443,7 @@ function updateSlotUI() {
     const elMedal = document.getElementById('slot-medal-text');
     if (elMedal) elMedal.innerText = `メダル: ${medals}`;
     const elMax = document.getElementById('slot-max-text');
-    if (elMax) elMax.innerText = `MAXメダル: ${maxMedals}`;
+    if (elMax) elMax.innerText = `ベスト: ${maxMedals}`;
     const elBet = document.getElementById('slot-bet-display');
     if (elBet) elBet.innerText = currentBet + '枚';
 
