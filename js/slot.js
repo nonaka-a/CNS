@@ -692,18 +692,35 @@ function checkReels() {
     const spinningReels = reels.filter(r => r.isSpinning || r.isStopping);
     if (spinningReels.length === 1) {
         const stoppedReels = reels.filter(r => !r.isSpinning);
+        // 1番目と2番目のリールが揃っているか確認
         if (stoppedReels.length === 2 && stoppedReels[0].resultSymbol === stoppedReels[1].resultSymbol) {
             if (!isReach) {
                 isReach = true;
-                spinningReels[0].speed = 0.03; 
+                
+                // 揃っているお面の種類（インデックス）を取得
+                const symbolType = stoppedReels[0].resultSymbol;
+                const rate = PAYOUT_RATES[symbolType] || 2;
+
+                // 倍率に応じて3つ目のリールのスロースピードを調整
+                // デフォルト（×2, ×3）: 0.03
+                // ×5: 0.045
+                // ×10: 0.06 (通常スピード 0.1 の半分以上)
+                let slowSpeed = 0.03; 
+                if (rate === 5) {
+                    slowSpeed = 0.045;
+                } else if (rate === 10) {
+                    slowSpeed = 0.06;
+                }
+
+                spinningReels[0].speed = slowSpeed; 
                 playSE('gather_energy', 0.5);
             }
         }
     }
     if (spinningReels.length === 0) {
         slotState = STATE.PAYOUT;
-        payoutTime = Date.now(); // 追加：時刻をセット
-        isReach = false; // 停止時にリセット
+        payoutTime = Date.now();
+        isReach = false;
         const s1 = reels[0].resultSymbol;
         const s2 = reels[1].resultSymbol;
         const s3 = reels[2].resultSymbol;
