@@ -244,6 +244,18 @@ function createSlotDOM() {
     slotCanvas.style.left = '0';
     sCtx = slotCanvas.getContext('2d');
 
+    const applyZabutonStyle = (el) => {
+        el.style.background = '#2a2a2a';
+        el.style.border = '3px solid #8c6e5e';
+        el.style.boxShadow = 'inset 0 0 0 2px #111, 0 4px 10px rgba(0,0,0,0.5)';
+        el.style.padding = '5px 15px';
+        ['m-tp-l', 'm-tp-r', 'm-bt-l', 'm-bt-r'].forEach(cls => {
+            const c = document.createElement('div');
+            c.className = `modal-corner ${cls}`;
+            el.appendChild(c);
+        });
+    };
+
     // メダル情報
     const medalInfo = document.createElement('div');
     medalInfo.style.position = 'absolute';
@@ -252,17 +264,23 @@ function createSlotDOM() {
     medalInfo.style.textAlign = 'left';
     medalInfo.style.fontFamily = "'Sawarabi Mincho', serif";
     medalInfo.style.textShadow = '2px 2px 4px #000';
+    applyZabutonStyle(medalInfo);
+
     const medalText = document.createElement('div');
     medalText.id = 'slot-medal-text';
     medalText.style.color = '#fff';
     medalText.style.fontSize = '24px';
     medalText.style.fontWeight = 'bold';
+    medalText.style.position = 'relative';
+    medalText.style.zIndex = '5';
     medalInfo.appendChild(medalText);
 
-    // デバッグ用
+    // デバッグ用（座布団の外に配置）
     const btnDebug = document.createElement('div');
     btnDebug.innerText = '+50';
-    btnDebug.style.marginTop = '5px';
+    btnDebug.style.position = 'absolute';
+    btnDebug.style.top = '75px';
+    btnDebug.style.left = '30px';
     btnDebug.style.color = '#fff';
     btnDebug.style.background = 'rgba(255,255,255,0.2)';
     btnDebug.style.border = '1px solid #fff';
@@ -271,18 +289,23 @@ function createSlotDOM() {
     btnDebug.style.cursor = 'pointer';
     btnDebug.style.textAlign = 'center';
     addBtnListener(btnDebug, () => { medals += 50; playSE('sausage_get'); updateSlotUI(); });
-    medalInfo.appendChild(btnDebug);
 
     // MAX
+    const maxWrap = document.createElement('div');
+    maxWrap.style.position = 'absolute';
+    maxWrap.style.top = '20px';
+    maxWrap.style.right = '30px';
+    maxWrap.style.fontFamily = "'Sawarabi Mincho', serif";
+    maxWrap.style.textShadow = '2px 2px 4px #000';
+    applyZabutonStyle(maxWrap);
+
     const maxText = document.createElement('div');
     maxText.id = 'slot-max-text';
-    maxText.style.position = 'absolute';
-    maxText.style.top = '20px';
-    maxText.style.right = '30px';
     maxText.style.color = '#fff';
     maxText.style.fontSize = '24px';
-    maxText.style.fontFamily = "'Sawarabi Mincho', serif";
-    maxText.style.textShadow = '2px 2px 4px #000';
+    maxText.style.position = 'relative';
+    maxText.style.zIndex = '5';
+    maxWrap.appendChild(maxText);
 
     // BET変更UI
     const betContainer = document.createElement('div');
@@ -379,7 +402,8 @@ function createSlotDOM() {
 
     container.appendChild(slotCanvas);
     container.appendChild(medalInfo);
-    container.appendChild(maxText);
+    container.appendChild(btnDebug);
+    container.appendChild(maxWrap);
     container.appendChild(betContainer);
     container.appendChild(stopContainer);
     container.appendChild(startContainer);
@@ -419,7 +443,7 @@ function updateSlotUI() {
     const elMedal = document.getElementById('slot-medal-text');
     if (elMedal) elMedal.innerText = `メダル: ${medals}`;
     const elMax = document.getElementById('slot-max-text');
-    if (elMax) elMax.innerText = `MAXメダル数: ${maxMedals}`;
+    if (elMax) elMax.innerText = `MAXメダル: ${maxMedals}`;
     const elBet = document.getElementById('slot-bet-display');
     if (elBet) elBet.innerText = currentBet + '枚';
 
