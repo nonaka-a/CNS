@@ -30,7 +30,16 @@ function setupControls() {
         if (e.code === 'Digit3') {
             distance = goalDistance * 0.95 - 200;
         }
-    });
+     // スロット動作中のみ有効なデバッグキー
+    if (typeof slotActive !== 'undefined' && slotActive && slotState === STATE.SPINNING) {
+        if (e.code === 'Digit2' || e.code === 'Numpad2') debugForceWin(OMEN_TYPE.OKAME); // 2倍
+        if (e.code === 'Digit3' || e.code === 'Numpad3') debugForceWin(OMEN_TYPE.TENGU); // 3倍
+        if (e.code === 'Digit5' || e.code === 'Numpad5') debugForceWin(OMEN_TYPE.KITUNE); // 5倍
+        if (e.code === 'Digit1' || e.code === 'Numpad1') debugForceWin(OMEN_TYPE.ONI);   // 10倍
+    }
+});
+
+    
     window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = false;
         if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = false;

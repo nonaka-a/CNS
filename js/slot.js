@@ -40,6 +40,7 @@ let slotActive = false;
 let slotCanvas, sCtx;
 let slotOverlay;
 let slotReqId;
+let slotParticles = []; 
 
 // アセット
 const omenImg = new Image();
@@ -52,6 +53,7 @@ ninjaImgs[2].src = 'images/slot/ninja3.png';
 
 // メダルデータ
 let medals = 50;
+let targetMedals = 50; // カウントアップ演出用
 let maxMedals = 50;
 let currentBet = 1;
 
@@ -59,7 +61,10 @@ let currentBet = 1;
 const STATE = { IDLE: 0, SPINNING: 1, STOPPING: 2, PAYOUT: 3 };
 let slotState = STATE.IDLE;
 let isReach = false;
-let payoutTime = 0; // 追加：結果表示開始時刻
+let payoutTime = 0;
+
+// 演出管理用の変数
+let winTextAnim = { active: false, x: 0, y: 0, targetX: 100, targetY: 50, timer: 0, text: "", amount: 0 };
 
 // タッチ/クリック兼用イベントハンドラ
 function addBtnListener(el, callback) {
@@ -160,6 +165,10 @@ function openSlot() {
     if (slotActive) return;
     slotActive = true;
 
+    // ここに追加：スロットを開くたびに演出をリセット
+    slotParticles = []; 
+    winTextAnim.active = false;
+
     loadMedalData();
     
     if (!omenConfig) {
@@ -215,8 +224,6 @@ function createModalBtn(text, id, callback, width = '150px') {
     wrap.appendChild(btn);
     return wrap;
 }
-
-// --- js/slot.js の createSlotDOM 関数および新規追加のヘルプ用関数 ---
 
 function createSlotDOM() {
     slotOverlay = document.createElement('div');
@@ -378,7 +385,7 @@ function createSlotDOM() {
         stopContainer.appendChild(sBtn);
     }
 
-    // STARTボタン
+    // STARTボタン (右側に移動)
     const startContainer = document.createElement('div');
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
@@ -386,7 +393,7 @@ function createSlotDOM() {
     const btnStart = createModalBtn('START', 'btn-slot-start', handleStartNext, '200px');
     startContainer.appendChild(btnStart);
 
-    // 設定ボタン (画面左)
+    // 設定ボタン (左側に移動)
     const btnSettings = document.createElement('div');
     btnSettings.className = 'v-btn settings-btn';
     btnSettings.innerText = '⚙️';
@@ -396,13 +403,13 @@ function createSlotDOM() {
     btnSettings.style.margin = '0';
     addBtnListener(btnSettings, () => toggleSettings());
 
-    // ヘルプボタン (設定ボタンの右隣)
+    // ヘルプボタン
     const btnHelp = document.createElement('div');
     btnHelp.className = 'v-btn settings-btn';
     btnHelp.innerText = '？';
     btnHelp.style.position = 'absolute';
     btnHelp.style.bottom = '60px';
-    btnHelp.style.left = '85px'; // 30px + 45px(width) + 10px margin
+    btnHelp.style.left = '85px';
     btnHelp.style.margin = '0';
     btnHelp.style.fontSize = '20px';
     addBtnListener(btnHelp, () => showSlotHelp());
@@ -453,13 +460,12 @@ function showSlotHelp() {
     windowEl.style.background = 'radial-gradient(circle, #4a4a4a 0%, #222 100%)';
     windowEl.style.border = '4px solid #8c6e5e';
     windowEl.style.boxShadow = 'inset 0 0 0 3px #111, 0 20px 60px rgba(0,0,0,0.9)';
-    windowEl.style.padding = '20px 15px'; // paddingを縮小
+    windowEl.style.padding = '20px 15px';
     windowEl.style.textAlign = 'center';
     windowEl.style.fontFamily = "'Sawarabi Mincho', serif";
     windowEl.style.color = '#fff';
     windowEl.style.overflow = 'hidden';
 
-    // 角の装飾
     ['m-tp-l', 'm-tp-r', 'm-bt-l', 'm-bt-r'].forEach(cls => {
         const c = document.createElement('div');
         c.className = `modal-corner ${cls}`;
@@ -479,8 +485,8 @@ function showSlotHelp() {
         const groupContainer = document.createElement('div');
         groupContainer.style.display = 'grid';
         groupContainer.style.gridTemplateColumns = `repeat(${group.cols}, 1fr)`;
-        groupContainer.style.gap = '8px'; // gapを縮小
-        groupContainer.style.marginBottom = '12px'; // marginを縮小
+        groupContainer.style.gap = '8px';
+        groupContainer.style.marginBottom = '12px';
         groupContainer.style.width = '100%';
 
         group.indices.forEach(index => {
@@ -490,7 +496,7 @@ function showSlotHelp() {
             row.style.alignItems = 'center';
             row.style.justifyContent = 'center';
             row.style.background = 'rgba(255,255,255,0.05)';
-            row.style.padding = '6px'; // paddingを縮小
+            row.style.padding = '6px';
             row.style.borderRadius = '4px';
 
             const iconsWrapper = document.createElement('div');
@@ -499,12 +505,12 @@ function showSlotHelp() {
 
             for (let i = 0; i < 3; i++) {
                 const icon = document.createElement('div');
-                icon.style.width = '50px'; // お面サイズを拡大
+                icon.style.width = '50px';
                 icon.style.height = '50px';
                 if (omenConfig && omenConfig.data[key]) {
                     const frame = omenConfig.data[key].frames[0];
                     icon.style.backgroundImage = 'url("images/Sprite/omen.png")';
-                    const scale = 50 / frame.w; // スケールを50px基準に
+                    const scale = 50 / frame.w;
                     icon.style.backgroundSize = `${omenImg.naturalWidth * scale}px ${omenImg.naturalHeight * scale}px`;
                     icon.style.backgroundPosition = `-${frame.x * scale}px -${frame.y * scale}px`;
                 }
@@ -514,11 +520,11 @@ function showSlotHelp() {
 
             const payoutText = document.createElement('div');
             payoutText.innerText = ` × ${group.rate}`;
-            payoutText.style.fontSize = '24px'; // フォントサイズを拡大
+            payoutText.style.fontSize = '24px';
             payoutText.style.marginLeft = '15px';
             payoutText.style.color = '#fbc02d';
             payoutText.style.fontWeight = 'bold';
-            payoutText.style.width = '60px'; // 幅を固定して揃える
+            payoutText.style.width = '60px';
             payoutText.style.textAlign = 'left';
             row.appendChild(payoutText);
 
@@ -527,7 +533,6 @@ function showSlotHelp() {
         windowEl.appendChild(groupContainer);
     });
 
-    // 補充説明
     const info = document.createElement('div');
     info.style.fontSize = '17px';
     info.style.lineHeight = '1.3';
@@ -539,7 +544,6 @@ function showSlotHelp() {
     info.innerText = '【メダル補充】毎日0時にメダルが50枚まで自動補充されます。';
     windowEl.appendChild(info);
 
-    // 閉じるボタン
     const closeBtnWrap = createModalBtn('閉じる', 'btn-help-close', () => {
         overlay.remove();
     }, '180px');
@@ -563,6 +567,7 @@ function loadMedalData() {
         localStorage.setItem('ninjaSlot_lastDate', todayStr);
         saveMedalData();
     }
+    targetMedals = medals; // 目標メダル数も同期
 }
 
 function saveMedalData() {
@@ -660,7 +665,8 @@ function handleStartNext() {
 }
 
 function startSlot() {
-    if (slotState !== STATE.IDLE || medals < currentBet) return;
+    if (slotState !== STATE.IDLE || targetMedals < currentBet) return;
+    targetMedals -= currentBet;
     medals -= currentBet;
     saveMedalData();
     slotState = STATE.SPINNING;
@@ -669,9 +675,9 @@ function startSlot() {
         setTimeout(() => {
             if (slotState === STATE.SPINNING) {
                 r.startSpin();
-                updateSlotUI(); // 各リールが回り始めたら「止」ボタンをアクティブにするためUIを更新
+                updateSlotUI(); 
             }
-        }, i * 150); // 150msずつ順番に回り始める
+        }, i * 150); 
     });
     playSE('shuriken', 0.8);
     updateSlotUI();
@@ -679,10 +685,26 @@ function startSlot() {
 
 function nextGame() {
     if (slotState !== STATE.PAYOUT) return;
-    if (currentBet > medals) currentBet = Math.max(1, medals);
+
+    // 演出中（テキスト移動中やカウントアップ中）に押されたら演出を即座に終了
+    if (winTextAnim.active || medals < targetMedals) {
+        winTextAnim.active = false;
+        medals = targetMedals; // メダルを目標値まで一気に加算
+        saveMedalData();
+        // ここでリターンせずにそのまま下の IDLE 移行処理へ進ませることで、1回で完了させる
+    }
+
+    // 次のゲームの準備
+    if (currentBet > targetMedals) currentBet = Math.max(1, targetMedals);
+    
+    // 状態をアイドルに戻し、UIを更新して「START」ボタンを表示させる
     slotState = STATE.IDLE;
     updateSlotUI();
+    
+    // 演出スキップ時の完了SE
+    playSE('sausage_get', 0.5);
 }
+
 
 function stopReel(index) {
     if (slotState !== STATE.SPINNING || !reels[index].isSpinning || reels[index].isStopping) return;
@@ -690,30 +712,24 @@ function stopReel(index) {
     updateSlotUI();
 }
 
+// --- js/slot.js ---
+
+// --- js/slot.js (後半部分の修正済み全コード) ---
+
+// --- js/slot.js (checkReelsから末尾までの一括置換用コード) ---
+
 function checkReels() {
     const spinningReels = reels.filter(r => r.isSpinning || r.isStopping);
     if (spinningReels.length === 1) {
         const stoppedReels = reels.filter(r => !r.isSpinning);
-        // 1番目と2番目のリールが揃っているか確認
         if (stoppedReels.length === 2 && stoppedReels[0].resultSymbol === stoppedReels[1].resultSymbol) {
             if (!isReach) {
                 isReach = true;
-                
-                // 揃っているお面の種類（インデックス）を取得
                 const symbolType = stoppedReels[0].resultSymbol;
                 const rate = PAYOUT_RATES[symbolType] || 2;
-
-                // 倍率に応じて3つ目のリールのスロースピードを調整
-                // デフォルト（×2, ×3）: 0.03
-                // ×5: 0.045
-                // ×10: 0.06 (通常スピード 0.1 の半分以上)
                 let slowSpeed = 0.03; 
-                if (rate === 5) {
-                    slowSpeed = 0.045;
-                } else if (rate === 10) {
-                    slowSpeed = 0.06;
-                }
-
+                if (rate === 5) slowSpeed = 0.045;
+                else if (rate === 10) slowSpeed = 0.06;
                 spinningReels[0].speed = slowSpeed; 
                 playSE('gather_energy', 0.5);
             }
@@ -729,14 +745,62 @@ function checkReels() {
         if (s1 === s2 && s2 === s3) {
             const rate = PAYOUT_RATES[s1] || 0;
             const winAmount = currentBet * rate;
-            medals += winAmount;
-            saveMedalData();
+            
+            // 目標メダル数を設定
+            targetMedals = medals + winAmount;
+
+            // 倍率によってベースサイズを変更
+            let fSize = 72;
+            if (rate === 5) fSize = 92;
+            else if (rate === 10) fSize = 120;
+
+            winTextAnim = {
+                active: true,
+                x: SLOT_WIDTH / 2,
+                y: reels[0].y + 20,
+                targetX: 130, // メダルUIのX座標
+                targetY: 45,  // メダルUIのY座標
+                timer: 0,
+                text: `${winAmount}枚GET!!`,
+                amount: winAmount,
+                baseSize: fSize
+            };
+
+            // 倍率に応じたエフェクト
+            if (rate === 5) {
+                if (typeof screenShake !== 'undefined') screenShake = 20;
+                spawnWinParticles(50);
+            }
+            if (rate === 10) {
+                if (typeof screenShake !== 'undefined') screenShake = 50;
+                spawnWinParticles(100);
+            }
+
             if (s1 === OMEN_TYPE.ONI) playSE('roar', 1.0); 
             else playSE('sausage_get', 1.0); 
         } else {
             playSE('damage', 0.5);
         }
         updateSlotUI();
+    }
+}
+
+function spawnWinParticles(count) {
+    if (typeof slotParticles === 'undefined') slotParticles = [];
+    for (let i = 0; i < count; i++) {
+        const originX = SLOT_WIDTH / 2;
+        const originY = SLOT_HEIGHT / 2;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 5 + Math.random() * 15;
+        slotParticles.push({
+            x: originX, y: originY,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1.0,
+            size: 5 + Math.random() * 10,
+            color: `hsl(${Math.random() * 40 + 40}, 100%, 60%)`,
+            friction: 0.96
+        });
     }
 }
 
@@ -747,23 +811,47 @@ function closeSlot() {
         slotOverlay.parentNode.removeChild(slotOverlay);
     }
     slotOverlay = null;
-    if (typeof bgmSlot !== 'undefined') {
-        bgmSlot.pause();
-    }
+    if (typeof bgmSlot !== 'undefined') bgmSlot.pause();
     if(typeof window.updateBtnRects === 'function') window.updateBtnRects();
 }
 
 function slotLoop() {
     if (!slotActive) return;
     sCtx.clearRect(0, 0, SLOT_WIDTH, SLOT_HEIGHT);
+
+    const isWin = (slotState === STATE.PAYOUT && reels[0].resultSymbol === reels[1].resultSymbol && reels[1].resultSymbol === reels[2].resultSymbol);
+    const isGlowing = isWin && winTextAnim.active && winTextAnim.timer < 2.0;
+
+    if (isGlowing) {
+        const glowAlpha = 0.2 + Math.sin(Date.now() / 100) * 0.15;
+        sCtx.save();
+        sCtx.globalCompositeOperation = 'lighter';
+        for (let i = 0; i < 3; i++) {
+            const grad = sCtx.createRadialGradient(reels[i].x, reels[i].y, 0, reels[i].x, reels[i].y, 120);
+            grad.addColorStop(0, `rgba(255, 255, 200, ${glowAlpha * 2})`);
+            grad.addColorStop(1, `rgba(255, 200, 0, 0)`);
+            sCtx.fillStyle = grad;
+            sCtx.beginPath();
+            sCtx.arc(reels[i].x, reels[i].y, 120, 0, Math.PI * 2);
+            sCtx.fill();
+        }
+        sCtx.restore();
+    }
+
     for (let i = 0; i < 3; i++) {
         const img = ninjaImgs[i];
         if (img.complete && img.naturalWidth > 0) {
             const nw = img.naturalWidth;
             const nh = img.naturalHeight;
+            sCtx.save();
+            if (isGlowing) {
+                sCtx.shadowBlur = 30; sCtx.shadowColor = "#fff";
+            }
             sCtx.drawImage(img, reels[i].x - nw / 2, reels[i].y - nh / 4.8 - 15, nw, nh);
+            sCtx.restore();
         }
     }
+
     sCtx.save();
     sCtx.beginPath();
     sCtx.rect(50, reels[0].y - 130, SLOT_WIDTH - 100, 280);
@@ -773,30 +861,125 @@ function slotLoop() {
         r.draw(sCtx);
     });
     sCtx.restore();
-    if (slotState === STATE.PAYOUT && (Date.now() - payoutTime < 3000)) {
-        if (reels[0].resultSymbol === reels[1].resultSymbol && reels[1].resultSymbol === reels[2].resultSymbol) {
-            const winAmount = currentBet * PAYOUT_RATES[reels[0].resultSymbol];
-            sCtx.save();
-            sCtx.globalCompositeOperation = 'lighter';
-            sCtx.fillStyle = `rgba(255, 255, 0, ${0.5 + Math.sin(Date.now()/50)*0.5})`;
-            sCtx.fillRect(100, reels[0].y - 70, SLOT_WIDTH - 200, 140);
-            sCtx.restore();
-            sCtx.fillStyle = '#ff1493';
-            sCtx.strokeStyle = '#fff';
-            sCtx.lineWidth = 4;
-            sCtx.font = "bold 48px 'Sawarabi Mincho', serif";
-            sCtx.textAlign = "center";
-            const text = `${winAmount} WIN!!`;
-            sCtx.strokeText(text, SLOT_WIDTH / 2, reels[0].y + 20);
-            sCtx.fillText(text, SLOT_WIDTH / 2, reels[0].y + 20);
+
+    if (slotParticles.length > 0) {
+        sCtx.save();
+        sCtx.globalCompositeOperation = 'lighter';
+        for (let i = slotParticles.length - 1; i >= 0; i--) {
+            const p = slotParticles[i];
+            p.vx *= p.friction; p.vy *= p.friction;
+            p.x += p.vx; p.y += p.vy;
+            p.life -= 0.015;
+            if (p.life <= 0) { slotParticles.splice(i, 1); continue; }
+            sCtx.globalAlpha = p.life;
+            sCtx.fillStyle = p.color;
+            sCtx.beginPath(); sCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); sCtx.fill();
+            sCtx.shadowBlur = 15; sCtx.shadowColor = p.color;
         }
-    } else if (isReach) {
-        sCtx.fillStyle = '#ff0';
-        sCtx.font = "bold 36px 'Sawarabi Mincho', serif";
-        sCtx.textAlign = "center";
-        if (Math.floor(Date.now() / 100) % 2 === 0) {
-            sCtx.fillText("REACH!!", SLOT_WIDTH / 2, reels[0].y - 90);
+        sCtx.restore();
+    }
+
+    if (winTextAnim.active) {
+        winTextAnim.timer += 0.016; 
+        let currentX = winTextAnim.x;
+        let currentY = winTextAnim.y;
+        let scale = 1.0;
+        let fontSize = winTextAnim.baseSize || 72;
+
+        if (winTextAnim.timer < 2.0) {
+            // バウンス演出 (0% -> 110% -> 100%)
+            const bounceDuration = 0.4;
+            const t = winTextAnim.timer / bounceDuration;
+            if (t < 1.0) {
+                if (t < 0.7) scale = (t / 0.7) * 1.1;
+                else scale = 1.1 - ((t - 0.7) / 0.3) * 0.1;
+            } else scale = 1.0;
+        } else {
+            // 移動演出
+            const moveT = (winTextAnim.timer - 2.0) / 0.4; 
+            if (moveT >= 1.0) {
+                winTextAnim.active = false;
+            } else {
+                const easedT = moveT * moveT; 
+                currentX = winTextAnim.x + (winTextAnim.targetX - winTextAnim.x) * easedT;
+                currentY = winTextAnim.y + (winTextAnim.targetY - winTextAnim.y) * easedT;
+                scale = 1.0 - easedT * 0.5; 
+            }
+        }
+        
+        if (winTextAnim.active) {
+            sCtx.save();
+            sCtx.translate(currentX, currentY);
+            sCtx.scale(scale, scale);
+            sCtx.font = `900 ${fontSize}px 'Sawarabi Mincho', serif`;
+            sCtx.textAlign = "center";
+            sCtx.textBaseline = "middle";
+            sCtx.shadowColor = "rgba(0,0,0,0.8)";
+            sCtx.shadowBlur = 12; sCtx.shadowOffsetX = 5; sCtx.shadowOffsetY = 5;
+            const grad = sCtx.createLinearGradient(0, -fontSize/2, 0, fontSize/2);
+            grad.addColorStop(0, "#fff"); grad.addColorStop(0.5, "#ffeb3b"); grad.addColorStop(1, "#fbc02d");
+            sCtx.lineWidth = 10; sCtx.strokeStyle = "#4a2a1a";
+            sCtx.strokeText(winTextAnim.text, 0, 0);
+            sCtx.fillStyle = grad; sCtx.fillText(winTextAnim.text, 0, 0);
+            sCtx.restore();
         }
     }
+
+    // カウントアップ処理（勝利演出中以外、かつ目標に届いていない場合）
+    if (slotState === STATE.PAYOUT && !winTextAnim.active && medals < targetMedals) {
+        const addAmount = Math.max(1, Math.ceil((targetMedals - medals) / 10));
+        medals += addAmount;
+        if (medals >= targetMedals) {
+            medals = targetMedals;
+            playSE('sausage_get', 0.8);
+        } else if (medals % 2 === 0) {
+            playSE('jump1', 0.1); 
+        }
+        saveMedalData();
+        updateSlotUI();
+    }
+
+    if (isReach && slotState === STATE.SPINNING) {
+        const reachScale = 1.0 + Math.sin(Date.now() / 200) * 0.05;
+        sCtx.save();
+        sCtx.translate(SLOT_WIDTH / 2, 450); // 止めるボタンの上あたり
+        sCtx.scale(reachScale, reachScale);
+        sCtx.font = "900 52px 'Sawarabi Mincho', serif";
+        sCtx.textAlign = "center"; sCtx.textBaseline = "middle";
+        sCtx.shadowColor = "rgba(0,0,0,0.8)"; sCtx.shadowBlur = 8; sCtx.shadowOffsetX = 3; sCtx.shadowOffsetY = 3;
+        const reachGrad = sCtx.createLinearGradient(0, -25, 0, 25);
+        reachGrad.addColorStop(0, "#fff"); reachGrad.addColorStop(0.5, "#ff5e5e"); reachGrad.addColorStop(1, "#d32f2f");
+        sCtx.lineWidth = 8; sCtx.strokeStyle = "#2e1a1a";
+        sCtx.strokeText("REACH!!", 0, 0);
+        sCtx.fillStyle = reachGrad; sCtx.fillText("REACH!!", 0, 0);
+        sCtx.restore();
+    }
     slotReqId = requestAnimationFrame(slotLoop);
+}
+
+function debugForceWin(symbolType) {
+    if (slotState !== STATE.SPINNING) return;
+    reels.forEach(reel => {
+        reel.isSpinning = true;
+        reel.isStopping = true;
+        const targetIdx = REEL_STRIP.indexOf(symbolType);
+        if (targetIdx !== -1) reel.stopTarget = targetIdx;
+    });
+    updateSlotUI();
+}
+
+// nextGame関数もこちらで確実に上書きしてください
+function nextGame() {
+    if (slotState !== STATE.PAYOUT) return;
+    if (winTextAnim.active || medals < targetMedals) {
+        winTextAnim.active = false;
+        medals = targetMedals;
+        saveMedalData();
+        updateSlotUI();
+        playSE('sausage_get', 0.5);
+    } else {
+        if (currentBet > targetMedals) currentBet = Math.max(1, targetMedals);
+        slotState = STATE.IDLE;
+        updateSlotUI();
+    }
 }
