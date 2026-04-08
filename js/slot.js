@@ -216,6 +216,8 @@ function createModalBtn(text, id, callback, width = '150px') {
     return wrap;
 }
 
+// --- js/slot.js の createSlotDOM 関数および新規追加のヘルプ用関数 ---
+
 function createSlotDOM() {
     slotOverlay = document.createElement('div');
     slotOverlay.style.position = 'absolute';
@@ -380,19 +382,30 @@ function createSlotDOM() {
     const startContainer = document.createElement('div');
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
-    startContainer.style.left = '30px'; 
+    startContainer.style.right = '30px'; 
     const btnStart = createModalBtn('START', 'btn-slot-start', handleStartNext, '200px');
     startContainer.appendChild(btnStart);
 
-    // 設定ボタン
+    // 設定ボタン (画面左)
     const btnSettings = document.createElement('div');
     btnSettings.className = 'v-btn settings-btn';
     btnSettings.innerText = '⚙️';
     btnSettings.style.position = 'absolute';
     btnSettings.style.bottom = '60px';
-    btnSettings.style.right = '30px';
+    btnSettings.style.left = '30px';
     btnSettings.style.margin = '0';
     addBtnListener(btnSettings, () => toggleSettings());
+
+    // ヘルプボタン (設定ボタンの右隣)
+    const btnHelp = document.createElement('div');
+    btnHelp.className = 'v-btn settings-btn';
+    btnHelp.innerText = '？';
+    btnHelp.style.position = 'absolute';
+    btnHelp.style.bottom = '60px';
+    btnHelp.style.left = '85px'; // 30px + 45px(width) + 10px margin
+    btnHelp.style.margin = '0';
+    btnHelp.style.fontSize = '20px';
+    addBtnListener(btnHelp, () => showSlotHelp());
 
     const originalBackToTitle = window.backToTitle;
     window.backToTitle = function() {
@@ -408,11 +421,130 @@ function createSlotDOM() {
     container.appendChild(stopContainer);
     container.appendChild(startContainer);
     container.appendChild(btnSettings);
+    container.appendChild(btnHelp);
     slotOverlay.appendChild(container);
 
     const wrapper = document.getElementById('main-wrapper');
     if(wrapper) wrapper.appendChild(slotOverlay);
     else document.body.appendChild(slotOverlay);
+}
+
+// ヘルプウィンドウを表示する関数
+function showSlotHelp() {
+    if (document.getElementById('slot-help-overlay')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'slot-help-overlay';
+    overlay.style.position = 'absolute';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.background = 'rgba(0,0,0,0.85)';
+    overlay.style.display = 'flex';
+    overlay.style.justifyContent = 'center';
+    overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '6000';
+    overlay.style.pointerEvents = 'auto';
+
+    const windowEl = document.createElement('div');
+    windowEl.style.position = 'relative';
+    windowEl.style.width = '900px'; 
+    windowEl.style.background = 'radial-gradient(circle, #4a4a4a 0%, #222 100%)';
+    windowEl.style.border = '4px solid #8c6e5e';
+    windowEl.style.boxShadow = 'inset 0 0 0 3px #111, 0 20px 60px rgba(0,0,0,0.9)';
+    windowEl.style.padding = '30px 20px';
+    windowEl.style.textAlign = 'center';
+    windowEl.style.fontFamily = "'Sawarabi Mincho', serif";
+    windowEl.style.color = '#fff';
+    windowEl.style.overflow = 'hidden'; // スクロールバーを完全に除去
+
+    // 角の装飾
+    ['m-tp-l', 'm-tp-r', 'm-bt-l', 'm-bt-r'].forEach(cls => {
+        const c = document.createElement('div');
+        c.className = `modal-corner ${cls}`;
+        windowEl.appendChild(c);
+    });
+
+    const groups = [
+        { rate: 10, indices: [OMEN_TYPE.ONI], cols: 1 },
+        { rate: 5, indices: [OMEN_TYPE.KITUNE, OMEN_TYPE.DAN], cols: 2 },
+        { rate: 3, indices: [OMEN_TYPE.TENGU, OMEN_TYPE.JEI, OMEN_TYPE.SENTAI], cols: 3 },
+        { rate: 2, indices: [OMEN_TYPE.OKAME, OMEN_TYPE.HYO, OMEN_TYPE.KAMEN], cols: 3 }
+    ];
+
+    const keys = ["oni", "kitune", "dan", "tengu", "jei", "sentai", "okame", "hyo", "kamen"];
+
+    groups.forEach(group => {
+        const groupContainer = document.createElement('div');
+        groupContainer.style.display = 'grid';
+        groupContainer.style.gridTemplateColumns = `repeat(${group.cols}, 1fr)`;
+        groupContainer.style.gap = '10px';
+        groupContainer.style.marginBottom = '15px';
+        groupContainer.style.width = '100%';
+
+        group.indices.forEach(index => {
+            const key = keys[index];
+            const row = document.createElement('div');
+            row.style.display = 'flex';
+            row.style.alignItems = 'center';
+            row.style.justifyContent = 'center';
+            row.style.background = 'rgba(255,255,255,0.05)';
+            row.style.padding = '8px';
+            row.style.borderRadius = '4px';
+
+            const iconsWrapper = document.createElement('div');
+            iconsWrapper.style.display = 'flex';
+            iconsWrapper.style.gap = '2px';
+
+            for (let i = 0; i < 3; i++) {
+                const icon = document.createElement('div');
+                icon.style.width = '42px';
+                icon.style.height = '42px';
+                if (omenConfig && omenConfig.data[key]) {
+                    const frame = omenConfig.data[key].frames[0];
+                    icon.style.backgroundImage = 'url("images/Sprite/omen.png")';
+                    const scale = 42 / frame.w;
+                    icon.style.backgroundSize = `${omenImg.naturalWidth * scale}px ${omenImg.naturalHeight * scale}px`;
+                    icon.style.backgroundPosition = `-${frame.x * scale}px -${frame.y * scale}px`;
+                }
+                iconsWrapper.appendChild(icon);
+            }
+            row.appendChild(iconsWrapper);
+
+            const payoutText = document.createElement('div');
+            payoutText.innerText = ` × ${group.rate}`;
+            payoutText.style.fontSize = '22px';
+            payoutText.style.marginLeft = '12px';
+            payoutText.style.color = '#fbc02d';
+            payoutText.style.fontWeight = 'bold';
+            row.appendChild(payoutText);
+
+            groupContainer.appendChild(row);
+        });
+        windowEl.appendChild(groupContainer);
+    });
+
+    // 補充説明
+    const info = document.createElement('div');
+    info.style.fontSize = '17px';
+    info.style.lineHeight = '1.4';
+    info.style.background = 'rgba(0,0,0,0.3)';
+    info.style.padding = '12px';
+    info.style.borderRadius = '5px';
+    info.style.marginTop = '5px';
+    info.style.marginBottom = '20px';
+    info.innerText = '【メダル補充】毎日0時にメダルが50枚まで自動補充されます。';
+    windowEl.appendChild(info);
+
+    // 閉じるボタン
+    const closeBtnWrap = createModalBtn('閉じる', 'btn-help-close', () => {
+        overlay.remove();
+    }, '180px');
+    windowEl.appendChild(closeBtnWrap);
+
+    overlay.appendChild(windowEl);
+    slotOverlay.appendChild(overlay);
 }
 
 function loadMedalData() {
