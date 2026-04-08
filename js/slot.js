@@ -279,8 +279,8 @@ function createSlotDOM() {
     maxText.style.position = 'absolute';
     maxText.style.top = '20px';
     maxText.style.right = '30px';
-    maxText.style.color = '#ccc';
-    maxText.style.fontSize = '18px';
+    maxText.style.color = '#fff';
+    maxText.style.fontSize = '24px';
     maxText.style.fontFamily = "'Sawarabi Mincho', serif";
     maxText.style.textShadow = '2px 2px 4px #000';
 
@@ -312,6 +312,8 @@ function createSlotDOM() {
     betDisplay.style.fontFamily = "'Sawarabi Mincho', serif";
     betDisplay.style.fontWeight = 'bold';
     betDisplay.style.textShadow = '2px 2px 4px #000';
+    betDisplay.style.width = '80px';
+    betDisplay.style.textAlign = 'center';
 
     const btnBetDown = document.createElement('div');
     btnBetDown.id = 'btn-bet-down';
@@ -364,7 +366,7 @@ function createSlotDOM() {
     btnSettings.className = 'v-btn settings-btn';
     btnSettings.innerText = '⚙️';
     btnSettings.style.position = 'absolute';
-    btnSettings.style.bottom = '20px';
+    btnSettings.style.bottom = '60px';
     btnSettings.style.right = '30px';
     btnSettings.style.margin = '0';
     addBtnListener(btnSettings, () => toggleSettings());
@@ -415,9 +417,9 @@ function updateSlotUI() {
     if (!slotActive) return;
     
     const elMedal = document.getElementById('slot-medal-text');
-    if (elMedal) elMedal.innerText = `MEDAL: ${medals}`;
+    if (elMedal) elMedal.innerText = `メダル: ${medals}`;
     const elMax = document.getElementById('slot-max-text');
-    if (elMax) elMax.innerText = `MAX: ${maxMedals}`;
+    if (elMax) elMax.innerText = `MAXメダル数: ${maxMedals}`;
     const elBet = document.getElementById('slot-bet-display');
     if (elBet) elBet.innerText = currentBet + '枚';
 
@@ -432,7 +434,7 @@ function updateSlotUI() {
             innerStart.style.background = 'linear-gradient(to bottom, #ffebad, #f7d478)';
         }
         if (btnDown) btnDown.style.opacity = currentBet > 1 ? '1' : '0.5';
-        if (btnUp) btnUp.style.opacity = currentBet < 5 && currentBet < medals ? '1' : '0.5';
+        if (btnUp) btnUp.style.opacity = currentBet < 10 && currentBet < medals ? '1' : '0.5';
         if (wrapStart) wrapStart.style.opacity = medals >= currentBet ? '1' : '0.5';
     } else if (slotState === STATE.PAYOUT) {
         if (innerStart) {
@@ -485,7 +487,7 @@ function changeBet(amount) {
     if (slotState !== STATE.IDLE) return;
     currentBet += amount;
     if (currentBet < 1) currentBet = 1;
-    if (currentBet > 5) currentBet = 5;
+    if (currentBet > 10) currentBet = 10;
     if (currentBet > medals) currentBet = Math.max(1, medals);
     playSE('jump1', 0.5);
     updateSlotUI();
