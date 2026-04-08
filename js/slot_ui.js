@@ -163,7 +163,7 @@ function createSlotDOM() {
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
     startContainer.style.right = '30px'; 
-    const btnStart = createModalBtn('START', 'btn-slot-start', handleStartNext, '200px');
+    const btnStart = createModalBtn('スタート', 'btn-slot-start', handleStartNext, '200px');
     startContainer.appendChild(btnStart);
 
     // 設定ボタン
@@ -312,7 +312,7 @@ function updateSlotUI() {
 
     if (slotState === STATE.IDLE) {
         if (innerStart) {
-            innerStart.innerText = 'START';
+            innerStart.innerText = 'スタート';
             innerStart.style.background = 'linear-gradient(to bottom, #ffebad, #f7d478)';
         }
         if (btnDown) btnDown.style.opacity = currentBet > 1 ? '1' : '0.5';
