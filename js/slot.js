@@ -449,15 +449,15 @@ function showSlotHelp() {
 
     const windowEl = document.createElement('div');
     windowEl.style.position = 'relative';
-    windowEl.style.width = '900px'; 
+    windowEl.style.width = '920px'; 
     windowEl.style.background = 'radial-gradient(circle, #4a4a4a 0%, #222 100%)';
     windowEl.style.border = '4px solid #8c6e5e';
     windowEl.style.boxShadow = 'inset 0 0 0 3px #111, 0 20px 60px rgba(0,0,0,0.9)';
-    windowEl.style.padding = '30px 20px';
+    windowEl.style.padding = '20px 15px'; // paddingを縮小
     windowEl.style.textAlign = 'center';
     windowEl.style.fontFamily = "'Sawarabi Mincho', serif";
     windowEl.style.color = '#fff';
-    windowEl.style.overflow = 'hidden'; // スクロールバーを完全に除去
+    windowEl.style.overflow = 'hidden';
 
     // 角の装飾
     ['m-tp-l', 'm-tp-r', 'm-bt-l', 'm-bt-r'].forEach(cls => {
@@ -479,8 +479,8 @@ function showSlotHelp() {
         const groupContainer = document.createElement('div');
         groupContainer.style.display = 'grid';
         groupContainer.style.gridTemplateColumns = `repeat(${group.cols}, 1fr)`;
-        groupContainer.style.gap = '10px';
-        groupContainer.style.marginBottom = '15px';
+        groupContainer.style.gap = '8px'; // gapを縮小
+        groupContainer.style.marginBottom = '12px'; // marginを縮小
         groupContainer.style.width = '100%';
 
         group.indices.forEach(index => {
@@ -490,21 +490,21 @@ function showSlotHelp() {
             row.style.alignItems = 'center';
             row.style.justifyContent = 'center';
             row.style.background = 'rgba(255,255,255,0.05)';
-            row.style.padding = '8px';
+            row.style.padding = '6px'; // paddingを縮小
             row.style.borderRadius = '4px';
 
             const iconsWrapper = document.createElement('div');
             iconsWrapper.style.display = 'flex';
-            iconsWrapper.style.gap = '2px';
+            iconsWrapper.style.gap = '3px';
 
             for (let i = 0; i < 3; i++) {
                 const icon = document.createElement('div');
-                icon.style.width = '42px';
-                icon.style.height = '42px';
+                icon.style.width = '50px'; // お面サイズを拡大
+                icon.style.height = '50px';
                 if (omenConfig && omenConfig.data[key]) {
                     const frame = omenConfig.data[key].frames[0];
                     icon.style.backgroundImage = 'url("images/Sprite/omen.png")';
-                    const scale = 42 / frame.w;
+                    const scale = 50 / frame.w; // スケールを50px基準に
                     icon.style.backgroundSize = `${omenImg.naturalWidth * scale}px ${omenImg.naturalHeight * scale}px`;
                     icon.style.backgroundPosition = `-${frame.x * scale}px -${frame.y * scale}px`;
                 }
@@ -514,10 +514,12 @@ function showSlotHelp() {
 
             const payoutText = document.createElement('div');
             payoutText.innerText = ` × ${group.rate}`;
-            payoutText.style.fontSize = '22px';
-            payoutText.style.marginLeft = '12px';
+            payoutText.style.fontSize = '24px'; // フォントサイズを拡大
+            payoutText.style.marginLeft = '15px';
             payoutText.style.color = '#fbc02d';
             payoutText.style.fontWeight = 'bold';
+            payoutText.style.width = '60px'; // 幅を固定して揃える
+            payoutText.style.textAlign = 'left';
             row.appendChild(payoutText);
 
             groupContainer.appendChild(row);
@@ -528,12 +530,12 @@ function showSlotHelp() {
     // 補充説明
     const info = document.createElement('div');
     info.style.fontSize = '17px';
-    info.style.lineHeight = '1.4';
+    info.style.lineHeight = '1.3';
     info.style.background = 'rgba(0,0,0,0.3)';
-    info.style.padding = '12px';
+    info.style.padding = '10px';
     info.style.borderRadius = '5px';
-    info.style.marginTop = '5px';
-    info.style.marginBottom = '20px';
+    info.style.marginTop = '0px';
+    info.style.marginBottom = '15px';
     info.innerText = '【メダル補充】毎日0時にメダルが50枚まで自動補充されます。';
     windowEl.appendChild(info);
 
