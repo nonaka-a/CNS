@@ -165,7 +165,7 @@ function openSlot() {
     if (slotActive) return;
     slotActive = true;
 
-    // ここに追加：スロットを開くたびに演出をリセット
+    // スロットを開くたびに演出をリセット
     slotParticles = []; 
     winTextAnim.active = false;
 
@@ -284,7 +284,7 @@ function createSlotDOM() {
     medalText.style.zIndex = '5';
     medalInfo.appendChild(medalText);
 
-    // デバッグ用（座布団の外に配置）
+    // デバッグ用
     const btnDebug = document.createElement('div');
     btnDebug.innerText = '+50';
     btnDebug.style.position = 'absolute';
@@ -297,7 +297,7 @@ function createSlotDOM() {
     btnDebug.style.fontSize = '12px';
     btnDebug.style.cursor = 'pointer';
     btnDebug.style.textAlign = 'center';
-    addBtnListener(btnDebug, () => { medals += 50; playSE('sausage_get'); updateSlotUI(); });
+    addBtnListener(btnDebug, () => { targetMedals += 50; medals += 50; saveMedalData(); playSE('sausage_get'); updateSlotUI(); });
 
     // MAX
     const maxWrap = document.createElement('div');
@@ -385,7 +385,7 @@ function createSlotDOM() {
         stopContainer.appendChild(sBtn);
     }
 
-    // STARTボタン (右側に移動)
+    // STARTボタン
     const startContainer = document.createElement('div');
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
@@ -393,7 +393,7 @@ function createSlotDOM() {
     const btnStart = createModalBtn('START', 'btn-slot-start', handleStartNext, '200px');
     startContainer.appendChild(btnStart);
 
-    // 設定ボタン (左側に移動)
+    // 設定ボタン
     const btnSettings = document.createElement('div');
     btnSettings.className = 'v-btn settings-btn';
     btnSettings.innerText = '⚙️';
@@ -436,23 +436,17 @@ function createSlotDOM() {
     else document.body.appendChild(slotOverlay);
 }
 
-// ヘルプウィンドウを表示する関数
 function showSlotHelp() {
     if (document.getElementById('slot-help-overlay')) return;
 
     const overlay = document.createElement('div');
     overlay.id = 'slot-help-overlay';
     overlay.style.position = 'absolute';
-    overlay.style.top = '0';
-    overlay.style.left = '0';
-    overlay.style.width = '100%';
-    overlay.style.height = '100%';
+    overlay.style.top = '0'; overlay.style.left = '0';
+    overlay.style.width = '100%'; overlay.style.height = '100%';
     overlay.style.background = 'rgba(0,0,0,0.85)';
-    overlay.style.display = 'flex';
-    overlay.style.justifyContent = 'center';
-    overlay.style.alignItems = 'center';
-    overlay.style.zIndex = '6000';
-    overlay.style.pointerEvents = 'auto';
+    overlay.style.display = 'flex'; overlay.style.justifyContent = 'center'; overlay.style.alignItems = 'center';
+    overlay.style.zIndex = '6000'; overlay.style.pointerEvents = 'auto';
 
     const windowEl = document.createElement('div');
     windowEl.style.position = 'relative';
@@ -492,21 +486,16 @@ function showSlotHelp() {
         group.indices.forEach(index => {
             const key = keys[index];
             const row = document.createElement('div');
-            row.style.display = 'flex';
-            row.style.alignItems = 'center';
-            row.style.justifyContent = 'center';
+            row.style.display = 'flex'; row.style.alignItems = 'center'; row.style.justifyContent = 'center';
             row.style.background = 'rgba(255,255,255,0.05)';
-            row.style.padding = '6px';
-            row.style.borderRadius = '4px';
+            row.style.padding = '6px'; row.style.borderRadius = '4px';
 
             const iconsWrapper = document.createElement('div');
-            iconsWrapper.style.display = 'flex';
-            iconsWrapper.style.gap = '3px';
+            iconsWrapper.style.display = 'flex'; iconsWrapper.style.gap = '3px';
 
             for (let i = 0; i < 3; i++) {
                 const icon = document.createElement('div');
-                icon.style.width = '50px';
-                icon.style.height = '50px';
+                icon.style.width = '50px'; icon.style.height = '50px';
                 if (omenConfig && omenConfig.data[key]) {
                     const frame = omenConfig.data[key].frames[0];
                     icon.style.backgroundImage = 'url("images/Sprite/omen.png")';
@@ -534,19 +523,14 @@ function showSlotHelp() {
     });
 
     const info = document.createElement('div');
-    info.style.fontSize = '17px';
-    info.style.lineHeight = '1.3';
+    info.style.fontSize = '17px'; info.style.lineHeight = '1.3';
     info.style.background = 'rgba(0,0,0,0.3)';
-    info.style.padding = '10px';
-    info.style.borderRadius = '5px';
-    info.style.marginTop = '0px';
-    info.style.marginBottom = '15px';
+    info.style.padding = '10px'; info.style.borderRadius = '5px';
+    info.style.marginTop = '0px'; info.style.marginBottom = '15px';
     info.innerText = '【メダル補充】毎日0時にメダルが50枚まで自動補充されます。';
     windowEl.appendChild(info);
 
-    const closeBtnWrap = createModalBtn('閉じる', 'btn-help-close', () => {
-        overlay.remove();
-    }, '180px');
+    const closeBtnWrap = createModalBtn('閉じる', 'btn-help-close', () => { overlay.remove(); }, '180px');
     windowEl.appendChild(closeBtnWrap);
 
     overlay.appendChild(windowEl);
@@ -567,7 +551,7 @@ function loadMedalData() {
         localStorage.setItem('ninjaSlot_lastDate', todayStr);
         saveMedalData();
     }
-    targetMedals = medals; // 目標メダル数も同期
+    targetMedals = medals; 
 }
 
 function saveMedalData() {
@@ -685,38 +669,24 @@ function startSlot() {
 
 function nextGame() {
     if (slotState !== STATE.PAYOUT) return;
-
-    // 演出中（テキスト移動中やカウントアップ中）に押されたら演出を即座に終了
     if (winTextAnim.active || medals < targetMedals) {
         winTextAnim.active = false;
-        medals = targetMedals; // メダルを目標値まで一気に加算
+        medals = targetMedals;
         saveMedalData();
-        // ここでリターンせずにそのまま下の IDLE 移行処理へ進ませることで、1回で完了させる
+        updateSlotUI();
+        playSE('sausage_get', 0.5);
+    } else {
+        if (currentBet > targetMedals) currentBet = Math.max(1, targetMedals);
+        slotState = STATE.IDLE;
+        updateSlotUI();
     }
-
-    // 次のゲームの準備
-    if (currentBet > targetMedals) currentBet = Math.max(1, targetMedals);
-    
-    // 状態をアイドルに戻し、UIを更新して「START」ボタンを表示させる
-    slotState = STATE.IDLE;
-    updateSlotUI();
-    
-    // 演出スキップ時の完了SE
-    playSE('sausage_get', 0.5);
 }
-
 
 function stopReel(index) {
     if (slotState !== STATE.SPINNING || !reels[index].isSpinning || reels[index].isStopping) return;
     reels[index].stopSpin();
     updateSlotUI();
 }
-
-// --- js/slot.js ---
-
-// --- js/slot.js (後半部分の修正済み全コード) ---
-
-// --- js/slot.js (checkReelsから末尾までの一括置換用コード) ---
 
 function checkReels() {
     const spinningReels = reels.filter(r => r.isSpinning || r.isStopping);
@@ -745,11 +715,8 @@ function checkReels() {
         if (s1 === s2 && s2 === s3) {
             const rate = PAYOUT_RATES[s1] || 0;
             const winAmount = currentBet * rate;
-            
-            // 目標メダル数を設定
             targetMedals = medals + winAmount;
 
-            // 倍率によってベースサイズを変更
             let fSize = 72;
             if (rate === 5) fSize = 92;
             else if (rate === 10) fSize = 120;
@@ -758,15 +725,14 @@ function checkReels() {
                 active: true,
                 x: SLOT_WIDTH / 2,
                 y: reels[0].y + 20,
-                targetX: 130, // メダルUIのX座標
-                targetY: 45,  // メダルUIのY座標
+                targetX: 130, 
+                targetY: 45,  
                 timer: 0,
                 text: `${winAmount}枚GET!!`,
                 amount: winAmount,
                 baseSize: fSize
             };
 
-            // 倍率に応じたエフェクト
             if (rate === 5) {
                 if (typeof screenShake !== 'undefined') screenShake = 20;
                 spawnWinParticles(50);
@@ -887,7 +853,6 @@ function slotLoop() {
         let fontSize = winTextAnim.baseSize || 72;
 
         if (winTextAnim.timer < 2.0) {
-            // バウンス演出 (0% -> 110% -> 100%)
             const bounceDuration = 0.4;
             const t = winTextAnim.timer / bounceDuration;
             if (t < 1.0) {
@@ -895,7 +860,6 @@ function slotLoop() {
                 else scale = 1.1 - ((t - 0.7) / 0.3) * 0.1;
             } else scale = 1.0;
         } else {
-            // 移動演出
             const moveT = (winTextAnim.timer - 2.0) / 0.4; 
             if (moveT >= 1.0) {
                 winTextAnim.active = false;
@@ -914,18 +878,25 @@ function slotLoop() {
             sCtx.font = `900 ${fontSize}px 'Sawarabi Mincho', serif`;
             sCtx.textAlign = "center";
             sCtx.textBaseline = "middle";
-            sCtx.shadowColor = "rgba(0,0,0,0.8)";
-            sCtx.shadowBlur = 12; sCtx.shadowOffsetX = 5; sCtx.shadowOffsetY = 5;
+            
+            const shadowX = 4;
+            const shadowY = 4;
+            sCtx.lineWidth = 10;
+            sCtx.strokeStyle = "rgba(0,0,0,0.5)"; 
+            sCtx.strokeText(winTextAnim.text, shadowX, shadowY);
+            
             const grad = sCtx.createLinearGradient(0, -fontSize/2, 0, fontSize/2);
             grad.addColorStop(0, "#fff"); grad.addColorStop(0.5, "#ffeb3b"); grad.addColorStop(1, "#fbc02d");
-            sCtx.lineWidth = 10; sCtx.strokeStyle = "#4a2a1a";
+            
+            sCtx.lineWidth = 10;
+            sCtx.strokeStyle = "#4a2a1a";
             sCtx.strokeText(winTextAnim.text, 0, 0);
-            sCtx.fillStyle = grad; sCtx.fillText(winTextAnim.text, 0, 0);
+            sCtx.fillStyle = grad;
+            sCtx.fillText(winTextAnim.text, 0, 0);
             sCtx.restore();
         }
     }
 
-    // カウントアップ処理（勝利演出中以外、かつ目標に届いていない場合）
     if (slotState === STATE.PAYOUT && !winTextAnim.active && medals < targetMedals) {
         const addAmount = Math.max(1, Math.ceil((targetMedals - medals) / 10));
         medals += addAmount;
@@ -942,11 +913,17 @@ function slotLoop() {
     if (isReach && slotState === STATE.SPINNING) {
         const reachScale = 1.0 + Math.sin(Date.now() / 200) * 0.05;
         sCtx.save();
-        sCtx.translate(SLOT_WIDTH / 2, 450); // 止めるボタンの上あたり
+        sCtx.translate(SLOT_WIDTH / 2, 450); 
         sCtx.scale(reachScale, reachScale);
         sCtx.font = "900 52px 'Sawarabi Mincho', serif";
         sCtx.textAlign = "center"; sCtx.textBaseline = "middle";
-        sCtx.shadowColor = "rgba(0,0,0,0.8)"; sCtx.shadowBlur = 8; sCtx.shadowOffsetX = 3; sCtx.shadowOffsetY = 3;
+
+        const sX = 3;
+        const sY = 3;
+        sCtx.lineWidth = 8;
+        sCtx.strokeStyle = "rgba(0,0,0,0.4)";
+        sCtx.strokeText("REACH!!", sX, sY);
+
         const reachGrad = sCtx.createLinearGradient(0, -25, 0, 25);
         reachGrad.addColorStop(0, "#fff"); reachGrad.addColorStop(0.5, "#ff5e5e"); reachGrad.addColorStop(1, "#d32f2f");
         sCtx.lineWidth = 8; sCtx.strokeStyle = "#2e1a1a";
@@ -954,32 +931,6 @@ function slotLoop() {
         sCtx.fillStyle = reachGrad; sCtx.fillText("REACH!!", 0, 0);
         sCtx.restore();
     }
+
     slotReqId = requestAnimationFrame(slotLoop);
-}
-
-function debugForceWin(symbolType) {
-    if (slotState !== STATE.SPINNING) return;
-    reels.forEach(reel => {
-        reel.isSpinning = true;
-        reel.isStopping = true;
-        const targetIdx = REEL_STRIP.indexOf(symbolType);
-        if (targetIdx !== -1) reel.stopTarget = targetIdx;
-    });
-    updateSlotUI();
-}
-
-// nextGame関数もこちらで確実に上書きしてください
-function nextGame() {
-    if (slotState !== STATE.PAYOUT) return;
-    if (winTextAnim.active || medals < targetMedals) {
-        winTextAnim.active = false;
-        medals = targetMedals;
-        saveMedalData();
-        updateSlotUI();
-        playSE('sausage_get', 0.5);
-    } else {
-        if (currentBet > targetMedals) currentBet = Math.max(1, targetMedals);
-        slotState = STATE.IDLE;
-        updateSlotUI();
-    }
 }

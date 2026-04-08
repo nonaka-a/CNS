@@ -7,35 +7,28 @@ function subAction() {
 
 function setupControls() {
     window.addEventListener('keydown', (e) => {
-        if (isOpRunning) {
-            skipOP();
-            return;
-        }
-        // 矢印キーとWASDキーの連動
-        if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = true;
-        if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = true;
-        if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.ArrowUp = true;
-        if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.ArrowDown = true;
-        
-        // アクションキー
-        if (e.code === 'Space') jump();
-        if (e.code === 'KeyV') keys.Shoot = true;
-        if (e.code === 'KeyB') toggleMode();
-        if (e.code === 'KeyN') subAction();
+    if (isOpRunning) {
+        skipOP();
+        return;
+    }
+    // 矢印キーとWASDキーの連動
+    if (e.code === 'ArrowLeft' || e.code === 'KeyA') keys.ArrowLeft = true;
+    if (e.code === 'ArrowRight' || e.code === 'KeyD') keys.ArrowRight = true;
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') keys.ArrowUp = true;
+    if (e.code === 'ArrowDown' || e.code === 'KeyS') keys.ArrowDown = true;
+    
+    // アクションキー
+    if (e.code === 'Space') jump();
+    if (e.code === 'KeyV') keys.Shoot = true;
+    if (e.code === 'KeyB') toggleMode();
+    if (e.code === 'KeyN') subAction();
 
-        // 開発デバッグ用
-        if (e.code === 'Digit2') {
-            distance = goalDistance * 0.5 - 200;
-        }
-        if (e.code === 'Digit3') {
-            distance = goalDistance * 0.95 - 200;
-        }
-     // スロット動作中のみ有効なデバッグキー
-    if (typeof slotActive !== 'undefined' && slotActive && slotState === STATE.SPINNING) {
-        if (e.code === 'Digit2' || e.code === 'Numpad2') debugForceWin(OMEN_TYPE.OKAME); // 2倍
-        if (e.code === 'Digit3' || e.code === 'Numpad3') debugForceWin(OMEN_TYPE.TENGU); // 3倍
-        if (e.code === 'Digit5' || e.code === 'Numpad5') debugForceWin(OMEN_TYPE.KITUNE); // 5倍
-        if (e.code === 'Digit1' || e.code === 'Numpad1') debugForceWin(OMEN_TYPE.ONI);   // 10倍
+    // 開発デバッグ用
+    if (e.code === 'Digit2') {
+        distance = goalDistance * 0.5 - 200;
+    }
+    if (e.code === 'Digit3') {
+        distance = goalDistance * 0.95 - 200;
     }
 });
 
