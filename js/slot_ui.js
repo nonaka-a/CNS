@@ -230,6 +230,15 @@ function showSlotHelp() {
         const c = document.createElement('div'); c.className = `modal-corner ${cls}`; windowEl.appendChild(c);
     });
 
+    // --- 追加: 遊び方の基本説明文 ---
+    const topMsg = document.createElement('div');
+    topMsg.style.fontSize = '20px';
+    topMsg.style.marginBottom = '20px';
+    topMsg.style.color = '#ffebad';
+    topMsg.style.textShadow = '2px 2px 4px #000';
+    topMsg.innerText = '使うメダルの枚数を決めてスロットをスタート。同じお面が3つ揃ったらメダルがもらえるぞ。';
+    windowEl.appendChild(topMsg);
+
     const groups = [
         { rate: 10, indices: [OMEN_TYPE.ONI], cols: 1 },
         { rate: 5, indices: [OMEN_TYPE.KITUNE, OMEN_TYPE.DAN], cols: 2 },

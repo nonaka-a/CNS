@@ -243,11 +243,39 @@ function showClearScreen() {
     bgm.pause();
     bgm2.pause();
     
-    // クリア用のモーダル表示（既存のモーダルを流用、または新規作成も可能）
     const modalText = document.getElementById('modal-text');
     if (modalText) modalText.innerText = "GAME CLEAR!";
+    
+    // クリア時はサブテキストを空にする
+    const subText = document.getElementById('modal-subtext');
+    if (subText) subText.innerText = "";
+
     const overlay = document.getElementById('modal-overlay');
     if (overlay) overlay.style.display = 'flex';
+}
+
+function endGame(msg) {
+    gameOver = true;
+    isGameRunning = false;
+    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
+    bgm.pause();
+    bgm2.pause();
+
+    // メインテキストをGAME OVERに固定
+    document.getElementById('modal-text').innerText = "GAME OVER";
+
+    // メッセージの振り分け
+    let subMsg = "";
+    if (msg.includes("落下")) subMsg = "落下してしまった...";
+    else if (msg.includes("脱落")) subMsg = "残念、ミタマ脱落...";
+    else if (msg.includes("GAME OVER")) subMsg = "咲耶のライフが0になってしまった..";
+    else if (msg.includes("MITAMA DESTROYED")) subMsg = "ミタマのライフが0になってしまった..";
+    else subMsg = msg; // 予期せぬメッセージ用
+
+    const subTextElement = document.getElementById('modal-subtext');
+    if (subTextElement) subTextElement.innerText = subMsg;
+
+    document.getElementById('modal-overlay').style.display = 'flex';
 }
 
 function gameLoop(timestamp) {
@@ -265,16 +293,6 @@ function fitWindow() {
     const wrapper = document.getElementById('main-wrapper');
     const scale = Math.min(window.innerWidth / CANVAS_WIDTH, window.innerHeight / CANVAS_HEIGHT);
     wrapper.style.transform = `scale(${scale})`;
-}
-
-function endGame(msg) {
-    gameOver = true;
-    isGameRunning = false;
-    if (bgmFadeInterval) clearInterval(bgmFadeInterval);
-    bgm.pause();
-    bgm2.pause();
-    document.getElementById('modal-text').innerText = msg;
-    document.getElementById('modal-overlay').style.display = 'flex';
 }
 
 let settingsTimer = 0;

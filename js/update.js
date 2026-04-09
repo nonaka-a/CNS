@@ -124,7 +124,7 @@ function update() {
         } else {
             if (isSecondScene && !isHalfwayTransitioning && sakuya.jumpOffset > 500) {
                 sakuya.hp -= 10;
-                if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("落下..."); } 
+                if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("落下"); } 
                 else {
                     sakuya.jumpOffset = 0; sakuya.vy = 0; sakuya.invincibleTimer = 120; 
                     sakuya.x = 400; sakuya.groundY = 360; 
@@ -183,7 +183,7 @@ function update() {
              mitamaAlertTimer = 0;
         }
 
-        if (currentX < lostThreshold) endGame("ミタマ脱落..."); // 日本語表記に
+        if (currentX < lostThreshold) endGame("脱落"); 
     }
 
     if (mitamaConfig) {
@@ -196,11 +196,13 @@ function update() {
     }
 
     if (sakuya.invincibleTimer > 0) sakuya.invincibleTimer--;
-    
     if (mitama.invincibleTimer > 0) mitama.invincibleTimer--;
 
     if (sakuya.invincibleTimer === undefined) sakuya.invincibleTimer = 0;
     if (mitama.invincibleTimer === undefined) mitama.invincibleTimer = 0;
+
+    if (sakuya.hp <= 0) { sakuya.hp = 0; endGame("GAME OVER"); }
+    if (mitama.hp <= 0) { mitama.hp = 0; endGame("MITAMA DESTROYED"); }
 
     updateEntities(); // entities.js
 
