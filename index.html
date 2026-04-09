@@ -65,36 +65,45 @@
             <div id="debug-skip-btn-3" style="display: none;">3</div>
 
             <div id="title-screen">
-            <div id="title-window">
-                <div class="modal-corner m-tp-l"></div><div class="modal-corner m-tp-r"></div>
-                <div class="modal-corner m-bt-l"></div><div class="modal-corner m-bt-r"></div>
-                <div id="title-text">RunGunGuard</div>
-                
-                <!-- 1. 開始ボタン -->
-                <div class="modal-btn-wrap">
-                        <button id="start-btn" class="modal-btn" onclick="startGame()" ontouchend="startGame()"
-                            style="opacity: 0.5;">
-                            <span class="modal-btn-inner">Loading...</span>
-                        </button>
+                <div id="title-bg-layer">
+                    <div class="t-bg-base"></div>
+                    <div class="t-bg-light"></div>
+                    <div class="t-bg-street"></div>
+                    <div class="t-bg-rail"></div>
+                    <div class="t-bg-overlay"></div>
+                </div>
+                <div id="title-container">
+                    <img id="title-logo" src="images/Sprite/logo.png" alt="RunGunGuard">
+                    <div id="title-window">
+                        <div class="modal-corner m-tp-l"></div>
+                        <div class="modal-corner m-tp-r"></div>
+                        <div class="modal-corner m-bt-l"></div>
+                        <div class="modal-corner m-bt-r"></div>
+
+                        <!-- 1. 開始ボタン -->
+                        <div class="modal-btn-wrap">
+                            <button id="start-btn" class="modal-btn" onclick="startGame()" ontouchend="startGame()"
+                                style="opacity: 0.5;">
+                                <span class="modal-btn-inner">Loading...</span>
+                            </button>
+                        </div>
+                        <div class="modal-btn-wrap" style="margin-top: 20px;">
+                            <button id="roulette-btn" class="modal-btn" onclick="openSlot()" ontouchend="openSlot()"
+                                style="width: 250px;">
+                                <span class="modal-btn-inner"
+                                    style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">スロット</span>
+                            </button>
+                        </div>
+                        <div class="modal-btn-wrap" style="margin-top: 20px;">
+                            <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()"
+                                ontouchend="toggleSettings()" style="width: 250px;">
+                                <span class="modal-btn-inner"
+                                    style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">⚙️設定</span>
+                            </button>
+                        </div>
                     </div>
-                    <!-- ↓「心変わりの術スロット」を「スロット」に変更、widthを 380px から 250px に変更 -->
-                    <div class="modal-btn-wrap" style="margin-top: 20px;">
-                        <button id="roulette-btn" class="modal-btn" onclick="openSlot()" ontouchend="openSlot()"
-                            style="width: 250px;">
-                            <span class="modal-btn-inner"
-                                style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">スロット</span>
-                        </button>
-                    </div>
-                    <!-- ↓ここは変更せず、そのまま残す（設定ボタン） -->
-                    <div class="modal-btn-wrap" style="margin-top: 20px;">
-                        <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()"
-                            ontouchend="toggleSettings()" style="width: 250px;">
-                            <span class="modal-btn-inner"
-                                style="font-size: 18px; letter-spacing: 2px; text-indent: 2px;">⚙️設定</span>
-                        </button>
-                    </div>
+                </div>
             </div>
-        </div>
 
             <div class="hud" style="display: none;">
                 <div class="hp-row">

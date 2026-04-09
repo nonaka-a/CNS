@@ -302,11 +302,56 @@ body {
         /* タイトル画面用 */
         #title-screen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; justify-content: center; align-items: center; z-index: 2000;
+            background: #000; display: flex; justify-content: center; align-items: center; z-index: 2000;
             pointer-events: auto;
+            overflow: hidden;
+        }
+        #title-bg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+        .t-bg-base {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('images/BG/BG1.jpg') center/cover no-repeat;
+        }
+        .t-bg-light {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 350px;
+            background: url('images/Sprite/light.png') left bottom/auto 100% repeat-x;
+            opacity: 0.6;
+        }
+        .t-bg-street {
+            position: absolute; bottom: 140px; left: 150px; width: 100%; height: 480px;
+            background: url('images/BG/Streetlight_front.png') left bottom/auto 100% no-repeat;
+        }
+        .t-bg-rail {
+            position: absolute; bottom: 110px; left: 0; width: 100%; height: 110px;
+            /* background-sizeを120%以上にすることで画像を引き伸ばし、間隔を調整 */
+            background: url('images/BG/Guardrail.png') left bottom/650px 100% repeat-x;
+        }
+        .t-bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+        }
+       #title-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px; /* 5pxから15pxへ。近すぎた間隔を微調整 */
+            z-index: 2001;
+            margin-top: 20px;
+        }
+        #title-logo {
+            width: 650px;
+            height: auto;
+            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
+            /* position: relative; top: 15px; は近すぎたため削除 */
         }
         #title-window {
-            position: relative; width: 600px; padding: 60px;
+            position: relative; 
+            width: 320px;
+            padding: 25px 20px;
             background: radial-gradient(circle, #4a4a4a 0%, #222 100%);
             border: 4px solid #8c6e5e;
             box-shadow: inset 0 0 0 3px #111, 0 30px 80px rgba(0,0,0,1);
