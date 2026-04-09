@@ -181,3 +181,7 @@ const bgmSlot = new Audio('sound/BGM_slot.mp3');
 bgmSlot.loop = true;
 bgmSlot.volume = 0.4;
 bgmSlot.muted = !isSoundOn;
+
+function startTutorial() {
+    console.log("Tutorial started");
+}

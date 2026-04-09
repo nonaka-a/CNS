@@ -22,9 +22,18 @@ body {
             pointer-events: none; color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
         .hud {
-            position: absolute; top: 55px; left: 20px;
-            display: flex; flex-direction: column; gap: 8px;
-        }
+    position: absolute; top: 55px; left: 20px;
+    display: flex; flex-direction: column; gap: 8px;
+    z-index: 100; /* 明示的に指定 */
+}
+#progress-container {
+    /* ... */
+    z-index: 100;
+}
+#title-screen {
+    /* ... */
+    z-index: 2000;
+}
         .hp-row { display: flex; align-items: center; gap: 12px; }
         .hp-label { font-family: 'Sawarabi Mincho', serif; font-size: 18px; font-weight: 900; color: #fff; width: 80px; text-shadow: 2px 2px 4px #000; }
         .circles { display: flex; gap: 5px; }
@@ -142,7 +151,7 @@ body {
         /* カスタムモーダル（ウィンドウ） */
         #modal-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 1000;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 20000 !important;
             pointer-events: auto;
         }
         #modal-window {
@@ -201,11 +210,12 @@ body {
         .m-bt-r { bottom: -8px; right: -8px; }
         
         /* Settings Modal specific */
-        #settings-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 5000;
-            pointer-events: auto;
-        }
+       #settings-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; 
+    z-index: 21000 !important; /* スロットの10000より確実に上に表示させる */
+    pointer-events: auto;
+}
         #settings-window {
             position: relative; width: 350px; padding: 40px;
             background: radial-gradient(circle, #4a4a4a 0%, #222 100%);
@@ -342,15 +352,15 @@ body {
             z-index: 2001;
             margin-top: 20px; /* コンテナ全体の位置を元の高さに戻す */
         }
-       #title-logo {
-            width: 650px;
-            height: auto;
-            filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
-            position: relative;
-            /* 以前の設定（gap負の値による調整等）を考慮し、個別で数ピクセル上にオフセット */
-            top: -10px; 
-            z-index: 2002;
-        }
+      #title-logo {
+    width: 820px; /* 650pxから820pxに拡大 */
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.9));
+    position: relative;
+    top: 0; /* 位置調整をリセット */
+    z-index: 2002;
+    margin-bottom: 15px; /* ロゴとウィンドウの間の余白を確保 */
+}
         #title-window {
             position: relative; 
             width: 320px;

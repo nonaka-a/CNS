@@ -165,10 +165,14 @@ async function init() {
     }, 500);
 
     const startBtn = document.getElementById('start-btn');
+    const tutorialBtn = document.getElementById('tutorial-btn');
     if (startBtn) {
         startBtn.style.opacity = '1';
         const inner = startBtn.querySelector('.modal-btn-inner');
         if (inner) inner.innerText = '開始';
+    }
+    if (tutorialBtn) {
+        tutorialBtn.style.opacity = '1';
     }
 
     requestAnimationFrame(gameLoop);
@@ -183,17 +187,22 @@ function startGame() {
     bgm.volume = 0.4;
     bgm2.volume = 0.4;
     if (isSoundOn) bgm.play().catch(e => console.error("BGM playback failed:", e));
-    document.getElementById('title-screen').style.display = 'none';
+    
+    // タイトル画面を完全に非表示にする
+    const titleScreen = document.getElementById('title-screen');
+    if (titleScreen) titleScreen.style.display = 'none';
     
     if (opConfig) {
         isOpRunning = true;
         opTime = 0;
     } else {
+        // UIの表示を強制
         document.getElementById('progress-container').style.display = 'block';
         document.getElementById('ninjutsu-container').style.display = 'block';
         document.getElementById('debug-skip-btn').style.display = 'flex';
         document.getElementById('debug-skip-btn-3').style.display = 'flex';
-        document.querySelector('.hud').style.display = 'block';
+        const hud = document.querySelector('.hud');
+        if (hud) hud.style.display = 'block';
         document.getElementById('control-panel').style.display = 'flex';
         isIntro = true;
         if (window.updateBtnRects) window.updateBtnRects();

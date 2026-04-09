@@ -15,6 +15,7 @@ function createModalBtn(text, id, callback, width = '150px') {
 
 function createSlotDOM() {
     slotOverlay = document.createElement('div');
+    slotOverlay.id = 'slot-overlay';
     slotOverlay.style.position = 'absolute';
     slotOverlay.style.top = '0';
     slotOverlay.style.left = '0';
@@ -24,7 +25,8 @@ function createSlotDOM() {
     slotOverlay.style.display = 'flex';
     slotOverlay.style.justifyContent = 'center';
     slotOverlay.style.alignItems = 'center';
-    slotOverlay.style.zIndex = '3000';
+    slotOverlay.style.zIndex = '10000'; // スロットのベース
+    slotOverlay.style.pointerEvents = 'auto';
 
     const container = document.createElement('div');
     container.style.position = 'relative';
@@ -32,6 +34,8 @@ function createSlotDOM() {
     container.style.height = SLOT_HEIGHT + 'px';
     container.style.background = 'url("images/slot/BG_slot.jpg") center/cover no-repeat';
     container.style.overflow = 'hidden';
+    container.style.pointerEvents = 'auto';
+    container.style.zIndex = '1';
 
     slotCanvas = document.createElement('canvas');
     slotCanvas.width = SLOT_WIDTH;
@@ -39,6 +43,8 @@ function createSlotDOM() {
     slotCanvas.style.position = 'absolute';
     slotCanvas.style.top = '0';
     slotCanvas.style.left = '0';
+    slotCanvas.style.zIndex = '5'; 
+    slotCanvas.style.pointerEvents = 'none'; 
     sCtx = slotCanvas.getContext('2d');
 
     const applyZabutonStyle = (el) => {
@@ -46,6 +52,7 @@ function createSlotDOM() {
         el.style.border = '3px solid #8c6e5e';
         el.style.boxShadow = 'inset 0 0 0 2px #111, 0 4px 10px rgba(0,0,0,0.5)';
         el.style.padding = '5px 15px';
+        el.style.zIndex = '20';
         ['m-tp-l', 'm-tp-r', 'm-bt-l', 'm-bt-r'].forEach(cls => {
             const c = document.createElement('div');
             c.className = `modal-corner ${cls}`;
@@ -53,7 +60,6 @@ function createSlotDOM() {
         });
     };
 
-    // メダル情報
     const medalInfo = document.createElement('div');
     medalInfo.style.position = 'absolute';
     medalInfo.style.top = '20px';
@@ -69,10 +75,9 @@ function createSlotDOM() {
     medalText.style.fontSize = '24px';
     medalText.style.fontWeight = 'bold';
     medalText.style.position = 'relative';
-    medalText.style.zIndex = '5';
+    medalText.style.zIndex = '25';
     medalInfo.appendChild(medalText);
 
-    // MAX
     const maxWrap = document.createElement('div');
     maxWrap.style.position = 'absolute';
     maxWrap.style.top = '20px';
@@ -86,10 +91,9 @@ function createSlotDOM() {
     maxText.style.color = '#fff';
     maxText.style.fontSize = '24px';
     maxText.style.position = 'relative';
-    maxText.style.zIndex = '5';
+    maxText.style.zIndex = '25';
     maxWrap.appendChild(maxText);
 
-    // BET変更UI
     const betContainer = document.createElement('div');
     betContainer.id = 'slot-bet-container';
     betContainer.style.position = 'absolute';
@@ -100,6 +104,7 @@ function createSlotDOM() {
     betContainer.style.flexDirection = 'column';
     betContainer.style.alignItems = 'center';
     betContainer.style.gap = '15px';
+    betContainer.style.zIndex = '20';
 
     const btnBetUp = document.createElement('div');
     btnBetUp.id = 'btn-bet-up';
@@ -133,7 +138,6 @@ function createSlotDOM() {
     betContainer.appendChild(betDisplay);
     betContainer.appendChild(btnBetDown);
 
-    // 止めるボタン
     const stopContainer = document.createElement('div');
     stopContainer.id = 'slot-stop-container';
     stopContainer.style.position = 'absolute';
@@ -144,6 +148,7 @@ function createSlotDOM() {
     stopContainer.style.display = 'flex';
     stopContainer.style.justifyContent = 'space-between';
     stopContainer.style.pointerEvents = 'none';
+    stopContainer.style.zIndex = '20';
 
     for (let i = 0; i < 3; i++) {
         const sBtn = document.createElement('div');
@@ -158,15 +163,14 @@ function createSlotDOM() {
         stopContainer.appendChild(sBtn);
     }
 
-    // STARTボタン
     const startContainer = document.createElement('div');
     startContainer.style.position = 'absolute';
     startContainer.style.bottom = '60px'; 
     startContainer.style.right = '30px'; 
+    startContainer.style.zIndex = '20';
     const btnStart = createModalBtn('スタート', 'btn-slot-start', handleStartNext, '200px');
     startContainer.appendChild(btnStart);
 
-    // 設定ボタン
     const btnSettings = document.createElement('div');
     btnSettings.className = 'v-btn settings-btn';
     btnSettings.innerText = '⚙️';
@@ -174,9 +178,10 @@ function createSlotDOM() {
     btnSettings.style.bottom = '60px';
     btnSettings.style.left = '30px';
     btnSettings.style.margin = '0';
+    btnSettings.style.zIndex = '20';
+    btnSettings.style.pointerEvents = 'auto';
     addBtnListener(btnSettings, () => toggleSettings());
 
-    // ヘルプボタン
     const btnHelp = document.createElement('div');
     btnHelp.className = 'v-btn settings-btn';
     btnHelp.innerText = '？';
@@ -185,6 +190,8 @@ function createSlotDOM() {
     btnHelp.style.left = '85px';
     btnHelp.style.margin = '0';
     btnHelp.style.fontSize = '20px';
+    btnHelp.style.zIndex = '20';
+    btnHelp.style.pointerEvents = 'auto';
     addBtnListener(btnHelp, () => showSlotHelp());
 
     const originalBackToTitle = window.backToTitle;
@@ -204,8 +211,17 @@ function createSlotDOM() {
     slotOverlay.appendChild(container);
 
     const wrapper = document.getElementById('main-wrapper');
-    if(wrapper) wrapper.appendChild(slotOverlay);
-    else document.body.appendChild(slotOverlay);
+    if (wrapper) {
+        // modal-overlay または settings-overlay がある場合、それらの前に挿入して背後に回す
+        const ref = document.getElementById('modal-overlay') || document.getElementById('settings-overlay');
+        if (ref) {
+            wrapper.insertBefore(slotOverlay, ref);
+        } else {
+            wrapper.appendChild(slotOverlay);
+        }
+    } else {
+        document.body.appendChild(slotOverlay);
+    }
 }
 
 function showSlotHelp() {
