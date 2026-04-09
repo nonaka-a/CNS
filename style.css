@@ -342,12 +342,14 @@ body {
             z-index: 2001;
             margin-top: 20px; /* コンテナ全体の位置を元の高さに戻す */
         }
-        #title-logo {
+       #title-logo {
             width: 650px;
             height: auto;
             filter: drop-shadow(0 0 15px rgba(0, 0, 0, 0.8));
             position: relative;
-            z-index: 2002; /* ウィンドウより手前に表示する場合 */
+            /* 以前の設定（gap負の値による調整等）を考慮し、個別で数ピクセル上にオフセット */
+            top: -10px; 
+            z-index: 2002;
         }
         #title-window {
             position: relative; 
