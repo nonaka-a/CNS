@@ -79,33 +79,34 @@
                 <div id="title-container" style="pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
                     <img id="title-logo" src="images/Sprite/logo.png" alt="RunGunGuard">
                     
-                    <div id="title-window" style="width: 380px; pointer-events: auto;">
+                    <div id="title-window" style="width: 680px; pointer-events: auto;">
                         <div class="modal-corner m-tp-l"></div>
                         <div class="modal-corner m-tp-r"></div>
                         <div class="modal-corner m-bt-l"></div>
                         <div class="modal-corner m-bt-r"></div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 10px; justify-items: center;">
-                            <!-- 1行目：チュートリアル（黄色）と開始（緑） -->
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 12px; justify-items: center;">
+                            <!-- 1: チュートリアル（黄色） -->
                             <div class="modal-btn-wrap">
                                 <button id="tutorial-btn" class="modal-btn" onclick="startTutorial()" ontouchend="startTutorial()" style="width: 155px; height: 58px;">
                                     <span class="modal-btn-inner" style="font-size: 15px; letter-spacing: 1px; text-indent: 1px;">チュートリアル</span>
                                 </button>
                             </div>
+                            <!-- 2: 開始（緑） -->
                             <div class="modal-btn-wrap">
                                 <button id="start-btn" class="modal-btn" onclick="startGame()" ontouchend="startGame()" style="width: 155px; height: 58px; background: #6b8c5e; opacity: 0.5;">
                                     <span class="modal-btn-inner" style="font-size: 15px; letter-spacing: 1px; text-indent: 1px; background: linear-gradient(to bottom, #9fe65e, #abca55);">開始</span>
                                 </button>
                             </div>
-
-                            <!-- 2行目：スロット（黄色）と設定（グレー） -->
+                            <!-- 3: スロット（黄色） -->
                             <div class="modal-btn-wrap">
                                 <button id="roulette-btn" class="modal-btn" onclick="openSlot()" ontouchend="openSlot()" style="width: 155px; height: 58px;">
                                     <span class="modal-btn-inner" style="font-size: 15px; letter-spacing: 1px; text-indent: 1px;">スロット</span>
                                 </button>
                             </div>
+                            <!-- 4: 設定（黄色） -->
                             <div class="modal-btn-wrap">
-                                <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()" style="width: 155px; height: 58px; background: #555;">
+                                <button id="title-settings-btn" class="modal-btn" onclick="toggleSettings()" ontouchend="toggleSettings()" style="width: 155px; height: 58px;">
                                     <span class="modal-btn-inner" style="font-size: 15px; letter-spacing: 1px; text-indent: 1px;">⚙️設定</span>
                                 </button>
                             </div>
