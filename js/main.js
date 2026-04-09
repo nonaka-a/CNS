@@ -1,10 +1,31 @@
 let initDone = false;
+let loadingFrame = 0;
+let loadingTimer = 0;
+let loadingLoopId = null;
 
 async function init() {
     canvas = document.getElementById('gameCanvas');
     ctx = canvas.getContext('2d');
     canvas.width = CANVAS_WIDTH;
     canvas.height = CANVAS_HEIGHT;
+
+    // --- ロード画面のアニメーションループ開始 ---
+    const lCanvas = document.getElementById('loading-canvas');
+    const lCtx = lCanvas.getContext('2d');
+    const loadingImg = new Image();
+    loadingImg.src = 'images/Sprite/sakuya.png';
+
+    function loadingLoop(timestamp) {
+        lCtx.clearRect(0, 0, 256, 256);
+        if (loadingImg.complete) {
+            // sakuya.png の run_m (ミタマ抱え走り) は y=256 の段にあると想定
+            // 256x256ピクセルのフレームを4枚ループ
+            const frameIdx = Math.floor(timestamp / 100) % 4;
+            lCtx.drawImage(loadingImg, frameIdx * 256, 256, 256, 256, 0, 0, 256, 256);
+        }
+        loadingLoopId = requestAnimationFrame(loadingLoop);
+    }
+    requestAnimationFrame(loadingLoop);
 
     try {
         const response = await fetch('json/sakuya.json');
@@ -21,7 +42,7 @@ async function init() {
         const resDrone = await fetch('json/droneA.json');
         droneConfig = await resDrone.json();
 
-        const resOnibi = await fetch('json/onibi.json'); // 追加：鬼火の設定ロード
+        const resOnibi = await fetch('json/onibi.json'); 
         onibiConfig = await resOnibi.json();
 
         const resOP = await fetch('json/OP.json');
@@ -36,7 +57,6 @@ async function init() {
         const fixAssetPath = (p, type) => {
             if (!p) return p;
             if (p.startsWith('data:')) return p;
-            
             let normalized = p.replace(/\\/g, '/');
             if (type === 'audio') {
                 let subPath = normalized.includes('sound/') ? normalized.split('sound/')[1] : 
@@ -48,12 +68,9 @@ async function init() {
                 let subPath = normalized.includes('images/') ? normalized.split('images/')[1] : 
                               normalized.includes('image/') ? normalized.split('image/')[1] : 
                               normalized.split('/').pop();
-                
                 if (subPath.includes('/')) return `images/${subPath}`;
-
                 const bgPatterns = ['BG', 'Building', 'Gradation', 'Guardrail', 'Streetlight', 'vignette'];
                 const isBG = bgPatterns.some(pattern => subPath.startsWith(pattern));
-                
                 if (isBG) return `images/BG/${subPath}`;
                 else return `images/Sprite/${subPath}`;
             }
@@ -61,7 +78,6 @@ async function init() {
 
         const loadEventAssets = async (config) => {
             if (!config || !config.assets) return;
-
             const loadAsset = async (asset) => {
                 if (!asset) return;
                 if (asset.type === 'audio') {
@@ -72,25 +88,23 @@ async function init() {
                         const buffer = await response.arrayBuffer();
                         asset.audioBuffer = await audioCtx.decodeAudioData(buffer);
                     } catch (err) { console.error("Event Audio Load Error:", asset.name, err); }
-                } else if (asset.type === 'animation') {
+                } else if (asset.type === 'animation' || asset.type === 'image') {
                     asset.imgObj = new Image();
-                    asset.imgObj.src = fixAssetPath(asset.source, 'image');
-                } else if (asset.type === 'image') {
-                    asset.imgObj = new Image();
-                    asset.imgObj.src = fixAssetPath(asset.src, 'image');
+                    asset.imgObj.src = fixAssetPath(asset.type === 'animation' ? asset.source : asset.src, 'image');
+                    await new Promise(resolve => { asset.imgObj.onload = resolve; asset.imgObj.onerror = resolve; });
                 } else if (asset.type === 'folder' && asset.children) {
                     await Promise.all(asset.children.map(child => loadAsset(child)));
                 } else if (asset.type === 'comp' && asset.layers) {
-                    asset.layers.forEach(layer => {
+                    await Promise.all(asset.layers.map(async layer => {
                         if (layer.source && (!layer.imgObj || !layer.imgObj.src)) {
                             layer.imgObj = new Image();
                             layer.imgObj.src = fixAssetPath(layer.source, 'image');
+                            await new Promise(resolve => { layer.imgObj.onload = resolve; layer.imgObj.onerror = resolve; });
                         }
-                    });
+                    }));
                 }
             };
             await Promise.all(config.assets.map(asset => loadAsset(asset)));
-
             const comp = config.assets.find(a => a.id === "comp_1");
             if (comp) {
                 comp.layers.forEach(layer => {
@@ -105,13 +119,11 @@ async function init() {
                         }
                         return null;
                     })(refId, config.assets);
-                    
                     if (asset && asset.imgObj) layer.imgObj = asset.imgObj;
                 });
             }
         };
 
-        // OPとEDのアセットをプリロード
         if (opConfig) await loadEventAssets(opConfig);
         if (endConfig) await loadEventAssets(endConfig);
 
@@ -123,15 +135,16 @@ async function init() {
         await loadSE('puni', 'sound/puni.mp3');
         await loadSE('puni2', 'sound/puni2.mp3');
         await loadSE('flash', 'sound/flash.mp3');
-        await loadSE('gather_energy', 'sound/B_Gather_energy.mp3'); // ドローンB：チャージ
-        await loadSE('charge_dash', 'sound/B_Charge.mp3');         // ドローンB：突進
+        await loadSE('gather_energy', 'sound/B_Gather_energy.mp3');
+        await loadSE('charge_dash', 'sound/B_Charge.mp3');
         await loadSE('soft_flame', 'sound/C_Soft_flame.mp3');
-        await loadSE('damage', 'sound/damage.mp3'); // ダメージSE
-        await loadSE('sausage_get', 'sound/Sausage.mp3'); // ソーセージ取得SE
-        await loadSE('barrier', 'sound/Barrier.mp3'); // ボスバリアSE
-        await loadSE('roar', 'sound/roar.mp3'); // 巨大手裏剣SE
-        await loadSE('impact', 'sound/impact.mp3'); // ボス衝撃波SE
-        await loadSE('siren', 'sound/Siren.mp3'); // ミタマアラートSE
+        await loadSE('damage', 'sound/damage.mp3');
+        await loadSE('sausage_get', 'sound/Sausage.mp3');
+        await loadSE('barrier', 'sound/Barrier.mp3');
+        await loadSE('roar', 'sound/roar.mp3');
+        await loadSE('impact', 'sound/impact.mp3');
+        await loadSE('siren', 'sound/Siren.mp3');
+
     } catch (e) {
         console.error("Failed to load configs:", e);
     }
@@ -142,6 +155,14 @@ async function init() {
     
     sakuya.groundY = GROUND_Y_POS;
     initDone = true;
+
+    // --- ロード完了時の処理：ロード画面を隠してループ停止 ---
+    if (loadingLoopId) cancelAnimationFrame(loadingLoopId);
+    const loadingScreen = document.getElementById('loading-screen');
+    loadingScreen.style.opacity = '0';
+    setTimeout(() => {
+        loadingScreen.style.display = 'none';
+    }, 500);
 
     const startBtn = document.getElementById('start-btn');
     if (startBtn) {
@@ -192,9 +213,7 @@ function endOP() {
     if (!isOpRunning) return;
     isOpRunning = false;
     opTime = 0;
-
     if (typeof stopAllOPAudio === 'function') stopAllOPAudio();
-
     document.getElementById('progress-container').style.display = 'block';
     document.getElementById('ninjutsu-container').style.display = 'block';
     document.getElementById('debug-skip-btn').style.display = 'flex';
@@ -202,11 +221,9 @@ function endOP() {
     document.querySelector('.hud').style.display = 'block';
     document.getElementById('control-panel').style.display = 'flex';
     document.getElementById('skip-op-btn').style.display = 'none';
-
     requestAnimationFrame(() => {
         if (window.updateBtnRects) window.updateBtnRects();
     });
-
     sakuya.x = -100;
     isIntro = true;
 }
@@ -218,8 +235,6 @@ function startEndEvent() {
     }
     isEndingRunning = true;
     endTime = 0;
-    
-    // UIを隠す
     document.getElementById('progress-container').style.display = 'none';
     document.getElementById('ninjutsu-container').style.display = 'none';
     document.getElementById('debug-skip-btn').style.display = 'none';
@@ -242,14 +257,10 @@ function showClearScreen() {
     if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
     bgm2.pause();
-    
     const modalText = document.getElementById('modal-text');
     if (modalText) modalText.innerText = "GAME CLEAR!";
-    
-    // クリア時はサブテキストを空にする
     const subText = document.getElementById('modal-subtext');
     if (subText) subText.innerText = "";
-
     const overlay = document.getElementById('modal-overlay');
     if (overlay) overlay.style.display = 'flex';
 }
@@ -260,21 +271,15 @@ function endGame(msg) {
     if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
     bgm2.pause();
-
-    // メインテキストをGAME OVERに固定
     document.getElementById('modal-text').innerText = "GAME OVER";
-
-    // メッセージの振り分け
     let subMsg = "";
     if (msg.includes("落下")) subMsg = "落下してしまった...";
     else if (msg.includes("脱落")) subMsg = "残念、ミタマ脱落...";
     else if (msg.includes("GAME OVER")) subMsg = "咲耶のライフが0になってしまった..";
     else if (msg.includes("MITAMA DESTROYED")) subMsg = "ミタマのライフが0になってしまった..";
-    else subMsg = msg; // 予期せぬメッセージ用
-
+    else subMsg = msg;
     const subTextElement = document.getElementById('modal-subtext');
     if (subTextElement) subTextElement.innerText = subMsg;
-
     document.getElementById('modal-overlay').style.display = 'flex';
 }
 
@@ -300,7 +305,6 @@ function toggleSettings() {
     const now = Date.now();
     if (now - settingsTimer < 300) return;
     settingsTimer = now;
-
     const overlay = document.getElementById('settings-overlay');
     if (!overlay) return;
     if (overlay.style.display === 'flex') {
@@ -374,7 +378,7 @@ function toggleFullscreen() {
 function resetGameState() {
     distance = 0;
     bgDistance = 0;
-    spawnWaveIndex = 0; // 追加
+    spawnWaveIndex = 0;
     halfwayReached = false;
     goalThresholdReached = false;
     isHalfwayTransitioning = false;
@@ -396,7 +400,6 @@ function resetGameState() {
     isWhiteFading = false;
     whiteFadeAlpha = 0;
     isBgmFading = false;
-    
     sakuya.x = -150;
     sakuya.y = 0;
     sakuya.vx = 0;
@@ -410,7 +413,6 @@ function resetGameState() {
     sakuya.currentAnim = 'idle';
     sakuya.currentFrame = 0;
     sakuya.invincibleTimer = 0;
-    
     mitama.hp = 50;
     mitama.isHolding = true;
     mitama.currentAnim = 'idle';
@@ -419,12 +421,10 @@ function resetGameState() {
     mitama.jumpOffset = 0;
     mitama.vy = 0;
     mitama.invincibleTimer = 0;
-
     boss.hp = boss.maxHp;
     boss.visible = false;
     boss.x = -500;
     boss.isArrived = false;
-    
     bullets = [];
     enemies = [];
     onibis = [];
@@ -433,22 +433,13 @@ function resetGameState() {
     sakuya.healFlashTimer = 0;
     mitama.healFlashTimer = 0;
     enemyLasers = [];
-    onibis = []; // 追加：鬼火の初期化
     explosions = [];
     platforms = [];
     bgX = 0;
-
-    if (bgmFadeInterval) {
-        clearInterval(bgmFadeInterval);
-        bgmFadeInterval = null;
-    }
-    bgm.pause();
-    bgm2.pause();
-    bgm.volume = 0.4;
-    bgm2.volume = 0.4;
-    bgm.currentTime = 0;
-    bgm2.currentTime = 0;
-    
+    if (bgmFadeInterval) { clearInterval(bgmFadeInterval); bgmFadeInterval = null; }
+    bgm.pause(); bgm2.pause();
+    bgm.volume = 0.4; bgm2.volume = 0.4;
+    bgm.currentTime = 0; bgm2.currentTime = 0;
     const progressBar = document.getElementById('progress-bar');
     if (progressBar) progressBar.style.width = '0%';
     const progressMarker = document.getElementById('progress-halfway-marker');
