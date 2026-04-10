@@ -245,7 +245,7 @@ function renderPage1(container) {
     const sakuyaVisual = document.createElement('div'); sakuyaVisual.id = 'tu-sakuya-sprite';
     sakuyaVisual.style.width = '128px'; sakuyaVisual.style.height = '128px'; sakuyaVisual.style.backgroundImage = 'url("images/Sprite/sakuya.png")'; sakuyaVisual.style.backgroundSize = '512px 512px'; sakuyaVisual.style.marginBottom = '5px';
     layout.appendChild(sakuyaVisual);
-    const opOnlyText = document.createElement('div'); opOnlyText.innerText = '操作できるのは咲耶のみです'; opOnlyText.style.fontSize = '18px'; opOnlyText.style.color = '#fff'; opOnlyText.style.marginBottom = '15px';
+    const opOnlyText = document.createElement('div'); opOnlyText.innerText = '咲耶を操作できます'; opOnlyText.style.fontSize = '18px'; opOnlyText.style.color = '#fff'; opOnlyText.style.marginBottom = '15px';
     layout.appendChild(opOnlyText);
     const ctrlLayout = document.createElement('div'); ctrlLayout.style.display = 'flex'; ctrlLayout.style.justifyContent = 'space-around'; ctrlLayout.style.width = '100%'; ctrlLayout.style.alignItems = 'center';
     const dirPad = document.createElement('div'); dirPad.className = 'dir-pad'; dirPad.style.position = 'relative'; dirPad.style.margin = '0'; dirPad.style.transform = 'scale(0.7)';
