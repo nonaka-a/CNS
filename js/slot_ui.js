@@ -97,7 +97,7 @@ function createSlotDOM() {
     const betContainer = document.createElement('div');
     betContainer.id = 'slot-bet-container';
     betContainer.style.position = 'absolute';
-    betContainer.style.right = '120px';
+    betContainer.style.right = '105px'; // 15px右に移動 (120 -> 105)
     betContainer.style.top = '50%';
     betContainer.style.transform = 'translateY(-50%)';
     betContainer.style.display = 'flex';
