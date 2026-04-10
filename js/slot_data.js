@@ -38,6 +38,9 @@ ninjaImgs[0].src = 'images/slot/ninja1.png';
 ninjaImgs[1].src = 'images/slot/ninja2.png';
 ninjaImgs[2].src = 'images/slot/ninja3.png';
 
+const slotMedalImg = new Image();
+slotMedalImg.src = 'images/slot/medal.png';
+
 let medals = 50;
 let targetMedals = 50; 
 let maxMedals = 50;

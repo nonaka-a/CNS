@@ -33,6 +33,9 @@ async function openSlot() {
         const bgImg = new Image();
         bgImg.src = 'images/slot/BG_slot.jpg';
         loadAssets.push(checkImg(bgImg));
+        
+        // メダル画像 (slot_data.js で定義済み)
+        loadAssets.push(checkImg(slotMedalImg));
 
         await Promise.all(loadAssets);
     } catch (e) {
@@ -171,23 +174,25 @@ function checkReels() {
                 baseSize: fSize
             };
 
-            if (rate === 5) {
-                if (typeof screenShake !== 'undefined') screenShake = 20;
-                spawnWinParticles(50);
-            }
-            if (rate === 10) {
-                if (typeof screenShake !== 'undefined') screenShake = 50;
-                spawnWinParticles(100);
-            }
+                // 従来のパーティクル演出のみに戻す
+                if (rate === 10) {
+                    if (typeof screenShake !== 'undefined') screenShake = 50;
+                    spawnWinParticles(100);
+                } else if (rate === 5) {
+                    if (typeof screenShake !== 'undefined') screenShake = 20;
+                    spawnWinParticles(50);
+                } else if (rate > 0) {
+                    spawnWinParticles(30);
+                }
 
-            if (s1 === OMEN_TYPE.ONI) playSE('roar', 1.0); 
-            else playSE('sausage_get', 1.0); 
-        } else {
-            playSE('damage', 0.5);
+                if (s1 === OMEN_TYPE.ONI) playSE('roar', 1.0); 
+                else playSE('sausage_get', 1.0); 
+            } else {
+                playSE('damage', 0.5);
+            }
+            updateSlotUI();
         }
-        updateSlotUI();
     }
-}
 
 function spawnWinParticles(count) {
     if (typeof slotParticles === 'undefined') slotParticles = [];

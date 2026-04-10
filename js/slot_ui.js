@@ -194,6 +194,15 @@ function createSlotDOM() {
     btnHelp.style.pointerEvents = 'auto';
     addBtnListener(btnHelp, () => showSlotHelp());
 
+    const betMedalsContainer = document.createElement('div');
+    betMedalsContainer.id = 'slot-bet-medals-container';
+    betMedalsContainer.style.position = 'absolute';
+    betMedalsContainer.style.bottom = '165px'; // さらに30pxアップ
+    betMedalsContainer.style.left = '60px'; 
+    betMedalsContainer.style.pointerEvents = 'none';
+    betMedalsContainer.style.zIndex = '15';
+    container.appendChild(betMedalsContainer);
+
     const originalBackToTitle = window.backToTitle;
     window.backToTitle = function() {
         closeSlot();
@@ -324,6 +333,26 @@ function updateSlotUI() {
     if (elMax) elMax.innerText = `ベスト: ${maxMedals}`;
     const elBet = document.getElementById('slot-bet-display');
     if (elBet) elBet.innerText = currentBet + '枚';
+
+    const medalCont = document.getElementById('slot-bet-medals-container');
+    if (medalCont) {
+        if (slotState === STATE.PAYOUT) {
+            medalCont.style.display = 'none';
+        } else {
+            medalCont.style.display = 'block';
+            medalCont.innerHTML = '';
+            const stackLimit = currentBet;
+            for (let i = 0; i < stackLimit; i++) {
+                const img = document.createElement('img');
+                img.src = 'images/slot/medal.png';
+                img.style.position = 'absolute';
+                img.style.bottom = (i * 15) + 'px'; // 重なりを少し離す
+                img.style.left = '0';
+                img.style.width = '120px';
+                medalCont.appendChild(img);
+            }
+        }
+    }
 
     const btnDown = document.getElementById('btn-bet-down');
     const btnUp = document.getElementById('btn-bet-up');
