@@ -72,6 +72,9 @@ function setupControls() {
     });
 
     const handleTouch = (e) => {
+        // クレジット画面内などのスクロールが必要な要素ではデフォルト動作（スクロール）を許可
+        if (e.target.closest('#credits-window')) return;
+        
         if (e.cancelable) e.preventDefault();
         
         if (isOpRunning) {

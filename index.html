@@ -113,6 +113,8 @@
                         </div>
                     </div>
                 </div>
+                <!-- クレジットボタン -->
+                <div id="info-btn" onclick="toggleCredits()" ontouchend="toggleCredits()">i</div>
             </div>
 
             <div class="hud" style="display: none; pointer-events: auto;">
@@ -192,6 +194,49 @@
 
         <div id="cutin-overlay" style="display:none; pointer-events:none; z-index: 10000;">
             <img id="cutin-img" src="images/Sprite/cut_in.png" alt="Cut-in">
+        </div>
+
+        <!-- クレジットオーバーレイ -->
+        <div id="credits-overlay" onclick="toggleCredits()" style="position: absolute; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); display:none; justify-content:center; align-items:center; z-index: 22000; pointer-events: auto;">
+            <div id="credits-window" onclick="event.stopPropagation()" ontouchend="event.stopPropagation()" ontouchstart="event.stopPropagation()">
+                <div class="credits-header">CREDITS</div>
+                
+                <div class="credits-section">
+                    <div class="credits-category">- STAFF -</div>
+                    <div class="credits-name">Director & Animation: Akifumi Nonaka</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credits-category">- PROGRAMMING SUPPORT -</div>
+                    <div class="credits-name">Gemini (Google AI)</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credits-category">- VISUAL ASSETS SUPPORT -</div>
+                    <div class="credits-name">Nano Banana / ChatGPT</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credits-category">- AUDIO -</div>
+                    <div class="credits-name" style="margin-bottom: 5px;">Music: Pixabay / DOVA-SYNDROME</div>
+                    <div class="credits-name">Sound Effects: Adobe Firefly / 効果音ラボ</div>
+                </div>
+
+                <div class="credits-section">
+                    <div class="credits-category">- SPECIAL THANKS -</div>
+                    <div class="credits-name">Original Work: CRYPTO NINJA / CRYPTO NINJA SAKUYA</div>
+                </div>
+
+                <div class="credits-footer">
+                    DEDICATED TO CRYPTO NINJA SAKUYA
+                </div>
+
+                <div class="modal-btn-wrap" style="margin-top: 35px;">
+                    <button class="modal-btn" onclick="toggleCredits()" ontouchend="toggleCredits()" style="width: 180px; height: 50px;">
+                        <span class="modal-btn-inner" style="font-size: 18px;">閉じる</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 

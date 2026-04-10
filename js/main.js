@@ -332,9 +332,20 @@ function toggleSettings() {
         overlay.style.display = 'flex';
         isPaused = true;
         if (bgmFadeInterval) clearInterval(bgmFadeInterval);
-        bgm.pause();
         bgm2.pause();
         bgmSlot.pause();
+    }
+}
+
+function toggleCredits() {
+    const overlay = document.getElementById('credits-overlay');
+    if (!overlay) return;
+    if (overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+        isPaused = false;
+    } else {
+        overlay.style.display = 'flex';
+        isPaused = true;
     }
 }
 
@@ -346,6 +357,7 @@ function backToTitle() {
     bgm2.pause();
     document.getElementById('settings-overlay').style.display = 'none';
     document.getElementById('modal-overlay').style.display = 'none';
+    document.getElementById('credits-overlay').style.display = 'none';
     
     // 追加：メインゲームのUI要素を確実に非表示にする
     document.getElementById('progress-container').style.display = 'none';
