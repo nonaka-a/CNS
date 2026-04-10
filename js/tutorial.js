@@ -3,6 +3,7 @@ let tutorialPage = 1;
 let tutorialAnimId = null;
 let tutorialTextTimer = 0;
 let tutorialTextIdx = 0;
+let tutorialVisibleTextIdx = 0; // 実際に表示されているテキストのインデックス
 let tutorialFrameIdx = 0;
 let tutorialFrameTimer = 0;
 
@@ -24,6 +25,7 @@ function startTutorial() {
     if (tutorialOverlay) return;
     tutorialPage = 1;
     tutorialTextIdx = 0;
+    tutorialVisibleTextIdx = 0;
     tutorialTextTimer = 0;
     tutorialFrameIdx = 0;
     tutorialFrameTimer = 0;
@@ -40,8 +42,9 @@ function tutorialAnimLoop() {
     if (tutorialFrameTimer > 6) {
         tutorialFrameIdx = (tutorialFrameIdx + 1) % 4;
         tutorialFrameTimer = 0;
-        updateSprites();
     }
+    // 毎フレーム更新して滑らかにする
+    updateSprites();
 
     if (tutorialPage > 1) {
         tutorialTextTimer++;
@@ -59,6 +62,7 @@ function tutorialAnimLoop() {
             tutorialTextIdx = (tutorialTextIdx + 1) % texts.length;
             tutorialTextTimer = 0;
             updateTutorialText();
+            updateSprites(); // テキスト切り替え直後にスプライト状態も即座に反映
         }
         updateProgressBar();
     }
@@ -91,30 +95,45 @@ function updateSprites() {
     } else {
         if (ctxBtn) {
             let showBtn = false;
+            let nextHtml = '';
+            let nextColor = '';
+            // 実際に表示されているテキスト(tutorialVisibleTextIdx)に合わせる
             if (tutorialPage === 2) {
-                if (tutorialTextIdx === 0) { showBtn = true; ctxBtn.innerHTML = '<img src="images/Sprite/syuriken_2.png" style="width: 45px; opacity: 0.8;">'; ctxBtn.style.borderColor = '#383'; }
-                else if (tutorialTextIdx === 3) { showBtn = true; ctxBtn.innerHTML = '<img src="images/Sprite/mitama_face.png" style="width: 55px; opacity: 0.9;">'; ctxBtn.style.borderColor = '#338'; }
+                if (tutorialVisibleTextIdx === 0) { showBtn = true; nextHtml = '<img src="images/Sprite/syuriken_2.png" style="width: 45px; opacity: 0.8;">'; nextColor = '#383'; }
+                else if (tutorialVisibleTextIdx === 3) { showBtn = true; nextHtml = '<img src="images/Sprite/mitama_face.png" style="width: 55px; opacity: 0.9;">'; nextColor = '#338'; }
             } else if (tutorialPage === 3) {
-                if (tutorialTextIdx === 2) { showBtn = true; ctxBtn.innerHTML = '<img src="images/Sprite/mitama_face.png" style="width: 55px; opacity: 0.9;">'; ctxBtn.style.borderColor = '#338'; }
+                if (tutorialVisibleTextIdx === 2) { showBtn = true; nextHtml = '<img src="images/Sprite/mitama_face.png" style="width: 55px; opacity: 0.9;">'; nextColor = '#338'; }
             }
-            ctxBtn.style.display = showBtn ? 'flex' : 'none';
+            if (ctxBtn.dataset.htmlContent !== nextHtml) {
+                ctxBtn.innerHTML = nextHtml;
+                ctxBtn.style.borderColor = nextColor;
+                ctxBtn.dataset.htmlContent = nextHtml;
+            }
+            // テキストがフェードアウト中(tutorialTextTimerがリセット直後)はボタンも隠す
+            const isTransitioning = tutorialTextTimer < 20; 
+            ctxBtn.style.display = (showBtn && !isTransitioning) ? 'flex' : 'none';
             if (showBtn) ctxBtn.style.transform = (tutorialTextTimer >= 150 && tutorialTextTimer < 180) ? 'scale(0.8)' : 'scale(1)';
         }
 
         if (hudEl) {
-            const isDmgPage = (tutorialPage === 2 && tutorialTextIdx === 4) || (tutorialPage === 3 && tutorialTextIdx === 1);
+            const isDmgPage = (tutorialPage === 2 && tutorialVisibleTextIdx === 4) || (tutorialPage === 3 && tutorialVisibleTextIdx === 1);
             hudEl.style.display = isDmgPage ? 'block' : 'none';
             if (isDmgPage) {
                 const hp = Math.max(0, 5 - Math.floor(tutorialTextTimer / 60));
-                // 第2引数の showMitamaRow だけでなく、ホールド時は減り方のロジックを変える
-                updateHudMock(hp, true, tutorialPage === 3);
+                // 毎フレームのDOM再構築を防ぐ（iPadのフリーズ原因）
+                if (hudEl.dataset.lastHp !== String(hp)) {
+                    updateHudMock(hp, true, tutorialPage === 3);
+                    hudEl.dataset.lastHp = String(hp);
+                }
+            } else {
+                hudEl.dataset.lastHp = "-1";
             }
         }
 
         if (tutorialPage === 2) {
-            let isHoldingAnim = (tutorialTextIdx === 3 && tutorialTextTimer >= 150);
+            let isHoldingAnim = (tutorialVisibleTextIdx === 3 && tutorialTextTimer >= 150);
             if (sakuyaEl) {
-                if (tutorialTextIdx === 0) {
+                if (tutorialVisibleTextIdx === 0) {
                     sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * SW}px ${S_Y}px`;
                     if (bulletEl) {
                         bulletEl.style.display = 'block';
@@ -122,24 +141,24 @@ function updateSprites() {
                     }
                 } else if (isHoldingAnim) { sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * SW}px ${B_Y}px`; }
                 else { sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * SW}px 0px`; if (bulletEl) bulletEl.style.display = 'none'; }
-                sakuyaEl.style.opacity = (tutorialTextIdx === 4 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
-                sakuyaEl.style.left = (tutorialTextIdx === 3) ? (380 + Math.min(60, (tutorialTextTimer / 150) * 60)) + 'px' : '380px';
+                sakuyaEl.style.opacity = (tutorialVisibleTextIdx === 4 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
+                sakuyaEl.style.left = (tutorialVisibleTextIdx === 3) ? (380 + Math.min(60, (tutorialTextTimer / 150) * 60)) + 'px' : '380px';
             }
             if (mitamaEl) {
                 mitamaEl.style.backgroundPositionX = `-${tutorialFrameIdx * MW}px`;
                 mitamaEl.style.display = (isHoldingAnim) ? 'none' : 'block';
                 let mx = 540;
-                if (tutorialTextIdx === 1) mx = 540 - (tutorialTextTimer % 300) / 2;
-                else if (tutorialTextIdx === 2) { mx = 200 - (tutorialTextTimer % 300) * 2; if (mx < -100) mitamaEl.style.display = 'none'; }
+                if (tutorialVisibleTextIdx === 1) mx = 540 - (tutorialTextTimer % 300) / 2;
+                else if (tutorialVisibleTextIdx === 2) { mx = 200 - (tutorialTextTimer % 300) * 2; if (mx < -100) mitamaEl.style.display = 'none'; }
                 mitamaEl.style.left = mx + 'px';
-                mitamaEl.style.opacity = (tutorialTextIdx === 4 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
+                mitamaEl.style.opacity = (tutorialVisibleTextIdx === 4 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
             }
         } else if (tutorialPage === 3) {
-            let isReleasedAnim = (tutorialTextIdx === 2 && tutorialTextTimer >= 150);
+            let isReleasedAnim = (tutorialVisibleTextIdx === 2 && tutorialTextTimer >= 150);
             if (sakuyaEl) {
                 sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * SW}px ${isReleasedAnim ? '0px' : B_Y + 'px'}`;
-                if (xMark) xMark.style.display = (tutorialTextIdx === 0) ? 'block' : 'none';
-                sakuyaEl.style.opacity = (tutorialTextIdx === 1 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
+                if (xMark) xMark.style.display = (tutorialVisibleTextIdx === 0) ? 'block' : 'none';
+                sakuyaEl.style.opacity = (tutorialVisibleTextIdx === 1 && tutorialFrameIdx % 2 === 0) ? '0.3' : '1';
             }
             if (mitamaEl) { mitamaEl.style.display = isReleasedAnim ? 'block' : 'none'; mitamaEl.style.left = '520px'; }
         }
@@ -164,10 +183,15 @@ function updateTutorialText() {
     if (!el) return;
     const texts = tutorialPage === 2 ? TU_TEXTS_PAGE2 : TU_TEXTS_PAGE3;
     el.style.opacity = '0';
-    setTimeout(() => {
-        el.innerText = texts[tutorialTextIdx];
+    // 既存のタイマーがあればクリア（念のため）
+    if (window.tuTextTimeout) clearTimeout(window.tuTextTimeout);
+    
+    window.tuTextTimeout = setTimeout(() => {
+        tutorialVisibleTextIdx = tutorialTextIdx; // 実際に表示されるタイミングでインデックスを同期
+        el.innerText = texts[tutorialVisibleTextIdx];
         el.style.opacity = '1';
-    }, 300);
+        updateSprites(); // 文字が出た瞬間にスプライトも再計算
+    }, 350); // フェードアウトが完全に終わってから書き換えるよう少しだけ猶予を持たせる
 }
 
 function updateProgressBar() {
@@ -225,7 +249,11 @@ function showTutorialPage() {
     navArea.style.padding = '0 30px'; navArea.style.boxSizing = 'border-box';
 
     const leftBtnWrap = document.createElement('div'); leftBtnWrap.style.width = '170px';
-    if (tutorialPage > 1) leftBtnWrap.appendChild(createTutorialBtn('戻る', () => { tutorialPage--; showTutorialPage(); }, '160px'));
+    if (tutorialPage > 1) leftBtnWrap.appendChild(createTutorialBtn('戻る', () => { 
+        tutorialPage--; 
+        tutorialTextIdx = 0; tutorialVisibleTextIdx = 0; tutorialTextTimer = 0;
+        showTutorialPage(); 
+    }, '160px'));
     navArea.appendChild(leftBtnWrap);
 
     const centerBtnWrap = document.createElement('div'); centerBtnWrap.style.width = '170px';
@@ -233,7 +261,11 @@ function showTutorialPage() {
     navArea.appendChild(centerBtnWrap);
 
     const rightBtnWrap = document.createElement('div'); rightBtnWrap.style.width = '170px';
-    if (tutorialPage < 3) rightBtnWrap.appendChild(createTutorialBtn('次へ', () => { tutorialPage++; showTutorialPage(); }, '160px'));
+    if (tutorialPage < 3) rightBtnWrap.appendChild(createTutorialBtn('次へ', () => { 
+        tutorialPage++; 
+        tutorialTextIdx = 0; tutorialVisibleTextIdx = 0; tutorialTextTimer = 0;
+        showTutorialPage(); 
+    }, '160px'));
     navArea.appendChild(rightBtnWrap);
 
     windowEl.appendChild(navArea);
