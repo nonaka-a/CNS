@@ -346,7 +346,17 @@ function backToTitle() {
     bgm2.pause();
     document.getElementById('settings-overlay').style.display = 'none';
     document.getElementById('modal-overlay').style.display = 'none';
+    
+    // 追加：メインゲームのUI要素を確実に非表示にする
+    document.getElementById('progress-container').style.display = 'none';
+    document.getElementById('ninjutsu-container').style.display = 'none';
+    document.getElementById('boss-hp-container').style.display = 'none';
+    const hud = document.querySelector('.hud');
+    if (hud) hud.style.display = 'none';
+    document.getElementById('control-panel').style.display = 'none';
+    
     document.getElementById('title-screen').style.display = 'flex';
+    if (window.updateBtnRects) window.updateBtnRects();
 }
 
 function toggleSound() {
