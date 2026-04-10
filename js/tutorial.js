@@ -312,7 +312,18 @@ function renderAutoText(container) {
 
 function createTutorialBtn(text, callback, width = '150px') {
     const wrap = document.createElement('div'); wrap.className = 'modal-btn-wrap';
-    const btn = document.createElement('button'); btn.className = 'modal-btn'; btn.style.width = width; btn.style.height = '45px'; btn.onclick = callback;
+    const btn = document.createElement('button'); btn.className = 'modal-btn'; btn.style.width = width; btn.style.height = '45px'; 
+    
+    const handler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        callback();
+    };
+    btn.addEventListener('click', handler);
+    btn.addEventListener('touchend', handler, { passive: false });
+    // 全体タッチ制御システム(input.js)に吸い込まれないようにする
+    btn.addEventListener('touchstart', (e) => { e.stopPropagation(); }, { passive: false });
+    
     const inner = document.createElement('span'); inner.className = 'modal-btn-inner'; inner.innerText = text; inner.style.fontSize = '18px'; inner.style.letterSpacing = '1px'; inner.style.textIndent = '1px';
     btn.appendChild(inner); wrap.appendChild(btn); return wrap;
 }
