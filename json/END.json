@@ -587,15 +587,15 @@
           "shadowOpacity": 100,
           "parent": null,
           "expanded": false,
-          "inPoint": 16.2,
-          "outPoint": 20.2,
+          "inPoint": 16.03333333333333,
+          "outPoint": 19.933333333333334,
           "tracks": {
             "position": {
               "label": "Position",
               "type": "vector2",
               "keys": [
                 {
-                  "time": 16.2,
+                  "time": 16.03333333333333,
                   "value": {
                     "x": 500,
                     "y": 520
@@ -645,14 +645,14 @@
               "type": "number",
               "keys": [
                 {
-                  "time": 16.53333333333333,
+                  "time": 16.366666666666667,
                   "value": 13.333333333333329,
                   "easeIn": false,
                   "easeOut": false,
                   "interpolation": "Linear"
                 },
                 {
-                  "time": 18.133333333333333,
+                  "time": 17.966666666666665,
                   "value": 100,
                   "easeIn": false,
                   "easeOut": false,
@@ -1382,8 +1382,8 @@
                 {
                   "time": 41.4,
                   "value": {
-                    "x": 107,
-                    "y": 107
+                    "x": 104,
+                    "y": 104
                   },
                   "easeIn": false,
                   "easeOut": false,
