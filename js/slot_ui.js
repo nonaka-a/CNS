@@ -337,19 +337,22 @@ function updateSlotUI() {
     const medalCont = document.getElementById('slot-bet-medals-container');
     if (medalCont) {
         if (slotState === STATE.PAYOUT) {
-            medalCont.style.display = 'none';
+            if (medalCont.style.display !== 'none') medalCont.style.display = 'none';
         } else {
-            medalCont.style.display = 'block';
-            medalCont.innerHTML = '';
-            const stackLimit = currentBet;
-            for (let i = 0; i < stackLimit; i++) {
-                const img = document.createElement('img');
-                img.src = 'images/slot/medal.png';
-                img.style.position = 'absolute';
-                img.style.bottom = (i * 15) + 'px'; // 重なりを少し離す
-                img.style.left = '0';
-                img.style.width = '120px';
-                medalCont.appendChild(img);
+            if (medalCont.style.display !== 'block') medalCont.style.display = 'block';
+            // 枚数が変わった時だけ中身を再構築する（点滅防止）
+            if (medalCont.childElementCount !== currentBet) {
+                medalCont.innerHTML = '';
+                const stackLimit = currentBet;
+                for (let i = 0; i < stackLimit; i++) {
+                    const img = document.createElement('img');
+                    img.src = 'images/slot/medal.png';
+                    img.style.position = 'absolute';
+                    img.style.bottom = (i * 15) + 'px';
+                    img.style.left = '0';
+                    img.style.width = '120px';
+                    medalCont.appendChild(img);
+                }
             }
         }
     }
