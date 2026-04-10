@@ -23,13 +23,8 @@ function setupControls() {
     if (e.code === 'KeyB') toggleMode();
     if (e.code === 'KeyN') subAction();
 
-    // 開発デバッグ用
-    if (e.code === 'Digit2') {
-        distance = goalDistance * 0.5 - 200;
-    }
-    if (e.code === 'Digit3') {
-        distance = goalDistance * 0.95 - 200;
-    }
+    // 開発デバッグ用（削除済み）
+
 });
 
     
@@ -50,9 +45,9 @@ function setupControls() {
         { id: 'btn-attack', action: toggleMode },
         { id: 'btn-mode', action: jump },
         { id: 'btn-settings', action: typeof toggleSettings !== 'undefined' ? toggleSettings : null },
-        { id: 'btn-sub', action: subAction },
-        { id: 'debug-skip-btn', action: () => { distance = goalDistance * 0.5 - 200; } },
-        { id: 'debug-skip-btn-3', action: () => { distance = goalDistance * 0.9 - 200; } }
+        { id: 'btn-sub', action: subAction }
+        // デバッグボタン処理は無効化
+
     ];
 
     // ボタンのレクト情報をキャッシュする（レイアウトスライッシング防止）
