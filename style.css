@@ -359,7 +359,7 @@ body {
     position: relative;
     top: 0; /* 位置調整をリセット */
     z-index: 2002;
-    margin-bottom: 15px; /* ロゴとウィンドウの間の余白を確保 */
+    margin-bottom: 25px; /* ロゴとウィンドウの間の余白を10px拡大 */
 }
         #title-window {
             position: relative; 
