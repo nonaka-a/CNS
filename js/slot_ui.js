@@ -187,7 +187,7 @@ function createSlotDOM() {
     btnHelp.innerText = '？';
     btnHelp.style.position = 'absolute';
     btnHelp.style.bottom = '60px';
-    btnHelp.style.left = '85px';
+    btnHelp.style.left = '95px';
     btnHelp.style.margin = '0';
     btnHelp.style.fontSize = '20px';
     btnHelp.style.zIndex = '20';
