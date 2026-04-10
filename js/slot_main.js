@@ -1,20 +1,54 @@
-function openSlot() {
+async function openSlot() {
     if (slotActive) return;
-    slotActive = true;
 
+    // --- 簡易的なロード中表示の作成 ---
+    const loadOverlay = document.createElement('div');
+    loadOverlay.id = 'slot-loading-overlay';
+    loadOverlay.style.position = 'absolute'; loadOverlay.style.top = '0'; loadOverlay.style.left = '0';
+    loadOverlay.style.width = '100%'; loadOverlay.style.height = '100%';
+    loadOverlay.style.background = '#000'; loadOverlay.style.display = 'flex';
+    loadOverlay.style.justifyContent = 'center'; loadOverlay.style.alignItems = 'center';
+    loadOverlay.style.zIndex = '30000'; loadOverlay.style.color = '#fff';
+    loadOverlay.style.fontFamily = "'Sawarabi Mincho', serif"; loadOverlay.style.fontSize = '24px';
+    loadOverlay.innerText = 'Now Loading...';
+    const wrapper = document.getElementById('main-wrapper');
+    if (wrapper) wrapper.appendChild(loadOverlay);
+
+    // --- アセットの読み込み待ち ---
+    try {
+        const loadAssets = [];
+        // JSON
+        if (!omenConfig) {
+            loadAssets.push(fetch('json/omen.json').then(r => r.json()).then(json => { omenConfig = json; }));
+        }
+        // Images (omenImg, ninjaImgs は slot_data.js で定義済み)
+        const checkImg = (img) => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => { img.onload = resolve; img.onerror = resolve; });
+        };
+        loadAssets.push(checkImg(omenImg));
+        ninjaImgs.forEach(img => loadAssets.push(checkImg(img)));
+        
+        // 背景画像
+        const bgImg = new Image();
+        bgImg.src = 'images/slot/BG_slot.jpg';
+        loadAssets.push(checkImg(bgImg));
+
+        await Promise.all(loadAssets);
+    } catch (e) {
+        console.error("Slot assets load error:", e);
+    }
+
+    // ロード画面を消す
+    if (loadOverlay.parentNode) loadOverlay.parentNode.removeChild(loadOverlay);
+
+    slotActive = true;
     slotParticles = []; 
     winTextAnim.active = false;
     lastSlotFrameTime = 0; 
 
     loadMedalData();
     
-    if (!omenConfig) {
-        fetch('json/omen.json')
-            .then(r => r.json())
-            .then(json => { omenConfig = json; })
-            .catch(e => console.error(e));
-    }
-
     createSlotDOM();
 
     if (typeof isSoundOn !== 'undefined' && isSoundOn && typeof bgmSlot !== 'undefined') {
@@ -33,7 +67,7 @@ function openSlot() {
     isReach = false;
 
     updateSlotUI();
-    slotLoop();
+    requestAnimationFrame(slotLoop);
 }
 
 function closeSlot() {
