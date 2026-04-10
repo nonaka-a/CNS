@@ -94,6 +94,7 @@ function startSlot() {
     targetMedals -= currentBet;
     medals -= currentBet;
     saveMedalData();
+    playSE('slot_start');
     slotState = STATE.SPINNING;
     isReach = false;
     reels.forEach((r, i) => {
@@ -126,6 +127,7 @@ function nextGame() {
 function stopReel(index) {
     if (slotState !== STATE.SPINNING || !reels[index].isSpinning || reels[index].isStopping) return;
     reels[index].stopSpin();
+    playSE('slot_stop', 1.3); // 音量をアップ
     updateSlotUI();
 }
 
@@ -188,7 +190,7 @@ function checkReels() {
                 if (s1 === OMEN_TYPE.ONI) playSE('roar', 1.0); 
                 else playSE('sausage_get', 1.0); 
             } else {
-                playSE('damage', 0.5);
+                // ハズレ時の音を削除
             }
             updateSlotUI();
         }

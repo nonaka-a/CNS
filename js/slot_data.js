@@ -92,7 +92,6 @@ class Reel {
                 this.isSpinning = false;
                 this.isStopping = false;
                 this.resultSymbol = REEL_STRIP[this.stopTarget];
-                playSE('impact', 0.8);
                 checkReels();
             }
         }

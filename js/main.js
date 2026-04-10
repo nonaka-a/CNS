@@ -144,6 +144,9 @@ async function init() {
         await loadSE('roar', 'sound/roar.mp3');
         await loadSE('impact', 'sound/impact.mp3');
         await loadSE('siren', 'sound/Siren.mp3');
+        await loadSE('Medal', 'sound/Medal.mp3');
+        await loadSE('slot_start', 'sound/slot_start.mp3');
+        await loadSE('slot_stop', 'sound/slot_stop.mp3');
 
     } catch (e) {
         console.error("Failed to load configs:", e);

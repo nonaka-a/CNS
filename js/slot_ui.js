@@ -427,6 +427,6 @@ function changeBet(amount) {
     if (currentBet < 1) currentBet = 1;
     if (currentBet > 10) currentBet = 10;
     if (currentBet > medals) currentBet = Math.max(1, medals);
-    playSE('jump1', 0.5);
+    playSE('puni', 0.5);
     updateSlotUI();
 }
