@@ -209,7 +209,15 @@ function startEndlessMode() {
 
 function showEndlessIntro() {
     const overlay = document.getElementById('endless-intro-overlay');
-    if (overlay) overlay.style.display = 'flex';
+    if (overlay) {
+        // ベスト記録を反映
+        const bestEl = document.getElementById('endless-intro-best-dist');
+        if (bestEl) {
+            const formattedDist = (typeof bestEndlessDistance !== 'undefined') ? bestEndlessDistance.toLocaleString() : "0";
+            bestEl.innerText = `最高到達点：${formattedDist}m`;
+        }
+        overlay.style.display = 'flex';
+    }
 }
 
 function closeEndlessIntro() {
