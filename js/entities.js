@@ -137,10 +137,11 @@ function updateEntities() {
     }
 
     // --- アイテムの更新 ---
-    // 出現管理 (15秒に1回)
+    // 出現管理 (通常は15秒に1回、ハードモードは60秒に1回)
     if (!isHalfwayTransitioning && !isIntro) {
         itemSpawnTimer += FRAME_INTERVAL;
-        if (itemSpawnTimer >= 15000) {
+        const spawnInterval = isEndlessMode ? 60000 : 15000;
+        if (itemSpawnTimer >= spawnInterval) {
             itemSpawnTimer = 0;
             items.push({
                 x: CANVAS_WIDTH + 100,
@@ -998,7 +999,7 @@ function spawnEnemy(type) {
     let hp = type === 'B' ? 3 : (type === 'C' ? 2 : 1);
     let anim = type === 'B' ? 'idleB' : (type === 'C' ? 'idleC' : 'idle');
     
-    enemies.push({
+    const newEnemy = {
         id: enemyIdCounter++, 
         type: type,
         hp: hp,
@@ -1020,7 +1021,9 @@ function spawnEnemy(type) {
         stateTimer: 0,
         invincibleTimer: 0,
         targetX: isThirdScene ? (300 + Math.random() * 200) : (20 + Math.random() * 200) 
-    });
+    };
+    if (typeof applyEndlessDifficulty === 'function') applyEndlessDifficulty(newEnemy);
+    enemies.push(newEnemy);
 }
 
 function spawnBossDrones() {

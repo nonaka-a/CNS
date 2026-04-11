@@ -87,37 +87,46 @@ function updateWorld() {
         halfwayTransitionTimer++;
         if (halfwayTransitionTimer === 120) {
             if (goalThresholdReached) {
-                isSecondScene = false; isThirdScene = true; platforms = [];
-                // エリア3開始：左上から大きく飛び込んでくる
-                sakuya.x = -400; sakuya.groundY = GROUND_Y_POS;
-                sakuya.jumpOffset = -1000; sakuya.vy = 4; sakuya.isOnPlat = false;
-                playSE('jump1');
-                // BGM切り替え (bgm -> bgm2)
-                if (bgmFadeInterval) {
-                    clearInterval(bgmFadeInterval);
-                    bgmFadeInterval = null;
-                }
-                bgm.pause();
-                bgm.currentTime = 0;
-                
-                if (isSoundOn) {
-                    bgm2.volume = 0.4;
-                    bgm2.currentTime = 0;
-                    const playPromise = bgm2.play();
-                    if (playPromise !== undefined) {
-                        playPromise.catch(e => {
-                            console.error("BGM2 playback failed, retrying on user interaction:", e);
-                            // 失敗した場合、次のユーザー操作（タップ等）で再試行する保険
-                            const retryPlay = () => {
-                                if (isThirdScene && isSoundOn && bgm2.paused) {
-                                    bgm2.play();
-                                }
-                                window.removeEventListener('touchstart', retryPlay);
-                                window.removeEventListener('mousedown', retryPlay);
-                            };
-                            window.addEventListener('touchstart', retryPlay);
-                            window.addEventListener('mousedown', retryPlay);
-                        });
+                // エリア3からエリア1へのエンドレスループチェック
+                if (isEndlessMode && isThirdScene) {
+                    if (typeof loopToEndlessStart === 'function') loopToEndlessStart();
+                    // loopToEndlessStart内部で isThirdScene = false になるため、エリア1の初期化が行われる
+                    sakuya.x = -150; sakuya.groundY = GROUND_Y_POS;
+                    sakuya.jumpOffset = 0; sakuya.vx = 0; sakuya.vy = 0;
+                    isIntro = true; // エリア1開始時のイントロ演出（右へのスライド）を再利用
+                } else {
+                    isSecondScene = false; isThirdScene = true; platforms = [];
+                    // エリア3開始：左上から大きく飛び込んでくる
+                    sakuya.x = -400; sakuya.groundY = GROUND_Y_POS;
+                    sakuya.jumpOffset = -1000; sakuya.vy = 4; sakuya.isOnPlat = false;
+                    playSE('jump1');
+                    // BGM切り替え (bgm -> bgm2)
+                    if (bgmFadeInterval) {
+                        clearInterval(bgmFadeInterval);
+                        bgmFadeInterval = null;
+                    }
+                    bgm.pause();
+                    bgm.currentTime = 0;
+                    
+                    if (isSoundOn) {
+                        bgm2.volume = 0.4;
+                        bgm2.currentTime = 0;
+                        const playPromise = bgm2.play();
+                        if (playPromise !== undefined) {
+                            playPromise.catch(e => {
+                                console.error("BGM2 playback failed, retrying on user interaction:", e);
+                                // 失敗した場合、次のユーザー操作（タップ等）で再試行する保険
+                                const retryPlay = () => {
+                                    if (isThirdScene && isSoundOn && bgm2.paused) {
+                                        bgm2.play();
+                                    }
+                                    window.removeEventListener('touchstart', retryPlay);
+                                    window.removeEventListener('mousedown', retryPlay);
+                                };
+                                window.addEventListener('touchstart', retryPlay);
+                                window.addEventListener('mousedown', retryPlay);
+                            });
+                        }
                     }
                 }
             } else if (halfwayReached) {

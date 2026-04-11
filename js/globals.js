@@ -59,6 +59,9 @@ let whiteHoldTimer = 0; // 追加：真っ白な状態の維持時間
 let isBgmFading = false; // 追加：BGMがフェードアウト中か
 let isIntro = true;
 const INTRO_TARGET_X = 410;
+let isEndlessMode = false;
+let endlessUnlocked = false;
+let bestEndlessDistance = 0;
 
 const sakuya = {
     x: -150, y: 0, w: 180, h: 180, vx: 0, vy: 0,

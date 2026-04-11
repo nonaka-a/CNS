@@ -209,19 +209,24 @@ function update() {
     let displayDistance = distance;
     const bossBattleTriggerDistance = goalDistance * 0.95 + 1;
     
-    // エリア3かつボス未撃破の時のみ、UI上のプログレスを95%付近で停止させる
-    if (isThirdScene && !bossDefeated && distance > bossBattleTriggerDistance) {
-        displayDistance = bossBattleTriggerDistance;
-    }
-
-
-    const progress = Math.min((displayDistance / goalDistance) * 100, 100);
     if (!window.uiCache) window.uiCache = {};
-    
-    if (window.uiCache.progress !== progress) {
-        const progressBar = document.getElementById('progress-bar');
-        if (progressBar) progressBar.style.width = progress + '%';
-        window.uiCache.progress = progress;
+
+    if (isEndlessMode) {
+        if (typeof updateEndlessHUD === 'function') updateEndlessHUD();
+        if (typeof checkEndlessLoop === 'function') checkEndlessLoop();
+    } else {
+        // エリア3かつボス未撃破の時のみ、UI上のプログレスを95%付近で停止させる
+        if (isThirdScene && !bossDefeated && distance > bossBattleTriggerDistance) {
+            displayDistance = bossBattleTriggerDistance;
+        }
+
+        const progress = Math.min((displayDistance / goalDistance) * 100, 100);
+        
+        if (window.uiCache.progress !== progress) {
+            const progressBar = document.getElementById('progress-bar');
+            if (progressBar) progressBar.style.width = progress + '%';
+            window.uiCache.progress = progress;
+        }
     }
     
     if (window.uiCache.mitamaHolding !== mitama.isHolding) {
@@ -291,7 +296,7 @@ function update() {
         window.uiCache.bossHpPercent = hpPercent;
     }
 
-    if (displayDistance >= goalDistance && !gameOver) {
+    if (displayDistance >= goalDistance && !gameOver && !isEndlessMode) {
         if (!isWhiteFading && !isEndingRunning) {
             isWhiteFading = true;
             whiteFadeAlpha = 0;

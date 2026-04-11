@@ -144,7 +144,6 @@ async function init() {
         await loadSE('roar', 'sound/roar.mp3');
         await loadSE('impact', 'sound/impact.mp3');
         await loadSE('siren', 'sound/Siren.mp3');
-        await loadSE('Medal', 'sound/Medal.mp3');
         await loadSE('slot_start', 'sound/slot_start.mp3');
         await loadSE('slot_stop', 'sound/slot_stop.mp3');
 
@@ -159,30 +158,68 @@ async function init() {
     sakuya.groundY = GROUND_Y_POS;
     initDone = true;
 
+    // エンドレスモードデータの読み込みとUI反映
+    if (typeof loadEndlessData === 'function') {
+        loadEndlessData();
+        if (endlessUnlocked) {
+            const eb = document.getElementById('endless-btn-wrap');
+            if (eb) eb.style.display = 'block';
+            // ボタンが4つから5つになるためグリッドとウィンドウ幅を調整
+            const grid = document.getElementById('title-btn-grid');
+            if (grid) grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+            const win = document.getElementById('title-window');
+            if (win) win.style.width = '750px'; // 5ボタン分の横幅に拡張
+        } else {
+            const win = document.getElementById('title-window');
+            if (win) win.style.width = '610px'; // 4ボタン分に縮小
+        }
+    }
+
+    if (typeof initEndlessHUD === 'function') initEndlessHUD();
+
     // --- ロード完了時の処理：ロード画面を隠してループ停止 ---
     if (loadingLoopId) cancelAnimationFrame(loadingLoopId);
-    const loadingScreen = document.getElementById('loading-screen');
-    loadingScreen.style.opacity = '0';
-    setTimeout(() => {
-        loadingScreen.style.display = 'none';
-    }, 500);
+    const ls = document.getElementById('loading-screen');
+    if (ls) {
+        ls.style.opacity = '0';
+        setTimeout(() => { ls.style.display = 'none'; }, 500);
+    }
 
     const startBtn = document.getElementById('start-btn');
     const tutorialBtn = document.getElementById('tutorial-btn');
-    if (startBtn) {
-        startBtn.style.opacity = '1';
-        const inner = startBtn.querySelector('.modal-btn-inner');
-        if (inner) inner.innerText = '開始';
-    }
-    if (tutorialBtn) {
-        tutorialBtn.style.opacity = '1';
-    }
+    if (startBtn) startBtn.style.opacity = '1';
+    if (tutorialBtn) tutorialBtn.style.opacity = '1';
 
     requestAnimationFrame(gameLoop);
 }
 
+function startEndlessMode() {
+    closeEndlessIntro();
+    startGame();
+    isEndlessMode = true;
+    if (typeof endlessLoopCount !== 'undefined') endlessLoopCount = 0;
+    
+    // エンドレス用HUDを表示
+    const ehud = document.getElementById('endless-hud');
+    if (ehud) ehud.style.display = 'block';
+    // 通常のプログレスバーを隠す
+    const prog = document.getElementById('progress-container');
+    if (prog) prog.style.display = 'none';
+}
+
+function showEndlessIntro() {
+    const overlay = document.getElementById('endless-intro-overlay');
+    if (overlay) overlay.style.display = 'flex';
+}
+
+function closeEndlessIntro() {
+    const overlay = document.getElementById('endless-intro-overlay');
+    if (overlay) overlay.style.display = 'none';
+}
+
 function startGame() {
     if (!initDone || isGameRunning) return; 
+    isEndlessMode = false; // 通常開始時はエンドレスをOFFにする
     resetGameState();
     if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
     bgm.currentTime = 0;
@@ -269,6 +306,12 @@ function showClearScreen() {
     if (bgmFadeInterval) clearInterval(bgmFadeInterval);
     bgm.pause();
     bgm2.pause();
+
+    // エンドレスモードのアンロック
+    if (typeof unlockEndlessMode === 'function') {
+        unlockEndlessMode();
+    }
+
     const modalText = document.getElementById('modal-text');
     if (modalText) modalText.innerText = "GAME CLEAR!";
     const subText = document.getElementById('modal-subtext');
@@ -370,8 +413,32 @@ function backToTitle() {
     if (hud) hud.style.display = 'none';
     document.getElementById('control-panel').style.display = 'none';
     
+    // エンドレス用HUDも隠す
+    const ehud = document.getElementById('endless-hud');
+    if (ehud) ehud.style.display = 'none';
+
+    // タイトル画面のボタン更新（アンロック対応）
+    if (endlessUnlocked) {
+        const eb = document.getElementById('endless-btn-wrap');
+        if (eb) eb.style.display = 'block';
+        const grid = document.getElementById('title-btn-grid');
+        if (grid) grid.style.gridTemplateColumns = 'repeat(5, 1fr)';
+        const win = document.getElementById('title-window');
+        if (win) win.style.width = '750px'; // 5ボタン分の横幅に拡張
+    } else {
+        const win = document.getElementById('title-window');
+        if (win) win.style.width = '610px'; // 4ボタン分に縮小
+    }
+
     document.getElementById('title-screen').style.display = 'flex';
     if (window.updateBtnRects) window.updateBtnRects();
+}
+
+function resetDebugData() {
+    if (confirm("【デバッグ】セーブデータをすべて削除して初期化しますか？\n(アンロック状況やメダル、ベスト記録がすべて消えます)")) {
+        localStorage.clear();
+        location.reload();
+    }
 }
 
 function toggleSound() {
@@ -459,6 +526,10 @@ function resetGameState() {
     boss.visible = false;
     boss.x = -500;
     boss.isArrived = false;
+    boss.state = 'idle'; // 追加: 状態を初期化
+    boss.currentAnim = 'idle'; // 追加: アニメーションを初期化
+    boss.currentFrame = 0;
+    boss.frameTimer = 0;
     bullets = [];
     enemies = [];
     onibis = [];
