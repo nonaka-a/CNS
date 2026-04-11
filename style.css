@@ -357,7 +357,7 @@ body {
     height: auto;
     filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.9));
     position: relative;
-    top: 0; /* 位置調整をリセット */
+    top: -10px; /* 10px上に移動 */
     z-index: 2002;
     margin-bottom: 25px; /* ロゴとウィンドウの間の余白を10px拡大 */
 }
