@@ -245,7 +245,7 @@ function updateEntities() {
         } else {
             // --- エリア3: 従来の確率ベース ---
             const spawnRate = 0.0014;
-            const maxRandomEnemies = 2;
+            const maxRandomEnemies = isEndlessMode ? 3 : 2; // エンドレスモードなら上限+1
             if (Math.random() < spawnRate && enemies.filter(e => !e.isBossShield).length < maxRandomEnemies) {
                 let availableTypes = ['A', 'A', 'B', 'C'];
                 let type = availableTypes[Math.floor(Math.random() * availableTypes.length)];
@@ -544,7 +544,8 @@ function updateEntities() {
                         boss.currentFrame = 0;
                         boss.frameTimer = 0;
                     }
-                    if (boss.stateTimer > 180) { // 3秒間に延長（攻撃チャンス）
+                    const waitTime = isEndlessMode ? 90 : 180; // エンドレスなら半分（1.5秒）
+                    if (boss.stateTimer > waitTime) { 
                         boss.stateTimer = 0;
                         if (boss.patternIndex === 1) {
                             boss.state = 'barrier';

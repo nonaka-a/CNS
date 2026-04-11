@@ -6,6 +6,7 @@ let tutorialTextIdx = 0;
 let tutorialVisibleTextIdx = 0; // 実際に表示されているテキストのインデックス
 let tutorialFrameIdx = 0;
 let tutorialFrameTimer = 0;
+let lastTutorialFrameTime = 0; // 追加: FPS固定用のタイマー変数
 
 const TU_TEXTS_PAGE2 = [
     '咲耶は手裏剣を使用して敵を攻撃できます',
@@ -32,39 +33,47 @@ function startTutorial() {
     showTutorialPage();
     
     if (tutorialAnimId) cancelAnimationFrame(tutorialAnimId);
-    tutorialAnimLoop();
+    lastTutorialFrameTime = 0; // タイマーリセット
+    requestAnimationFrame(tutorialAnimLoop);
 }
 
-function tutorialAnimLoop() {
+function tutorialAnimLoop(timestamp) {
     if (!tutorialOverlay) return;
 
-    tutorialFrameTimer++;
-    if (tutorialFrameTimer > 6) {
-        tutorialFrameIdx = (tutorialFrameIdx + 1) % 4;
-        tutorialFrameTimer = 0;
-    }
-    // 毎フレーム更新して滑らかにする
-    updateSprites();
+    if (!lastTutorialFrameTime) lastTutorialFrameTime = timestamp;
+    const elapsed = timestamp - lastTutorialFrameTime;
 
-    if (tutorialPage > 1) {
-        tutorialTextTimer++;
-        if (typeof playSE !== 'undefined') {
-            if (tutorialPage === 2 && tutorialTextIdx === 0 && tutorialTextTimer % 120 === 1) {
-                playSE('shuriken', 0.4);
-            }
-            if (tutorialTextTimer === 150) {
-                playTransitionSE();
-            }
-        }
+    if (elapsed >= FRAME_INTERVAL) {
+        lastTutorialFrameTime = timestamp - (elapsed % FRAME_INTERVAL);
 
-        if (tutorialTextTimer > 300) {
-            const texts = tutorialPage === 2 ? TU_TEXTS_PAGE2 : TU_TEXTS_PAGE3;
-            tutorialTextIdx = (tutorialTextIdx + 1) % texts.length;
-            tutorialTextTimer = 0;
-            updateTutorialText();
-            updateSprites(); // テキスト切り替え直後にスプライト状態も即座に反映
+        tutorialFrameTimer++;
+        if (tutorialFrameTimer > 6) {
+            tutorialFrameIdx = (tutorialFrameIdx + 1) % 4;
+            tutorialFrameTimer = 0;
         }
-        updateProgressBar();
+        // 毎フレーム更新して滑らかにする
+        updateSprites();
+
+        if (tutorialPage > 1) {
+            tutorialTextTimer++;
+            if (typeof playSE !== 'undefined') {
+                if (tutorialPage === 2 && tutorialTextIdx === 0 && tutorialTextTimer % 120 === 1) {
+                    playSE('shuriken', 0.4);
+                }
+                if (tutorialTextTimer === 150) {
+                    playTransitionSE();
+                }
+            }
+
+            if (tutorialTextTimer > 300) {
+                const texts = tutorialPage === 2 ? TU_TEXTS_PAGE2 : TU_TEXTS_PAGE3;
+                tutorialTextIdx = (tutorialTextIdx + 1) % texts.length;
+                tutorialTextTimer = 0;
+                updateTutorialText();
+                updateSprites(); // テキスト切り替え直後にスプライト状態も即座に反映
+            }
+            updateProgressBar();
+        }
     }
 
     tutorialAnimId = requestAnimationFrame(tutorialAnimLoop);
@@ -91,7 +100,7 @@ function updateSprites() {
     const S_Y = -384; const B_Y = -192;
 
     if (tutorialPage === 1) {
-        if (sakuyaEl) sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * 128}px 0px`;
+        if (sakuyaEl) sakuyaEl.style.backgroundPosition = `-${tutorialFrameIdx * 155}px 0px`;
     } else {
         if (ctxBtn) {
             let showBtn = false;
@@ -274,16 +283,32 @@ function showTutorialPage() {
 
 function renderPage1(container) {
     const layout = document.createElement('div'); layout.style.display = 'flex'; layout.style.flexDirection = 'column'; layout.style.alignItems = 'center'; layout.style.width = '100%';
+    
+    // 咲耶とテキストを横に並べるボックス
+    const sakuyaBox = document.createElement('div');
+    sakuyaBox.style.display = 'flex'; sakuyaBox.style.alignItems = 'center'; sakuyaBox.style.gap = '30px'; sakuyaBox.style.marginBottom = '15px';
+
+    const sakuyaFrame = document.createElement('div');
+    sakuyaFrame.style.width = '300px'; sakuyaFrame.style.height = '170px';
+    sakuyaFrame.style.background = 'rgba(0,0,0,0.2)'; sakuyaFrame.style.borderRadius = '15px';
+    sakuyaFrame.style.display = 'flex'; sakuyaFrame.style.justifyContent = 'center'; sakuyaFrame.style.alignItems = 'center';
+    sakuyaFrame.style.position = 'relative';
+
     const sakuyaVisual = document.createElement('div'); sakuyaVisual.id = 'tu-sakuya-sprite';
-    sakuyaVisual.style.width = '128px'; sakuyaVisual.style.height = '128px'; sakuyaVisual.style.backgroundImage = 'url("images/Sprite/sakuya.png")'; sakuyaVisual.style.backgroundSize = '512px 512px'; sakuyaVisual.style.marginBottom = '5px';
-    layout.appendChild(sakuyaVisual);
-    const opOnlyText = document.createElement('div'); opOnlyText.innerText = '咲耶を操作できます'; opOnlyText.style.fontSize = '18px'; opOnlyText.style.color = '#fff'; opOnlyText.style.marginBottom = '15px';
-    layout.appendChild(opOnlyText);
+    sakuyaVisual.style.width = '155px'; sakuyaVisual.style.height = '155px'; sakuyaVisual.style.backgroundImage = 'url("images/Sprite/sakuya.png")'; sakuyaVisual.style.backgroundSize = '620px 620px';
+    
+    sakuyaFrame.appendChild(sakuyaVisual);
+    sakuyaBox.appendChild(sakuyaFrame);
+    
+    const opOnlyText = document.createElement('div'); opOnlyText.innerText = '咲耶を操作できます'; opOnlyText.style.fontSize = '24px'; opOnlyText.style.color = '#fff'; opOnlyText.style.textShadow = '2px 2px 4px #000';
+    sakuyaBox.appendChild(opOnlyText);
+    
+    layout.appendChild(sakuyaBox);
     const ctrlLayout = document.createElement('div'); ctrlLayout.style.display = 'flex'; ctrlLayout.style.justifyContent = 'space-around'; ctrlLayout.style.width = '100%'; ctrlLayout.style.alignItems = 'center';
-    const dirPad = document.createElement('div'); dirPad.className = 'dir-pad'; dirPad.style.position = 'relative'; dirPad.style.margin = '0'; dirPad.style.transform = 'scale(0.7)';
+    const dirPad = document.createElement('div'); dirPad.className = 'dir-pad'; dirPad.style.position = 'relative'; dirPad.style.margin = '0'; dirPad.style.left = '-50px'; dirPad.style.transform = 'scale(0.95)';
     const dirConfig = [{ text: '◀', top: '60px', left: '0', key: '←A' },{ text: '▶', top: '60px', left: '190px', key: '→D' },{ text: '▼', top: '120px', left: '95px', key: '↓S' },{ text: '▲', top: '0px', left: '95px', key: '↑W' }];
     dirConfig.forEach(c => { const btn = document.createElement('div'); btn.className = 'v-btn dir-btn'; btn.innerText = c.text; btn.style.position = 'absolute'; btn.style.top = c.top; btn.style.left = c.left; addLargeLabel(btn, c.key); dirPad.appendChild(btn); });
-    const actionPad = document.createElement('div'); actionPad.className = 'action-pad'; actionPad.style.position = 'relative'; actionPad.style.margin = '0'; actionPad.style.transform = 'scale(0.7)';
+    const actionPad = document.createElement('div'); actionPad.className = 'action-pad'; actionPad.style.position = 'relative'; actionPad.style.margin = '0'; actionPad.style.transform = 'scale(0.95)';
     const actionConfig = [{ key: 'V', bottom: '60px', left: '0', borderColor: '#383', color: '#5a5', desc: '手裏剣を投げる' },{ key: 'B', bottom: '120px', left: '95px', borderColor: '#338', color: '#55a', desc: 'ミタマのホールド＆リリース' },{ text: '跳', key: 'Space', bottom: '0px', left: '95px', borderColor: '#833', color: '#a55', desc: 'ジャンプ（2段ジャンプ可）' },{ text: '忍', key: 'N', bottom: '60px', left: '190px', borderColor: '#883', color: '#ff0', desc: '必殺技' }];
     actionConfig.forEach(c => {
         const btn = document.createElement('div'); btn.className = 'v-btn action-btn'; btn.style.position = 'absolute'; btn.style.bottom = c.bottom; btn.style.left = c.left; btn.style.borderColor = c.borderColor; btn.style.color = c.color;
@@ -291,9 +316,9 @@ function renderPage1(container) {
         else { btn.innerText = c.text; btn.style.fontSize = '36px'; btn.style.fontFamily = "'Sawarabi Mincho', serif"; }
         addLargeLabel(btn, c.key); actionPad.appendChild(btn);
         const desc = document.createElement('div'); desc.style.position = 'absolute'; desc.style.color = '#fff'; desc.style.fontSize = '22px'; desc.style.fontWeight = 'bold'; desc.innerText = c.desc; desc.style.whiteSpace = 'nowrap'; desc.style.textShadow = '2px 2px 4px #000';
-        if (c.key === 'B') { desc.style.bottom = '220px'; desc.style.left = '50%'; desc.style.transform = 'translateX(-50%)'; }
+        if (c.key === 'B') { desc.style.bottom = '190px'; desc.style.left = '-140px'; desc.style.textAlign = 'right'; }
         else if (c.key === 'N') { desc.style.bottom = '90px'; desc.style.left = '290px'; }
-        else if (c.key === 'Space') { desc.style.bottom = '-50px'; desc.style.left = '50%'; desc.style.transform = 'translateX(-50%)'; }
+        else if (c.key === 'Space') { desc.style.bottom = '2px'; desc.style.left = '-170px'; desc.style.textAlign = 'right'; }
         else if (c.key === 'V') { desc.style.bottom = '90px'; desc.style.left = '-160px'; desc.style.textAlign = 'right'; }
         actionPad.appendChild(desc);
     });
