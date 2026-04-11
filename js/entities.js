@@ -868,6 +868,7 @@ function updateEntities() {
     }
 
     // 巨大手裏剣の更新
+    // 巨大手裏剣の更新
     if (giantShuriken) {
         giantShuriken.x += giantShuriken.vx;
         giantShuriken.angle -= 0.3; // 回転速度を0.3まで落とす（重厚感アップ）
@@ -950,7 +951,10 @@ function updateEntities() {
                 // 撃破時の爆発とSEを削除
             }
         }
-        if (giantShuriken.x + giantShuriken.w < -400) giantShuriken = null; 
+        if (giantShuriken.x + giantShuriken.w < -400) {
+            giantShuriken = null; 
+            sakuya.hissatsuSlideX = undefined; // 追加：巨大手裏剣が消滅するタイミングで強制リセット
+        }
     }
 
     // ボスが落としたスマホの更新
