@@ -544,7 +544,7 @@ function updateEntities() {
                         boss.currentFrame = 0;
                         boss.frameTimer = 0;
                     }
-                    const waitTime = isEndlessMode ? 90 : 180; // エンドレスなら半分（1.5秒）
+                    const waitTime = 180; // 通常と同じく3秒待機に戻す
                     if (boss.stateTimer > waitTime) { 
                         boss.stateTimer = 0;
                         if (boss.patternIndex === 1) {

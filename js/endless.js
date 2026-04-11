@@ -112,6 +112,15 @@ function loopToEndlessStart() {
     bossDefeated = false;
     bossSpawnTimer = 0;
     bossDefeatTimer = 0;
+    
+    // ボスのステータスリセット（体力など）
+    boss.hp = boss.maxHp;
+    boss.state = 'intro';
+    boss.stateTimer = 0;
+    boss.patternIndex = 1;
+    boss.isArrived = false;
+    boss.x = -500;
+    boss.visible = false;
     endlessLoopCount++; // ここで周回カウントを増やす
     
     // 敵や弾のクリア
